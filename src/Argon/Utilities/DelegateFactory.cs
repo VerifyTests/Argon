@@ -6,6 +6,7 @@
 
 static class DelegateFactory
 {
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     static DynamicMethod CreateDynamicMethod(string name, Type? returnType, Type[] parameterTypes, Type owner)
     {
         if (owner.IsInterface)
@@ -16,6 +17,7 @@ static class DelegateFactory
         return new(name, returnType, parameterTypes, owner, true);
     }
 
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static ObjectConstructor CreateParameterizedConstructor(MethodBase method)
     {
         var dynamicMethod = CreateDynamicMethod(method.ToString()!, typeof(object), [typeof(object[])], method.DeclaringType!);
@@ -26,6 +28,7 @@ static class DelegateFactory
         return (ObjectConstructor) dynamicMethod.CreateDelegate(typeof(ObjectConstructor));
     }
 
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static MethodCall<T, object?> CreateMethodCall<T>(MethodBase method)
     {
         var dynamicMethod = CreateDynamicMethod(method.ToString()!, typeof(object), [typeof(object), typeof(object[])], method.DeclaringType!);
@@ -213,7 +216,9 @@ static class DelegateFactory
         generator.Return();
     }
 
-    public static Func<T> CreateDefaultConstructor<T>(Type type)
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
+    public static Func<T> CreateDefaultConstructor<T>(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] Type type)
     {
         var method = CreateDynamicMethod($"Create{type.FullName}", typeof(T), Type.EmptyTypes, type);
         method.InitLocals = true;
@@ -224,7 +229,10 @@ static class DelegateFactory
         return (Func<T>) method.CreateDelegate(typeof(Func<T>));
     }
 
-    static void GenerateCreateDefaultConstructorIL(Type type, ILGenerator generator, Type delegateType)
+    static void GenerateCreateDefaultConstructorIL(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type,
+        ILGenerator generator,
+        Type delegateType)
     {
         if (type.IsValueType)
         {
@@ -253,6 +261,7 @@ static class DelegateFactory
         generator.Return();
     }
 
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static Func<T, object?> CreateGet<T>(PropertyInfo property)
     {
         var method = CreateDynamicMethod($"Get{property.Name}", typeof(object), [typeof(T)], property.DeclaringType!);
@@ -283,6 +292,7 @@ static class DelegateFactory
 
     static Type[] objectArray = [typeof(object)];
 
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static Func<T, object?> CreateGet<T>(FieldInfo field)
     {
         if (field.IsLiteral)
@@ -315,6 +325,7 @@ static class DelegateFactory
         generator.Return();
     }
 
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static Action<T, object?> CreateSet<T>(FieldInfo field)
     {
         var method = CreateDynamicMethod($"Set{field.Name}", null, [typeof(T), typeof(object)], field.DeclaringType!);
@@ -347,6 +358,7 @@ static class DelegateFactory
         generator.Return();
     }
 
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static Action<T, object?> CreateSet<T>(PropertyInfo property)
     {
         var method = CreateDynamicMethod($"Set{property.Name}", null, [typeof(T), typeof(object)], property.DeclaringType!);
@@ -371,6 +383,7 @@ static class DelegateFactory
         generator.Return();
     }
 
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static Func<T, object?> CreateGet<T>(MemberInfo member)
     {
         if (member is PropertyInfo property)
@@ -392,6 +405,7 @@ static class DelegateFactory
         throw new($"Could not create getter for {member}.");
     }
 
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static Action<T, object?> CreateSet<T>(MemberInfo member)
     {
         if (member is PropertyInfo property)

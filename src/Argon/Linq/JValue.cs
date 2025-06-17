@@ -655,6 +655,8 @@ public class JValue :
     /// Writes this token to a <see cref="JsonWriter" />.
     /// </summary>
     /// <param name="converters">A collection of <see cref="JsonConverter" />s which will be used when writing the token.</param>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public override void WriteTo(JsonWriter writer, params JsonConverter[] converters)
     {
         if (converters is {Length: > 0} && value != null)
@@ -878,9 +880,21 @@ public class JValue :
     /// <returns>
     /// The <see cref="DynamicMetaObject" /> to bind this object.
     /// </returns>
-    protected override DynamicMetaObject GetMetaObject(Expression parameter) =>
-        new DynamicProxyMetaObject<JValue>(parameter, this, new JValueDynamicProxy());
+    protected override DynamicMetaObject GetMetaObject(Expression parameter)
+    {
+#if HAVE_COMPONENT_MODEL
+        if (!DynamicIsSupported)
+        {
+            throw new NotSupportedException(DynamicNotSupportedMessage);
+        }
+#endif
+#pragma warning disable IL2026, IL3050
+        return new DynamicProxyMetaObject<JValue>(parameter, this, new JValueDynamicProxy());
+#pragma warning restore IL2026, IL3050
+    }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     class JValueDynamicProxy :
         DynamicProxy<JValue>
     {
@@ -1065,6 +1079,16 @@ public class JValue :
     DateTime IConvertible.ToDateTime(IFormatProvider? provider) =>
         (DateTime) this;
 
-    object IConvertible.ToType(Type conversionType, IFormatProvider? provider) =>
-        ToObject(conversionType)!;
+    object IConvertible.ToType(Type conversionType, IFormatProvider? provider)
+    {
+#if NET7_0_OR_GREATER
+        if (!SerializationIsSupported)
+        {
+            throw new NotSupportedException(SerializationNotSupportedMessage);
+        }
+#endif
+#pragma warning disable IL2026, IL3050
+        return ToObject(conversionType)!;
+#pragma warning restore IL2026, IL3050
+    }
 }

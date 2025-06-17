@@ -56,6 +56,7 @@ public class JsonProperty(Type propertyType, Type declaringType)
     /// <summary>
     /// Gets or sets the type of the property.
     /// </summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
     public Type PropertyType { get; set; } = propertyType;
 
     /// <summary>

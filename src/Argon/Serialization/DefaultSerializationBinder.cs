@@ -7,6 +7,8 @@ namespace Argon;
 /// <summary>
 /// The default serialization binder used when resolving and loading classes from type names.
 /// </summary>
+[RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+[RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
 public class DefaultSerializationBinder :
     ISerializationBinder
 {

@@ -12,9 +12,17 @@ static class JsonTypeReflector
 
     public const string ConcurrentDictionaryTypeName = "System.Collections.Concurrent.ConcurrentDictionary`2";
 
-    static ThreadSafeStore<Type, JsonConverter> creatorCache = new(GetCreator);
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
+    private static class CreatorCache
+    {
+        internal static readonly ThreadSafeStore<Type, JsonConverter> Instance = new(GetCreator);
+    }
 
-    public static bool TryGetStringConverter(Type type, [NotNullWhen(true)] out TypeConverter? typeConverter)
+    [RequiresUnreferencedCode("Generic TypeConverters may require the generic types to be annotated. For example, NullableConverter requires the underlying type to be DynamicallyAccessedMembers All.")]
+    public static bool TryGetStringConverter(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type type,
+        [NotNullWhen(true)] out TypeConverter? typeConverter)
     {
         typeConverter = TypeDescriptor.GetConverter(type);
 
@@ -39,12 +47,20 @@ static class JsonTypeReflector
         return false;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static DataContractAttribute? GetDataContractAttribute(Type type) =>
         AttributeCache<DataContractAttribute>.GetAttribute(type);
 
+
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static DataMemberAttribute? GetDataMemberAttribute(MemberInfo member) =>
         AttributeCache<DataMemberAttribute>.GetAttribute(member);
 
+
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static MemberSerialization GetObjectMemberSerialization(Type type)
     {
         var objectAttribute = AttributeCache<JsonObjectAttribute>.GetAttribute(type);
@@ -63,6 +79,8 @@ static class JsonTypeReflector
         return MemberSerialization.OptIn;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static JsonConverter? GetJsonConverter(ICustomAttributeProvider attributeProvider)
     {
         var attribute = AttributeCache<JsonConverterAttribute>.GetAttribute(attributeProvider);
@@ -72,23 +90,27 @@ static class JsonTypeReflector
             return null;
         }
 
-        return creatorCache.Get(attribute.ConverterType);
+        return CreatorCache.Instance.Get(attribute.ConverterType);
     }
 
     /// <summary>
     /// Lookup and create an instance of the <see cref="JsonConverter" /> type described by the argument.
     /// </summary>
     /// <param name="converterType">The <see cref="JsonConverter" /> type to create.</param>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static JsonConverter CreateJsonConverterInstance(Type converterType) =>
-        creatorCache.Get(converterType);
+        CreatorCache.Instance.Get(converterType);
 
-    static JsonConverter GetCreator(Type type)
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
+    static JsonConverter GetCreator(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
     {
         var constructor = DelegateFactory.CreateDefaultConstructor<JsonConverter>(type);
         return constructor();
     }
 
-    public static T? GetAttribute<T>(this Type type)
+    public static T? GetAttribute<T>([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type)
         where T : Attribute
     {
         var attribute = type.GetCustomAttribute<T>(true);
@@ -109,6 +131,7 @@ static class JsonTypeReflector
         return null;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     public static T? GetAttribute<T>(this MemberInfo member)
         where T : Attribute
     {
@@ -138,6 +161,7 @@ static class JsonTypeReflector
         return null;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     public static T? GetAttribute<T>(ICustomAttributeProvider provider)
         where T : Attribute
     {

@@ -24,6 +24,7 @@ public class JsonArrayContract : JsonContainerContract
 
     readonly Type? genericCollectionDefinition;
 
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
     Type? genericWrapperType;
     ObjectConstructor? genericWrapperCreator;
     Func<object>? genericTemporaryCollectionCreator;
@@ -38,6 +39,7 @@ public class JsonArrayContract : JsonContainerContract
 
     internal ObjectConstructor? ParameterizedCreator
     {
+        [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
         get
         {
             if (parameterizedCreator == null &&
@@ -80,6 +82,8 @@ public class JsonArrayContract : JsonContainerContract
     /// <summary>
     /// Initializes a new instance of the <see cref="JsonArrayContract" /> class.
     /// </summary>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public JsonArrayContract(Type underlyingType)
         : base(underlyingType)
     {
@@ -208,6 +212,7 @@ public class JsonArrayContract : JsonContainerContract
         }
     }
 
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     internal IWrappedCollection CreateWrapper(object list)
     {
         if (genericWrapperCreator == null)
@@ -235,6 +240,7 @@ public class JsonArrayContract : JsonContainerContract
         return (IWrappedCollection) genericWrapperCreator(list);
     }
 
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     internal IList CreateTemporaryCollection()
     {
         if (genericTemporaryCollectionCreator == null)

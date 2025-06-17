@@ -19,6 +19,8 @@ static class DynamicUtils
         static MethodCall<object?, object?>? setMemberCall;
         static bool init;
 
+        [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+        [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
         static void Init()
         {
             if (init)
@@ -41,6 +43,7 @@ static class DynamicUtils
             init = true;
         }
 
+        [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
         static object CreateSharpArgumentInfoArray(params int[] values)
         {
             var csharpArgumentInfoType = Type.GetType(CSharpArgumentInfoTypeName)!;
@@ -58,6 +61,8 @@ static class DynamicUtils
             return a;
         }
 
+        [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+        [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
         static void CreateMemberCalls()
         {
             var csharpArgumentInfoType = Type.GetType(CSharpArgumentInfoTypeName, true)!;
@@ -73,6 +78,8 @@ static class DynamicUtils
             setMemberCall = DelegateFactory.CreateMethodCall<object?>(setMemberMethod);
         }
 
+        [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+        [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
         public static CallSiteBinder GetMember(string name, Type context)
         {
             Init();
@@ -81,6 +88,8 @@ static class DynamicUtils
             return (CallSiteBinder) getMemberCall(null, 0, name, context, getCSharpArgumentInfoArray)!;
         }
 
+        [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+        [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
         public static CallSiteBinder SetMember(string name, Type context)
         {
             Init();
@@ -97,6 +106,7 @@ static class DynamicUtils
     }
 }
 
+[RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
 class NoThrowGetBinderMember(GetMemberBinder innerBinder) :
     GetMemberBinder(innerBinder.Name, innerBinder.IgnoreCase)
 {
@@ -111,6 +121,7 @@ class NoThrowGetBinderMember(GetMemberBinder innerBinder) :
     }
 }
 
+[RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
 class NoThrowSetBinderMember(SetMemberBinder innerBinder) :
     SetMemberBinder(innerBinder.Name, innerBinder.IgnoreCase)
 {

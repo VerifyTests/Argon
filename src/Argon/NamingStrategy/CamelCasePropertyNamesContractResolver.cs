@@ -7,6 +7,8 @@ namespace Argon;
 /// <summary>
 /// Resolves member mappings for a type, camel casing property names.
 /// </summary>
+[RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+[RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
 public class CamelCasePropertyNamesContractResolver :
     DefaultContractResolver
 {

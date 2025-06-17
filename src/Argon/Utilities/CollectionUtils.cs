@@ -4,19 +4,26 @@
 
 static class CollectionUtils
 {
-    public static bool IsDictionary(this Type type) =>
+    public static bool IsDictionary(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type) =>
         type.IsAssignableTo<IDictionary>() ||
         type.ImplementsGeneric(typeof(IDictionary<,>)) ||
         type.ImplementsGeneric(typeof(IReadOnlyDictionary<,>));
 
-    public static ConstructorInfo? ResolveEnumerableCollectionConstructor(this Type collectionType, Type collectionItemType)
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
+    public static ConstructorInfo? ResolveEnumerableCollectionConstructor(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] this Type collectionType,
+        Type collectionItemType)
     {
         var genericConstructorArgument = typeof(IList<>).MakeGenericType(collectionItemType);
 
         return ResolveEnumerableCollectionConstructor(collectionType, collectionItemType, genericConstructorArgument);
     }
 
-    public static ConstructorInfo? ResolveEnumerableCollectionConstructor(this Type collectionType, Type collectionItemType, Type constructorArgumentType)
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
+    public static ConstructorInfo? ResolveEnumerableCollectionConstructor(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+        this Type collectionType, Type collectionItemType, Type constructorArgumentType)
     {
         var genericEnumerable = typeof(IEnumerable<>).MakeGenericType(collectionItemType);
         ConstructorInfo? match = null;
@@ -161,6 +168,7 @@ static class CollectionUtils
         return currentList;
     }
 
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static Array ToMultidimensionalArray(IList values, Type type, int rank)
     {
         var dimensions = GetDimensions(values, rank);
@@ -175,4 +183,22 @@ static class CollectionUtils
 
         return multidimensionalArray;
     }
+
+    public static T[] ArrayEmpty<T>() =>
+#if !HAS_ARRAY_EMPTY
+        // Enumerable.Empty<T> no longer returns an empty array in .NET Core 3.0
+        [];
+#else
+        return Array.Empty<T>();
+#endif
+
+
+#if !HAS_ARRAY_EMPTY
+    private static class EmptyArrayContainer<T>
+    {
+#pragma warning disable CA1825 // Avoid zero-length array allocations.
+        public static readonly T[] Empty = [];
+#pragma warning restore CA1825 // Avoid zero-length array allocations.
+    }
+#endif
 }

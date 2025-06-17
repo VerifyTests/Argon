@@ -29,6 +29,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
     JsonContract GetContract(Type type) =>
         Serializer.ResolveContract(type);
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public object? Deserialize(JsonReader reader, Type? type, bool? checkAdditionalContent)
     {
         var contract = GetContractSafe(type);
@@ -82,6 +84,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         }
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     JsonSerializerProxy GetInternalSerializer() =>
         InternalSerializer ??= new(this);
 
@@ -155,6 +159,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         throw JsonSerializationException.Create(reader, "Unexpected end when deserializing object.");
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     object? CreateValueInternal(JsonReader reader, Type? type, JsonContract? contract, JsonProperty? member, JsonContainerContract? containerContract, JsonProperty? containerMember, object? existingValue)
     {
         if (contract is {ContractType: JsonContractType.Linq})
@@ -283,6 +289,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         return null;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     object? CreateObject(JsonReader reader, Type? type, JsonContract? contract, JsonProperty? member, JsonContainerContract? containerContract, JsonProperty? containerMember, object? existingValue)
     {
         string? id;
@@ -446,6 +454,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         throw JsonSerializationException.Create(reader, message);
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     bool ReadMetadataPropertiesToken(JTokenReader reader, ref Type? type, ref JsonContract? contract, JsonProperty? member, JsonContainerContract? containerContract, JsonProperty? containerMember, object? existingValue, out object? newValue, out string? id)
     {
         id = null;
@@ -533,6 +543,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         return false;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     bool ReadMetadataProperties(JsonReader reader, ref Type? type, ref JsonContract? contract, JsonProperty? member, JsonContainerContract? containerContract, JsonProperty? containerMember, object? existingValue, out object? newValue, out string? id)
     {
         id = null;
@@ -620,6 +632,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         return false;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     void ResolveTypeName(JsonReader reader, ref Type? type, ref JsonContract? contract, JsonProperty? member, JsonContainerContract? containerContract, JsonProperty? containerMember, string qualifiedTypeName)
     {
         var resolvedTypeNameHandling =
@@ -674,6 +688,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         return arrayContract;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     object? CreateList(JsonReader reader, Type? type, JsonContract? contract, JsonProperty? member, object? existingValue, string? id)
     {
         if (HasNoDefinedType(contract))
@@ -753,6 +769,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         contract.ContractType == JsonContractType.Linq ||
         contract.UnderlyingType == typeof(IDynamicMetaObjectProvider);
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     static object? EnsureType(JsonReader reader, object? value, CultureInfo culture, JsonContract? contract, Type? targetType)
     {
         if (targetType == null)
@@ -823,6 +841,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         return value;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     bool SetPropertyValue(JsonProperty property, JsonConverter? propertyConverter, JsonContainerContract? containerContract, JsonProperty? containerProperty, JsonReader reader, object target)
     {
         var skipSettingProperty = CalculatePropertyDetails(
@@ -1000,6 +1020,7 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         return property.Writable;
     }
 
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     IList CreateNewList(JsonReader reader, JsonArrayContract contract, out bool createdFromNonDefaultCreator)
     {
         // some types like non-generic IEnumerable can be serialized but not deserialized
@@ -1069,6 +1090,7 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         throw JsonSerializationException.Create(reader, $"Could not create an instance of type {contract.UnderlyingType}. Type is an interface or abstract class and cannot be instantiated.");
     }
 
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     IDictionary CreateNewDictionary(JsonReader reader, JsonDictionaryContract contract, out bool createdFromNonDefaultCreator)
     {
         if (contract.OverrideCreator != null)
@@ -1124,6 +1146,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
     void OnDeserialized(JsonReader reader, object value) =>
         Serializer.Deserialized?.Invoke(reader, value);
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     object PopulateDictionary(IDictionary dictionary, JsonReader reader, JsonDictionaryContract contract, JsonProperty? containerProperty, string? id)
     {
         var underlyingDictionary = dictionary is IWrappedDictionary wrappedDictionary ? wrappedDictionary.UnderlyingDictionary : dictionary;
@@ -1258,6 +1282,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         return underlyingDictionary;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     void PopulateMultidimensionalArray(IList list, JsonReader reader, JsonArrayContract contract, JsonProperty? containerProperty, string? id)
     {
         var rank = contract.UnderlyingType.GetArrayRank();
@@ -1407,6 +1433,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         }
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     object PopulateList(IList list, JsonReader reader, JsonArrayContract contract, JsonProperty? containerProperty, string? id)
     {
 #pragma warning disable CS8600, CS8602, CS8603, CS8604
@@ -1504,6 +1532,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
 #pragma warning restore CS8600, CS8602, CS8603, CS8604
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     object CreateDynamic(JsonReader reader, JsonDynamicContract contract, JsonProperty? member, string? id)
     {
         IDynamicMetaObjectProvider newObject;
@@ -1622,6 +1652,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         public bool Used;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     object CreateObjectUsingCreatorWithParameters(JsonReader reader, JsonObjectContract contract, JsonProperty? containerProperty, ObjectConstructor creator, string? id)
     {
         // only need to keep a track of properties' presence if they are required or a value should be defaulted if missing
@@ -1835,9 +1867,13 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         return createdObject;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     object? DeserializeConvertible(JsonConverter converter, JsonReader reader, Type type, object? existingValue) =>
         converter.ReadJson(reader, type, existingValue, GetInternalSerializer());
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     List<CreatorPropertyContext> ResolvePropertyAndCreatorValues(JsonObjectContract contract, JsonProperty? containerProperty, JsonReader reader, Type type)
     {
         var propertyValues = new List<CreatorPropertyContext>();
@@ -1921,6 +1957,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         return propertyValues;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public object CreateNewObject(JsonReader reader, JsonObjectContract objectContract, JsonProperty? containerMember, string? id, out bool createdFromNonDefaultCreator)
     {
         object? newObject = null;
@@ -1965,6 +2003,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         return newObject;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     object PopulateObject(object newObject, JsonReader reader, JsonObjectContract contract, JsonProperty? member, string? id)
     {
         OnDeserializing(reader, newObject);
@@ -2108,6 +2148,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         return false;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     void EndProcessProperty(object newObject, JsonReader reader, JsonObjectContract contract, int initialDepth, JsonProperty property, PropertyPresence presence, bool setDefaultValue)
     {
         if (presence is not (PropertyPresence.None or PropertyPresence.Null))

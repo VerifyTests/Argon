@@ -114,6 +114,19 @@ public abstract class JToken :
         JTokenType.Integer
     ];
 
+#if NET7_0_OR_GREATER
+        [FeatureSwitchDefinition("Argon.Linq.JToken.SerializationIsSupported")]
+        internal static bool SerializationIsSupported => AppContext.TryGetSwitch("Argon.Linq.JToken.SerializationIsSupported", out var isSupported) ? isSupported : true;
+
+        internal const string SerializationNotSupportedMessage = "Argon serialization is not compatible with trimming and has been disabled. Argon.Linq.JToken.SerializationIsSupported is set to false.";
+
+        [FeatureSwitchDefinition("Argon.Linq.JToken.DynamicIsSupported")]
+        internal static bool DynamicIsSupported => AppContext.TryGetSwitch("Argon.Linq.JToken.DynamicIsSupported", out var isSupported) ? isSupported : true;
+
+        internal const string DynamicNotSupportedMessage = "Argon support for dynamic is not compatible with trimming and has been disabled. Argon.Linq.JToken.DynamicIsSupported is set to false.";
+
+#endif // NET7_0_OR_GREATER
+
     /// <summary>
     /// Gets a comparer that can compare two tokens for value equality.
     /// </summary>
@@ -400,8 +413,19 @@ public abstract class JToken :
     }
 
     /// <summary>
+    /// Writes this token to a <see cref="JsonWriter"/>.
+    /// </summary>
+    /// <param name="writer">A <see cref="JsonWriter"/> into which this method will write.</param>
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "WriteTo without converters is safe.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "WriteTo without converters is safe.")]
+    public void WriteTo(JsonWriter writer) =>
+        WriteTo(writer, CollectionUtils.ArrayEmpty<JsonConverter>());
+
+    /// <summary>
     /// Writes this token to a <see cref="JsonWriter" />.
     /// </summary>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public abstract void WriteTo(JsonWriter writer, params JsonConverter[] converters);
 
     /// <summary>
@@ -420,8 +444,29 @@ public abstract class JToken :
     /// <summary>
     /// Returns the JSON for this token using the given formatting and converters.
     /// </summary>
+    /// <param name="formatting">Indicates how the output should be formatted.</param>
+    /// <returns>The JSON for this token using the given formatting and converters.</returns>
+    public string ToString(Formatting formatting)
+    {
+        using var sw = new StringWriter(InvariantCulture);
+
+        var jw = new JsonTextWriter(sw)
+        {
+            Formatting = formatting,
+        };
+
+        WriteTo(jw);
+
+        return sw.ToString();
+    }
+
+    /// <summary>
+    /// Returns the JSON for this token using the given formatting and converters.
+    /// </summary>
     /// <param name="converters">A collection of <see cref="JsonConverter" />s which will be used when writing the token.</param>
     /// <returns>The JSON for this token using the given formatting and converters.</returns>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public string ToString(Formatting formatting, params JsonConverter[] converters)
     {
         using var stringWriter = new StringWriter(InvariantCulture);
@@ -1650,6 +1695,8 @@ public abstract class JToken :
     /// <summary>
     /// Creates a <see cref="JToken" /> from an object.
     /// </summary>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static JToken FromObject(object o) =>
         FromObjectInternal(o, JsonSerializer.CreateDefault());
 
@@ -1667,6 +1714,8 @@ public abstract class JToken :
     /// </summary>
     /// <typeparam name="T">The object type that the token will be deserialized to.</typeparam>
     /// <returns>The new object created from the JSON value.</returns>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public T? ToObject<T>() =>
         (T?) ToObject(typeof(T));
 
@@ -1675,6 +1724,8 @@ public abstract class JToken :
     /// </summary>
     /// <param name="type">The object type that the token will be deserialized to.</param>
     /// <returns>The new object created from the JSON value.</returns>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public object? ToObject(Type type)
     {
         if (JsonConvert.DefaultSettings == null)
@@ -1987,8 +2038,18 @@ public abstract class JToken :
     /// <returns>
     /// The <see cref="DynamicMetaObject" /> to bind this object.
     /// </returns>
-    protected virtual DynamicMetaObject GetMetaObject(Expression parameter) =>
-        new DynamicProxyMetaObject<JToken>(parameter, this, new());
+    protected virtual DynamicMetaObject GetMetaObject(Expression parameter)
+    {
+#if NET7_0_OR_GREATER
+        if (!DynamicIsSupported)
+        {
+            throw new NotSupportedException(DynamicNotSupportedMessage);
+        }
+#endif
+#pragma warning disable IL2026, IL3050
+        return new DynamicProxyMetaObject<JToken>(parameter, this, new());
+#pragma warning restore IL2026, IL3050
+    }
 
     /// <summary>
     /// Returns the <see cref="DynamicMetaObject" /> responsible for binding operations performed on this object.

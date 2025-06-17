@@ -145,6 +145,8 @@ public class JArray :
     /// </summary>
     /// <param name="o">The object that will be used to create <see cref="JArray" />.</param>
     /// <returns>A <see cref="JArray" /> with the values of the specified object.</returns>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public new static JArray FromObject(object o) =>
         FromObject(o, JsonSerializer.CreateDefault());
 
@@ -170,6 +172,8 @@ public class JArray :
     /// <summary>
     /// Writes this token to a <see cref="JsonWriter" />.
     /// </summary>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public override void WriteTo(JsonWriter writer, params JsonConverter[] converters)
     {
         writer.WriteStartArray();

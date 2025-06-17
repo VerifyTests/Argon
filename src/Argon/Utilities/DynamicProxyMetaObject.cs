@@ -2,6 +2,8 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
+[RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+[RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
 sealed class DynamicProxyMetaObject<T> : DynamicMetaObject
 {
     readonly DynamicProxy<T> proxy;
@@ -389,6 +391,7 @@ sealed class DynamicProxyMetaObject<T> : DynamicMetaObject
     // is only used by DynamicObject.GetMember--it is not expected to
     // (and cannot) implement binding semantics. It is just so the DO
     // can use the Name and IgnoreCase properties.
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     sealed class GetBinderAdapter : GetMemberBinder
     {
         internal GetBinderAdapter(InvokeMemberBinder binder) :

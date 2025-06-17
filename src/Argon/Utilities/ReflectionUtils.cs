@@ -127,7 +127,8 @@ static class ReflectionUtils
         return builder.ToString();
     }
 
-    public static bool HasDefaultConstructor(this Type type)
+    public static bool HasDefaultConstructor(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.None | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] this Type type)
     {
         if (type.IsValueType)
         {
@@ -137,7 +138,9 @@ static class ReflectionUtils
         return GetDefaultConstructor(type, false) != null;
     }
 
-    public static ConstructorInfo? GetDefaultConstructor(this Type type, bool nonPublic)
+    public static ConstructorInfo? GetDefaultConstructor(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.None | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] this Type type,
+        bool nonPublic)
     {
         var bindingFlags = BindingFlags.Instance | BindingFlags.Public;
         if (nonPublic)
@@ -180,10 +183,15 @@ static class ReflectionUtils
         type.IsGenericType &&
         type.GetGenericTypeDefinition() == genericInterfaceDefinition;
 
-    public static bool ImplementsGeneric(this Type type, Type genericInterfaceDefinition) =>
+    public static bool ImplementsGeneric(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type,
+        Type genericInterfaceDefinition) =>
         type.ImplementsGeneric(genericInterfaceDefinition, out _);
 
-    public static bool ImplementsGeneric(this Type type, Type genericInterfaceDefinition, [NotNullWhen(true)] out Type? implementingType)
+    public static bool ImplementsGeneric(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type,
+        Type genericInterfaceDefinition,
+        [NotNullWhen(true)] out Type? implementingType)
     {
         if (!genericInterfaceDefinition.IsInterface ||
             !genericInterfaceDefinition.IsGenericTypeDefinition)
@@ -256,7 +264,8 @@ static class ReflectionUtils
     /// </summary>
     /// <param name="type">The type.</param>
     /// <returns>The type of the typed collection's items.</returns>
-    public static Type? GetCollectionItemType(this Type type)
+    public static Type? GetCollectionItemType(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type)
     {
         if (type.IsArray)
         {
@@ -281,7 +290,10 @@ static class ReflectionUtils
         throw new($"Type {type} is not a collection.");
     }
 
-    public static void GetDictionaryKeyValueTypes(this Type dictionaryType, out Type? keyType, out Type? valueType)
+    public static void GetDictionaryKeyValueTypes([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+        this Type dictionaryType,
+        out Type? keyType,
+        out Type? valueType)
     {
         if (dictionaryType.ImplementsGeneric(typeof(IDictionary<,>), out var genericDictionaryType))
         {
@@ -423,6 +435,7 @@ static class ReflectionUtils
         return false;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     public static List<MemberInfo> GetFieldsAndProperties(this Type type, BindingFlags bindingFlags) =>
         [
         ..GetFields(type, bindingFlags),
@@ -473,7 +486,22 @@ static class ReflectionUtils
         return null;
     }
 
-    public static MemberInfo? GetMemberInfoFromType(Type targetType, MemberInfo member)
+    public static MemberInfo? GetMemberInfoFromType(
+        [DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.NonPublicConstructors |
+        DynamicallyAccessedMemberTypes.NonPublicEvents |
+        DynamicallyAccessedMemberTypes.NonPublicFields |
+        DynamicallyAccessedMemberTypes.NonPublicMethods |
+        DynamicallyAccessedMemberTypes.NonPublicNestedTypes |
+        DynamicallyAccessedMemberTypes.NonPublicProperties |
+        DynamicallyAccessedMemberTypes.PublicConstructors |
+        DynamicallyAccessedMemberTypes.PublicEvents |
+        DynamicallyAccessedMemberTypes.PublicFields |
+        DynamicallyAccessedMemberTypes.PublicMethods |
+        DynamicallyAccessedMemberTypes.PublicNestedTypes |
+        DynamicallyAccessedMemberTypes.PublicProperties)]
+        Type targetType,
+        MemberInfo member)
     {
         const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
@@ -495,7 +523,10 @@ static class ReflectionUtils
         return targetType.GetMember(member.Name, memberType, bindingFlags).SingleOrDefault();
     }
 
-    static List<FieldInfo> GetFields(Type targetType, BindingFlags bindingFlags)
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    static List<FieldInfo> GetFields(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.NonPublicFields | DynamicallyAccessedMemberTypes.None | DynamicallyAccessedMemberTypes.PublicFields)] Type targetType,
+        BindingFlags bindingFlags)
     {
         var fields = new List<FieldInfo>(targetType.GetFields(bindingFlags));
         // Type.GetFields doesn't return inherited private fields
@@ -505,6 +536,7 @@ static class ReflectionUtils
         return fields;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     static void GetChildPrivateFields(List<FieldInfo> initialFields, Type targetType, BindingFlags bindingFlags)
     {
         // fix weirdness with private FieldInfos only being returned for the current Type
@@ -527,6 +559,7 @@ static class ReflectionUtils
         }
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     static List<PropertyInfo> GetProperties(Type targetType, BindingFlags bindingFlags)
     {
         var properties = new List<PropertyInfo>(targetType.GetProperties(bindingFlags));
@@ -560,7 +593,10 @@ static class ReflectionUtils
             ? source ^ flag
             : source;
 
-    static void GetChildPrivateProperties(List<PropertyInfo> initialProperties, Type targetType, BindingFlags bindingFlags)
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    static void GetChildPrivateProperties(List<PropertyInfo> initialProperties,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties)] Type targetType,
+        BindingFlags bindingFlags)
     {
         // fix weirdness with private PropertyInfos only being returned for the current Type
         // find base type properties and add them to result
@@ -627,7 +663,10 @@ static class ReflectionUtils
         }
     }
 
-    public static bool IsMethodOverridden(Type currentType, Type methodDeclaringType, string method)
+    public static bool IsMethodOverridden(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] Type currentType,
+        Type methodDeclaringType,
+        string method)
     {
         foreach (var inner in currentType
                      .GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
@@ -645,7 +684,8 @@ static class ReflectionUtils
         return false;
     }
 
-    public static object? GetDefaultValue(Type type)
+    public static object? GetDefaultValue(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
     {
         if (!type.IsValueType)
         {

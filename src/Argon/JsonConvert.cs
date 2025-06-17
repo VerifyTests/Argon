@@ -383,6 +383,8 @@ public static class JsonConvert
     /// Serializes the specified object to a JSON string.
     /// </summary>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static string SerializeObject(object? value) =>
         SerializeObject(value, null, (JsonSerializerSettings?) null);
 
@@ -390,6 +392,8 @@ public static class JsonConvert
     /// Serializes the specified object to a JSON string using formatting.
     /// </summary>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static string SerializeObject(object? value, Formatting formatting) =>
         SerializeObject(value, formatting, (JsonSerializerSettings?) null);
 
@@ -397,6 +401,8 @@ public static class JsonConvert
     /// Serializes the specified object to a JSON string using a collection of <see cref="JsonConverter" />.
     /// </summary>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static string SerializeObject(object? value, params JsonConverter[] converters)
     {
         JsonSerializerSettings? settings = null;
@@ -412,6 +418,8 @@ public static class JsonConvert
     /// Serializes the specified object to a JSON string using formatting and a collection of <see cref="JsonConverter" />.
     /// </summary>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static string SerializeObject(object? value, Formatting formatting, params JsonConverter[] converters)
     {
         JsonSerializerSettings? settings = null;
@@ -431,6 +439,8 @@ public static class JsonConvert
     /// If this is <c>null</c>, default serialization settings will be used.
     /// </param>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static string SerializeObject(object? value, JsonSerializerSettings? settings) =>
         SerializeObject(value, null, settings);
 
@@ -448,6 +458,8 @@ public static class JsonConvert
     /// Specifying the type is optional.
     /// </param>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static string SerializeObject(object? value, Type? type, JsonSerializerSettings? settings)
     {
         var serializer = JsonSerializer.CreateDefault(settings);
@@ -463,6 +475,8 @@ public static class JsonConvert
     /// If this is <c>null</c>, default serialization settings will be used.
     /// </param>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static string SerializeObject(object? value, Formatting formatting, JsonSerializerSettings? settings) =>
         SerializeObject(value, null, formatting, settings);
 
@@ -480,6 +494,8 @@ public static class JsonConvert
     /// Specifying the type is optional.
     /// </param>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static string SerializeObject(object? value, Type? type, Formatting formatting, JsonSerializerSettings? settings)
     {
         var serializer = JsonSerializer.CreateDefault(settings);
@@ -511,6 +527,8 @@ public static class JsonConvert
     /// Deserializes the JSON to a .NET object.
     /// </summary>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static object DeserializeObject(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value) =>
@@ -520,6 +538,8 @@ public static class JsonConvert
     /// Deserializes the JSON to a .NET object.
     /// </summary>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static object? TryDeserializeObject(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value) =>
@@ -533,6 +553,8 @@ public static class JsonConvert
     /// If this is <c>null</c>, default serialization settings will be used.
     /// </param>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static object DeserializeObject(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value,
@@ -547,6 +569,8 @@ public static class JsonConvert
     /// If this is <c>null</c>, default serialization settings will be used.
     /// </param>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static object? TryDeserializeObject(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value,
@@ -557,6 +581,8 @@ public static class JsonConvert
     /// Deserializes the JSON to the specified .NET type.
     /// </summary>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static object DeserializeObject(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value,
@@ -567,6 +593,8 @@ public static class JsonConvert
     /// Deserializes the JSON to the specified .NET type.
     /// </summary>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static object? TryDeserializeObject(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value,
@@ -577,6 +605,8 @@ public static class JsonConvert
     /// Deserializes the JSON to the specified .NET type.
     /// </summary>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static T DeserializeObject<T>(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value) =>
@@ -586,6 +616,8 @@ public static class JsonConvert
     /// Deserializes the JSON to the specified .NET type.
     /// </summary>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static T? TryDeserializeObject<T>(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value) =>
@@ -600,6 +632,8 @@ public static class JsonConvert
     /// as a parameter.
     /// </typeparam>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static T DeserializeAnonymousType<T>(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value,
@@ -615,6 +649,8 @@ public static class JsonConvert
     /// as a parameter.
     /// </typeparam>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static T? TryDeserializeAnonymousType<T>(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value,
@@ -634,6 +670,8 @@ public static class JsonConvert
     /// If this is <c>null</c>, default serialization settings will be used.
     /// </param>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static T DeserializeAnonymousType<T>(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value,
@@ -654,6 +692,8 @@ public static class JsonConvert
     /// If this is <c>null</c>, default serialization settings will be used.
     /// </param>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static T? TryDeserializeAnonymousType<T>(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value,
@@ -665,6 +705,8 @@ public static class JsonConvert
     /// Deserializes the JSON to the specified .NET type using a collection of <see cref="JsonConverter" />.
     /// </summary>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static T DeserializeObject<T>(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value,
@@ -675,6 +717,8 @@ public static class JsonConvert
     /// Deserializes the JSON to the specified .NET type using a collection of <see cref="JsonConverter" />.
     /// </summary>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static T? TryDeserializeObject<T>(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value,
@@ -689,6 +733,8 @@ public static class JsonConvert
     /// If this is <c>null</c>, default serialization settings will be used.
     /// </param>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static T DeserializeObject<T>(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value,
@@ -703,6 +749,8 @@ public static class JsonConvert
     /// If this is <c>null</c>, default serialization settings will be used.
     /// </param>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static T? TryDeserializeObject<T>(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value,
@@ -713,6 +761,8 @@ public static class JsonConvert
     /// Deserializes the JSON to the specified .NET type using a collection of <see cref="JsonConverter" />.
     /// </summary>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static object DeserializeObject(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value,
@@ -728,6 +778,8 @@ public static class JsonConvert
     /// Deserializes the JSON to the specified .NET type using a collection of <see cref="JsonConverter" />.
     /// </summary>
     [DebuggerStepThrough]
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static object? TryDeserializeObject(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value,
@@ -756,6 +808,8 @@ public static class JsonConvert
     /// The <see cref="JsonSerializerSettings" /> used to deserialize the object.
     /// If this is <c>null</c>, default serialization settings will be used.
     /// </param>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static object DeserializeObject(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value,
@@ -778,6 +832,8 @@ public static class JsonConvert
     /// The <see cref="JsonSerializerSettings" /> used to deserialize the object.
     /// If this is <c>null</c>, default serialization settings will be used.
     /// </param>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static object? TryDeserializeObject(
         [StringSyntax(StringSyntaxAttribute.Json)]
         string value,

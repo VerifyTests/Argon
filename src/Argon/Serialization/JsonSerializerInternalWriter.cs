@@ -12,6 +12,8 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
     int rootLevel;
     readonly List<object> serializeStack = [];
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public void Serialize(JsonWriter jsonWriter, object? value, Type? type)
     {
         rootType = type;
@@ -53,6 +55,8 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
         }
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     JsonSerializerProxy GetInternalSerializer() =>
         InternalSerializer ??= new(this);
 
@@ -93,6 +97,8 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
         writer.WriteEndObject();
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     void SerializeValue(JsonWriter writer, object? value, JsonContract? valueContract, JsonProperty? member, JsonContainerContract? containerContract, JsonProperty? containerProperty)
     {
         if (value == null)
@@ -310,6 +316,7 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
         }
     }
 
+    [RequiresUnreferencedCode("Generic TypeConverters may require the generic types to be annotated. For example, NullableConverter requires the underlying type to be DynamicallyAccessedMembers All.")]
     static bool TryConvertToString(object value, Type type, [NotNullWhen(true)] out string? s)
     {
 #if NET6_0_OR_GREATER
@@ -352,6 +359,7 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
         return false;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     void SerializeString(JsonWriter writer, object value, JsonStringContract contract)
     {
         OnSerializing(writer, value);
@@ -368,6 +376,8 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
     void OnSerialized(JsonWriter writer, object value) =>
         Serializer.Serialized?.Invoke(writer, value);
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     void SerializeObject(JsonWriter writer, object value, JsonObjectContract contract, JsonProperty? member, JsonContainerContract? collectionContract, JsonProperty? containerProperty)
     {
         OnSerializing(writer, value);
@@ -508,6 +518,9 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
         value != null &&
         (value & flag) == flag;
 
+
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     void SerializeConvertible(JsonWriter writer, JsonConverter converter, object value, JsonContract contract, JsonContainerContract? collectionContract, JsonProperty? containerProperty)
     {
         if (ShouldWriteReference(value, null, contract, collectionContract, containerProperty))
@@ -528,6 +541,8 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
         serializeStack.RemoveAt(serializeStack.Count - 1);
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     void SerializeList(JsonWriter writer, IEnumerable values, JsonArrayContract contract, JsonProperty? member, JsonContainerContract? collectionContract, JsonProperty? containerProperty)
     {
         var underlyingList = values is IWrappedCollection wrappedCollection ? wrappedCollection.UnderlyingCollection : values;
@@ -561,6 +576,8 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
         OnSerialized(writer, underlyingList);
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     private void SerializeArrayItem(JsonWriter writer, JsonArrayContract contract, JsonProperty? member, object? value, object underlyingList, int initialDepth, ref int index)
     {
         try
@@ -608,6 +625,8 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
         }
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     void SerializeMultidimensionalArray(JsonWriter writer, Array values, JsonArrayContract contract, JsonProperty? member, JsonContainerContract? collectionContract, JsonProperty? containerProperty)
     {
         OnSerializing(writer, values);
@@ -628,6 +647,8 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
         OnSerialized(writer, values);
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     void SerializeMultidimensionalArray(JsonWriter writer, Array values, JsonArrayContract contract, JsonProperty? member, int initialDepth, int[] indices)
     {
         var dimension = indices.Length;
@@ -716,6 +737,8 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
         return writeMetadataObject;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     void SerializeDynamic(JsonWriter writer, IDynamicMetaObjectProvider value, JsonDynamicContract contract, JsonProperty? member, JsonContainerContract? collectionContract, JsonProperty? containerProperty)
     {
         OnSerializing(writer, value);
@@ -797,6 +820,7 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
         OnSerialized(writer, value);
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     bool ShouldWriteDynamicProperty(object? memberValue)
     {
         if (Serializer.NullValueHandling == NullValueHandling.Ignore &&
@@ -853,6 +877,8 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
         return false;
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     void SerializeDictionary(JsonWriter writer, IDictionary values, JsonDictionaryContract contract, JsonProperty? member, JsonContainerContract? collectionContract, JsonProperty? containerProperty)
     {
 #pragma warning disable CS8600, CS8602, CS8604
@@ -908,6 +934,8 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
 #pragma warning restore CS8600, CS8602, CS8604
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     void SerializeDictionaryItem(JsonWriter writer, JsonDictionaryContract contract, JsonProperty? member, object key, object? value, JsonContract keyContract, object underlyingDictionary)
     {
         var initialDepth = writer.Top;
@@ -980,6 +1008,7 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
         }
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     static string GetDictionaryPropertyName(object key, JsonContract contract, out bool escape)
     {
         if (contract.ContractType == JsonContractType.Primitive)

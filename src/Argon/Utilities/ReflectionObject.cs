@@ -22,7 +22,17 @@ class ReflectionObject
     public Type GetType(string member) =>
         Members[member].MemberType!;
 
-    public static ReflectionObject Create(Type type, MethodBase? creator, params string[] memberNames)
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
+    public static ReflectionObject Create(
+        [DynamicallyAccessedMembers(
+            DynamicallyAccessedMemberTypes.NonPublicConstructors |
+            DynamicallyAccessedMemberTypes.PublicConstructors |
+            DynamicallyAccessedMemberTypes.PublicEvents |
+            DynamicallyAccessedMemberTypes.PublicFields |
+            DynamicallyAccessedMemberTypes.PublicMethods |
+            DynamicallyAccessedMemberTypes.PublicNestedTypes |
+            DynamicallyAccessedMemberTypes.PublicProperties)]
+        Type type, MethodBase? creator, params string[] memberNames)
     {
         var creatorConstructor = CreatorConstructor(type, creator);
 
@@ -73,7 +83,11 @@ class ReflectionObject
         return new(creatorConstructor, memberLookup.ToFrozenDictionary());
     }
 
-    static ObjectConstructor? CreatorConstructor(Type type, MethodBase? creator)
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
+    static ObjectConstructor? CreatorConstructor(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
+        Type type,
+        MethodBase? creator)
     {
         if (creator == null)
         {

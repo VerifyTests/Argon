@@ -37,6 +37,7 @@ public class JsonDictionaryContract : JsonContainerContract
 
     readonly Type? dictionaryDefinition;
 
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
     Type? genericWrapperType;
     ObjectConstructor? genericWrapperCreator;
 
@@ -52,6 +53,7 @@ public class JsonDictionaryContract : JsonContainerContract
 
     internal ObjectConstructor? ParameterizedCreator
     {
+        [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
         get
         {
             if (parameterizedCreator == null &&
@@ -81,6 +83,8 @@ public class JsonDictionaryContract : JsonContainerContract
     /// <summary>
     /// Initializes a new instance of the <see cref="JsonDictionaryContract" /> class.
     /// </summary>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public JsonDictionaryContract(Type underlyingType)
         : base(underlyingType)
     {
@@ -196,6 +200,7 @@ public class JsonDictionaryContract : JsonContainerContract
                definition == typeof(ImmutableSortedDictionary<,>);
     }
 
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     internal IWrappedDictionary CreateWrapper(object dictionary)
     {
         if (genericWrapperCreator == null)
@@ -209,6 +214,7 @@ public class JsonDictionaryContract : JsonContainerContract
         return (IWrappedDictionary) genericWrapperCreator(dictionary);
     }
 
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     internal IDictionary CreateTemporaryDictionary()
     {
         if (genericTemporaryDictionaryCreator == null)
