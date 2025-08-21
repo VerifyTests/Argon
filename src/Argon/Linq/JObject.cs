@@ -334,12 +334,12 @@ public class JObject :
     {
         var token = FromObjectInternal(o, serializer);
 
-        if (token.Type != JTokenType.Object)
+        if (token.Type == JTokenType.Object)
         {
-            throw new ArgumentException($"Object serialized to {token.Type}. JObject instance expected.");
+            return (JObject) token;
         }
 
-        return (JObject) token;
+        throw new ArgumentException($"Object serialized to {token.Type}. JObject instance expected.");
     }
 
     /// <summary>
