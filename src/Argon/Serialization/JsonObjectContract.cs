@@ -82,6 +82,8 @@ public class JsonObjectContract : JsonContainerContract
     /// <summary>
     /// Initializes a new instance of the <see cref="JsonObjectContract" /> class.
     /// </summary>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public JsonObjectContract(Type underlyingType)
         : base(underlyingType)
     {

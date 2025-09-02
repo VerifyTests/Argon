@@ -78,6 +78,8 @@ static class ImmutableCollectionsUtils
             .ToFrozenDictionary();
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     internal static bool TryBuildImmutableForArrayContract(Type targetType, Type collectionItemType, [NotNullWhen(true)] out Type? createdType, [NotNullWhen(true)] out ObjectConstructor? parameterizedCreator)
     {
         if (targetType.IsGenericType &&
@@ -95,13 +97,16 @@ static class ImmutableCollectionsUtils
         return false;
     }
 
-    static MethodInfo GetArrayCreateRange(Type type) =>
+    static MethodInfo GetArrayCreateRange(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods )] Type type) =>
         type
             .GetMethods()
             .Single(_ => _.Name == "CreateRange" &&
                          _.GetParameters()
                              .Length == 1);
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     internal static bool TryBuildImmutableForDictionaryContract(Type targetType, Type keyItemType, Type valueItemType, [NotNullWhen(true)] out Type? createdType, [NotNullWhen(true)] out ObjectConstructor? parameterizedCreator)
     {
         if (targetType.IsGenericType &&
@@ -118,7 +123,8 @@ static class ImmutableCollectionsUtils
         return false;
     }
 
-    static MethodInfo GetDictionaryCreateRange(Type type) =>
+    static MethodInfo GetDictionaryCreateRange(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods )] Type type) =>
         type
             .GetMethods()
             .Single(_ =>

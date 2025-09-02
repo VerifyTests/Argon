@@ -321,6 +321,8 @@ public class JObject :
     /// </summary>
     /// <param name="o">The object that will be used to create <see cref="JObject" />.</param>
     /// <returns>A <see cref="JObject" /> with the values of the specified object.</returns>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public new static JObject FromObject(object o) =>
         FromObject(o, JsonSerializer.CreateDefault());
 
@@ -345,6 +347,8 @@ public class JObject :
     /// <summary>
     /// Writes this token to a <see cref="JsonWriter" />.
     /// </summary>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public override void WriteTo(JsonWriter writer, params JsonConverter[] converters)
     {
         writer.WriteStartObject();
@@ -541,8 +545,19 @@ public class JObject :
     /// <returns>
     /// The <see cref="DynamicMetaObject" /> to bind this object.
     /// </returns>
-    protected override DynamicMetaObject GetMetaObject(Expression parameter) =>
-        new DynamicProxyMetaObject<JObject>(parameter, this, new JObjectDynamicProxy());
+    protected override DynamicMetaObject GetMetaObject(Expression parameter)
+    {
+#if HAVE_COMPONENT_MODEL
+        if (!DynamicIsSupported)
+        {
+            throw new NotSupportedException(DynamicNotSupportedMessage);
+        }
+#endif
+        // Can be disabled because we throw when dynamic is not supported before
+#pragma warning disable IL2026, IL3050
+        return new DynamicProxyMetaObject<JObject>(parameter, this, new JObjectDynamicProxy());
+#pragma warning restore IL2026, IL3050
+    }
 
     class JObjectDynamicProxy :
         DynamicProxy<JObject>

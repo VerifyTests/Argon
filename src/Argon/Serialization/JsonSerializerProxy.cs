@@ -2,6 +2,8 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
+[RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+[RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
 class JsonSerializerProxy : JsonSerializer
 {
     readonly JsonSerializerInternalReader? serializerReader;

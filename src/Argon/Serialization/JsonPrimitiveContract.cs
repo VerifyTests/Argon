@@ -14,6 +14,7 @@ public class JsonPrimitiveContract : JsonContract
     /// <summary>
     /// Initializes a new instance of the <see cref="JsonPrimitiveContract" /> class.
     /// </summary>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     public JsonPrimitiveContract(Type underlyingType)
         : base(underlyingType)
     {

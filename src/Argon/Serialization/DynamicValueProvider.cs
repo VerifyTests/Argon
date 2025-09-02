@@ -7,6 +7,7 @@ namespace Argon;
 /// <summary>
 /// Get and set values for a <see cref="MemberInfo" /> using dynamic methods.
 /// </summary>
+[RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
 public class DynamicValueProvider : IValueProvider
 {
     readonly MemberInfo member;

@@ -7,6 +7,8 @@ namespace Argon;
 /// <summary>
 /// Used by <see cref="JsonSerializer" /> to resolve a <see cref="JsonContract" /> for a given <see cref="System.Type" />.
 /// </summary>
+[RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+[RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
 public class DefaultContractResolver : IContractResolver
 {
     // Json.NET Schema requires a property

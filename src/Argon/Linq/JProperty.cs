@@ -248,6 +248,8 @@ public class JProperty :
     /// <summary>
     /// Writes this token to a <see cref="JsonWriter" />.
     /// </summary>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public override void WriteTo(JsonWriter writer, params JsonConverter[] converters)
     {
         writer.WritePropertyName(Name);

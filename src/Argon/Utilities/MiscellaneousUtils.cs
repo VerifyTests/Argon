@@ -8,6 +8,10 @@
 
 static class MiscellaneousUtils
 {
+    internal const string TrimWarning = "Argon relies on reflection over types that may be removed when trimming.";
+
+    internal const string AotWarning = "Argon relies on dynamically creating types that may not be available with Ahead of Time compilation.";
+
     [Conditional("DEBUG")]
     public static void Assert([DoesNotReturnIf(false)] bool condition, string? message = null) =>
         Debug.Assert(condition, message);

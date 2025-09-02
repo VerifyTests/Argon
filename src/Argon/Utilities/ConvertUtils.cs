@@ -81,6 +81,7 @@ static class ConvertUtils
     public static PrimitiveTypeCode GetTypeCode(Type type) =>
         GetTypeCode(type, out _);
 
+    [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "Nullable<T> instantiated over primitive types are kept by TypeCodeMap")]
     public static PrimitiveTypeCode GetTypeCode(Type type, out bool isEnum)
     {
         if (TypeCodeMap.TryGetValue(type, out var typeCode))
@@ -116,8 +117,15 @@ static class ConvertUtils
     public static TimeSpan ParseTimeSpan(string input) =>
         TimeSpan.Parse(input, InvariantCulture);
 
-    static ThreadSafeStore<Tuple<Type, Type>, Func<object?, object?>?> castConverters = new(CreateCastConverter);
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
+    static class CastConverters
+    {
+        public static readonly ThreadSafeStore<Tuple<Type, Type>, Func<object?, object?>?> Instance = new(CreateCastConverter);
+    }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     static Func<object?, object?>? CreateCastConverter(Tuple<Type, Type> t)
     {
         var initialType = t.Item1;
@@ -236,6 +244,8 @@ static class ConvertUtils
         NoValidConversion = 3
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static object Convert(object initialValue, Type targetType) =>
         TryConvertInternal(initialValue, targetType, out var value) switch
         {
@@ -251,6 +261,8 @@ static class ConvertUtils
                 throw new InvalidOperationException("Unexpected conversion result.")
         };
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     static bool TryConvert(object initialValue, Type targetType, out object? value)
     {
         try
@@ -270,6 +282,8 @@ static class ConvertUtils
         }
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     static ConvertResult TryConvertInternal(object initialValue, Type targetType, out object? value)
     {
         if (targetType.IsNullableType())
@@ -449,6 +463,8 @@ static class ConvertUtils
     /// The converted type. If conversion was unsuccessful, the initial value
     /// is returned if assignable to the target type.
     /// </returns>
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public static object? ConvertOrCast(object? initialValue, Type targetType)
     {
         if (targetType == typeof(object))
@@ -471,6 +487,8 @@ static class ConvertUtils
 
     #endregion
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     static object? EnsureTypeAssignable(object? value, Type initialType, Type targetType)
     {
         if (value == null)
@@ -489,7 +507,7 @@ static class ConvertUtils
                 return value;
             }
 
-            var castConverter = castConverters.Get(new(valueType, targetType));
+            var castConverter = CastConverters.Instance.Get(new(valueType, targetType));
             if (castConverter != null)
             {
                 return castConverter(value);

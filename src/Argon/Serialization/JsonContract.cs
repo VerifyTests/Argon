@@ -12,6 +12,7 @@ public abstract class JsonContract
     internal bool IsNullable;
     internal bool IsConvertible;
     internal bool IsEnum;
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
     internal Type NonNullableUnderlyingType;
     internal ReadType InternalReadType;
     internal JsonContractType ContractType;
@@ -27,6 +28,7 @@ public abstract class JsonContract
     /// <summary>
     /// Gets or sets the type created during deserialization.
     /// </summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
     public Type CreatedType
     {
         get;
@@ -66,7 +68,9 @@ public abstract class JsonContract
     /// </summary>
     public bool DefaultCreatorNonPublic { get; set; }
 
-    internal JsonContract(Type underlyingType)
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    internal JsonContract(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] Type underlyingType)
     {
         UnderlyingType = underlyingType;
 

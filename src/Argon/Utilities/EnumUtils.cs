@@ -9,6 +9,7 @@ static class EnumUtils
 
     static readonly ThreadSafeStore<Tuple<Type, NamingStrategy?>, EnumInfo> ValuesAndNamesPerEnum = new(InitializeValuesAndNames);
 
+    [UnconditionalSuppressMessage("TrimAnalysis", "IL2075", Justification = "Enum fields are not trimmed")]
     static EnumInfo InitializeValuesAndNames(Tuple<Type, NamingStrategy?> key)
     {
         var enumType = key.Item1;
