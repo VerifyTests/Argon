@@ -7,7 +7,10 @@ namespace Argon;
 /// <summary>
 /// Maps a JSON property to a .NET member or constructor parameter.
 /// </summary>
-public class JsonProperty(Type propertyType, Type declaringType)
+public class JsonProperty(
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+    Type propertyType,
+    Type declaringType)
 {
     internal Required? required;
     internal bool hasExplicitDefaultValue;
