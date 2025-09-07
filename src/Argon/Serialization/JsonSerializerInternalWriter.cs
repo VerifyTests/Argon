@@ -5,6 +5,8 @@
 // ReSharper disable NullableWarningSuppressionIsUsed
 // ReSharper disable RedundantSuppressNullableWarningExpression
 
+[RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+[RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
 class JsonSerializerInternalWriter(JsonSerializer serializer) :
     JsonSerializerInternalBase(serializer)
 {
@@ -505,7 +507,8 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
 
     void WriteTypeProperty(JsonWriter writer, Type type)
     {
-        var typeName = type.GetTypeName(Serializer.TypeNameAssemblyFormatHandling, Serializer.SerializationBinder);
+        var binder = Serializer.SerializationBinder ?? DefaultSerializationBinder.Instance;
+        var typeName = type.GetTypeName(Serializer.TypeNameAssemblyFormatHandling, binder);
         writer.WritePropertyName(JsonTypeReflector.TypePropertyName, false);
         writer.WriteValue(typeName);
     }
