@@ -13,7 +13,6 @@
     <PackageReference Include="MarkdownSnippets.MsBuild" PrivateAssets="all" />
     <PackageReference Include="NodaTime" />
     <PackageReference Include="ProjectDefaults" PrivateAssets="all" />
-    <PackageReference Include="System.ValueTuple" />
     <PackageReference Include="FSharp.Core" />
     <PackageReference Include="Verify.XunitV3" PrivateAssets="all" />
     <PackageReference Include="xunit.v3" PrivateAssets="all" />
