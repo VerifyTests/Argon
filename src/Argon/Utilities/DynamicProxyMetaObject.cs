@@ -40,7 +40,7 @@ sealed class DynamicProxyMetaObject<T> : DynamicMetaObject
 
     public override DynamicMetaObject BindDeleteMember(DeleteMemberBinder binder)
     {
-        const string name = nameof(DynamicProxy<T>.TryDeleteMember);
+        const string name = nameof(DynamicProxy<>.TryDeleteMember);
         if (IsOverridden(name))
         {
             return CallMethodNoResult(name, binder, [], _ => binder.FallbackDeleteMember(this, _));
@@ -51,7 +51,7 @@ sealed class DynamicProxyMetaObject<T> : DynamicMetaObject
 
     public override DynamicMetaObject BindConvert(ConvertBinder binder)
     {
-        const string name = nameof(DynamicProxy<T>.TryConvert);
+        const string name = nameof(DynamicProxy<>.TryConvert);
         if (IsOverridden(name))
         {
             return CallMethodWithResult(name, binder, [], _ => binder.FallbackConvert(this, _));
@@ -62,7 +62,7 @@ sealed class DynamicProxyMetaObject<T> : DynamicMetaObject
 
     public override DynamicMetaObject BindInvokeMember(InvokeMemberBinder binder, DynamicMetaObject[] args)
     {
-        const string name = nameof(DynamicProxy<T>.TryInvokeMember);
+        const string name = nameof(DynamicProxy<>.TryInvokeMember);
         if (!IsOverridden(name))
         {
             return base.BindInvokeMember(binder, args);
@@ -92,7 +92,7 @@ sealed class DynamicProxyMetaObject<T> : DynamicMetaObject
             binder,
             GetArgArray(args),
             BuildCallMethodWithResult(
-                nameof(DynamicProxy<T>.TryGetMember),
+                nameof(DynamicProxy<>.TryGetMember),
                 new GetBinderAdapter(binder),
                 [],
                 Fallback(null),
@@ -104,7 +104,7 @@ sealed class DynamicProxyMetaObject<T> : DynamicMetaObject
 
     public override DynamicMetaObject BindCreateInstance(CreateInstanceBinder binder, DynamicMetaObject[] args)
     {
-        const string name = nameof(DynamicProxy<T>.TryCreateInstance);
+        const string name = nameof(DynamicProxy<>.TryCreateInstance);
         if (IsOverridden(name))
         {
             return CallMethodWithResult(name, binder, GetArgArray(args), _ => binder.FallbackCreateInstance(this, args, _));
@@ -115,7 +115,7 @@ sealed class DynamicProxyMetaObject<T> : DynamicMetaObject
 
     public override DynamicMetaObject BindInvoke(InvokeBinder binder, DynamicMetaObject[] args)
     {
-        const string name = nameof(DynamicProxy<T>.TryInvoke);
+        const string name = nameof(DynamicProxy<>.TryInvoke);
         if (IsOverridden(name))
         {
             return CallMethodWithResult(name, binder, GetArgArray(args), _ => binder.FallbackInvoke(this, args, _));
@@ -126,7 +126,7 @@ sealed class DynamicProxyMetaObject<T> : DynamicMetaObject
 
     public override DynamicMetaObject BindBinaryOperation(BinaryOperationBinder binder, DynamicMetaObject arg)
     {
-        const string name = nameof(DynamicProxy<T>.TryBinaryOperation);
+        const string name = nameof(DynamicProxy<>.TryBinaryOperation);
         if (IsOverridden(name))
         {
             return CallMethodWithResult(name, binder, GetArgs(arg), _ => binder.FallbackBinaryOperation(this, arg, _));
@@ -137,7 +137,7 @@ sealed class DynamicProxyMetaObject<T> : DynamicMetaObject
 
     public override DynamicMetaObject BindUnaryOperation(UnaryOperationBinder binder)
     {
-        const string name = nameof(DynamicProxy<T>.TryUnaryOperation);
+        const string name = nameof(DynamicProxy<>.TryUnaryOperation);
         if (IsOverridden(name))
         {
             return CallMethodWithResult(name, binder, [], _ => binder.FallbackUnaryOperation(this, _));
@@ -148,7 +148,7 @@ sealed class DynamicProxyMetaObject<T> : DynamicMetaObject
 
     public override DynamicMetaObject BindGetIndex(GetIndexBinder binder, DynamicMetaObject[] indexes)
     {
-        const string name = nameof(DynamicProxy<T>.TryGetIndex);
+        const string name = nameof(DynamicProxy<>.TryGetIndex);
         if (IsOverridden(name))
         {
             return CallMethodWithResult(name, binder, GetArgArray(indexes), _ => binder.FallbackGetIndex(this, indexes, _));
@@ -159,7 +159,7 @@ sealed class DynamicProxyMetaObject<T> : DynamicMetaObject
 
     public override DynamicMetaObject BindSetIndex(SetIndexBinder binder, DynamicMetaObject[] indexes, DynamicMetaObject value)
     {
-        const string name = nameof(DynamicProxy<T>.TrySetIndex);
+        const string name = nameof(DynamicProxy<>.TrySetIndex);
         if (IsOverridden(name))
         {
             return CallMethodReturnLast(name, binder, GetArgArray(indexes, value), _ => binder.FallbackSetIndex(this, indexes, value, _));
@@ -170,7 +170,7 @@ sealed class DynamicProxyMetaObject<T> : DynamicMetaObject
 
     public override DynamicMetaObject BindDeleteIndex(DeleteIndexBinder binder, DynamicMetaObject[] indexes)
     {
-        const string name = nameof(DynamicProxy<T>.TryDeleteIndex);
+        const string name = nameof(DynamicProxy<>.TryDeleteIndex);
         if (IsOverridden(name))
         {
             return CallMethodNoResult(name, binder, GetArgArray(indexes), _ => binder.FallbackDeleteIndex(this, indexes, _));
