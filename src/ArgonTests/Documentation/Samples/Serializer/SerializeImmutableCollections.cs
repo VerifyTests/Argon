@@ -9,12 +9,12 @@ public class SerializeImmutableCollections : TestFixtureBase
     {
         #region SerializeImmutableCollections
 
-        var l = ImmutableList.CreateRange(new List<string>
-        {
+        var l = ImmutableList.CreateRange(
+        [
             "One",
             "II",
             "3"
-        });
+        ]);
 
         var json = JsonConvert.SerializeObject(l, Formatting.Indented);
         // [

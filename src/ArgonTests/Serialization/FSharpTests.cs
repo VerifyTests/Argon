@@ -16,12 +16,12 @@ public class FSharpTests : TestFixtureBase
     [Fact]
     public void List()
     {
-        var l = ListModule.OfSeq(new List<int>
-        {
+        var l = ListModule.OfSeq(
+        [
             1,
             2,
             3
-        });
+        ]);
 
         var json = JsonConvert.SerializeObject(l, Formatting.Indented, converters);
 

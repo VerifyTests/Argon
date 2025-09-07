@@ -364,12 +364,12 @@ public class JArrayTests : TestFixtureBase
     {
         var itemZeroText = "Zero text";
 
-        IEnumerable<ListItemFields> t = new List<ListItemFields>
-        {
+        IEnumerable<ListItemFields> t =
+        [
             new() {ListItemText = "First", ListItemValue = 1},
             new() {ListItemText = "Second", ListItemValue = 2},
             new() {ListItemText = "Third", ListItemValue = 3}
-        };
+        ];
 
         var optionValues =
             new JObject(

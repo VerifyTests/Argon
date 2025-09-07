@@ -35,7 +35,7 @@ public class SerializeSerializationBinder : TestFixtureBase
 
         var knownTypesBinder = new KnownTypesBinder
         {
-            KnownTypes = new List<Type> {typeof(Car)}
+            KnownTypes = [typeof(Car)]
         };
 
         var car = new Car

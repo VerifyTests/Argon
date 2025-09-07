@@ -35,7 +35,7 @@ public class JObjectTests : TestFixtureBase
     {
         var json = "{ 'name': 'Admin' }{ 'name': 'Publisher' }";
 
-        IList<JObject> roles = new List<JObject>();
+        IList<JObject> roles = [];
 
         var reader = new JsonTextReader(new StringReader(json))
         {

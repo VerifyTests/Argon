@@ -11,11 +11,7 @@ public class KeysJsonConverter(params Type[] types) : JsonConverter
     {
         var token = JToken.FromObject(value);
 
-        if (token.Type != JTokenType.Object)
-        {
-            token.WriteTo(writer);
-        }
-        else
+        if (token.Type == JTokenType.Object)
         {
             var o = (JObject) token;
             var propertyNames = o.Properties().Select(_ => _.Name).ToList();
@@ -23,6 +19,10 @@ public class KeysJsonConverter(params Type[] types) : JsonConverter
             o.AddFirst(new JProperty("Keys", new JArray(propertyNames)));
 
             o.WriteTo(writer);
+        }
+        else
+        {
+            token.WriteTo(writer);
         }
     }
 

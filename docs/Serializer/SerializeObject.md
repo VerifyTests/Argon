@@ -24,11 +24,11 @@ var account = new Account
     Email = "james@example.com",
     Active = true,
     CreatedDate = new(2013, 1, 20, 0, 0, 0, DateTimeKind.Utc),
-    Roles = new List<string>
-    {
+    Roles =
+    [
         "User",
         "Admin"
-    }
+    ]
 };
 
 var json = JsonConvert.SerializeObject(account, Formatting.Indented);

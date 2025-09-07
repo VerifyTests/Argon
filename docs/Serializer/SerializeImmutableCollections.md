@@ -5,12 +5,12 @@ This sample serializes an immutable collection into JSON.
 <!-- snippet: SerializeImmutableCollections -->
 <a id='snippet-SerializeImmutableCollections'></a>
 ```cs
-var l = ImmutableList.CreateRange(new List<string>
-{
+var l = ImmutableList.CreateRange(
+[
     "One",
     "II",
     "3"
-});
+]);
 
 var json = JsonConvert.SerializeObject(l, Formatting.Indented);
 // [

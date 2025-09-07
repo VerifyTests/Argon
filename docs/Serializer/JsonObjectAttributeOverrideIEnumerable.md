@@ -9,7 +9,7 @@ This sample uses `Argon.JsonObjectAttribute` to serialize a class that implement
 public class Directory : IEnumerable<string>
 {
     public string Name { get; set; }
-    public IList<string> Files { get; set; } = new List<string>();
+    public IList<string> Files { get; set; } = [];
 
     public IEnumerator<string> GetEnumerator() =>
         Files.GetEnumerator();

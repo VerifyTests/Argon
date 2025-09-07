@@ -837,11 +837,11 @@ public class LinqToJsonTest : TestFixtureBase
             Title = "LINQ to JSON beta",
             Description = "Announcing LINQ to JSON",
             Link = "http://james.newtonking.com/projects/json-net.aspx",
-            Categories = new List<string>
-            {
+            Categories =
+            [
                 "Json.NET",
                 "LINQ"
-            }
+            ]
         },
 
         new()
