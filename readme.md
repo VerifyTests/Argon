@@ -118,6 +118,7 @@ var json = jObject.ToString();
   * [Converting between JSON and XML](/docs/ConvertingJSONandXML.md)
   * [Creating JSON](/docs/CreatingLINQtoJSON.md)
   * [Dates in JSON](/docs/DatesInJSON.md)
+  * [Differences](/docs/differences.md)
   * [F#](/docs/FSharp.md)
   * [LINQ to JSON](/docs/LINQtoJSON.md)
   * [Parsing JSON](/docs/ParsingLINQtoJSON.md)
