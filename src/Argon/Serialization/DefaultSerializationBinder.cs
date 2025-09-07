@@ -15,6 +15,7 @@ public class DefaultSerializationBinder :
     internal static readonly DefaultSerializationBinder Instance = new();
 
     static ThreadSafeStore<TypeNameKey, Type> typeCache = new(GetTypeFromTypeNameKey);
+    static ThreadSafeStore<Type, TypeNameKey> nameCache = new(GetNameKeyFromType);
 
     static Type GetTypeFromTypeNameKey(TypeNameKey key)
     {
@@ -152,7 +153,19 @@ public class DefaultSerializationBinder :
     /// <param name="typeName">Specifies the <see cref="System.Type" /> name of the serialized object.</param>
     public void BindToName(Type serializedType, out string? assemblyName, out string? typeName)
     {
-        assemblyName = serializedType.Assembly.FullName;
-        typeName = serializedType.FullName;
+        var (assembly, type) = nameCache.Get(serializedType);
+        assemblyName = assembly;
+        typeName = type;
+    }
+
+    static TypeNameKey GetNameKeyFromType(Type type)
+    {
+        //TODO: map other collection expression types
+        if (type.Name.Contains("__ReadOnlySingleElementList`1"))
+        {
+            type = typeof(IEnumerable<>).MakeGenericType(type.GenericTypeArguments.Single());
+        }
+
+        return new(type.Assembly.FullName, type.FullName!);
     }
 }
