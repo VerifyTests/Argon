@@ -18,7 +18,7 @@ sealed class DynamicProxyMetaObject<T> : DynamicMetaObject
 
     public override DynamicMetaObject BindGetMember(GetMemberBinder binder)
     {
-        const string name = nameof(DynamicProxy<T>.TryGetMember);
+        const string name = nameof(DynamicProxy<>.TryGetMember);
         if (IsOverridden(name))
         {
             return CallMethodWithResult(name, binder, [], _ => binder.FallbackGetMember(this, _));
@@ -29,7 +29,7 @@ sealed class DynamicProxyMetaObject<T> : DynamicMetaObject
 
     public override DynamicMetaObject BindSetMember(SetMemberBinder binder, DynamicMetaObject value)
     {
-        const string name = nameof(DynamicProxy<T>.TrySetMember);
+        const string name = nameof(DynamicProxy<>.TrySetMember);
         if (IsOverridden(name))
         {
             return CallMethodReturnLast(name, binder, GetArgs(value), _ => binder.FallbackSetMember(this, value, _));
