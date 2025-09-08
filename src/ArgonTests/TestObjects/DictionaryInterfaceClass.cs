@@ -17,12 +17,11 @@ public class DictionaryInterfaceClass
         };
 
     public ICollection<int> Collection { get; set; } =
-        new List<int>
-        {
+        [
             1,
             2,
             3
-        };
+        ];
 
     public EmployeeReference Employee { get; set; } =
         new()

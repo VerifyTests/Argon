@@ -6,5 +6,5 @@ namespace TestObjects;
 
 public class ClassWithException
 {
-    public IList<Exception> Exceptions { get; set; } = new List<Exception>();
+    public IList<Exception> Exceptions { get; set; } = [];
 }

@@ -6,7 +6,7 @@ namespace TestObjects;
 
 public class ThisGenericTest<T> where T : IKeyValueId
 {
-    Dictionary<string, T> dict1 = new();
+    Dictionary<string, T> dict1 = [];
 
     public string MyProperty { get; set; }
 

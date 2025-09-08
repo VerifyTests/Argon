@@ -15,13 +15,13 @@ public class Store
     public char Symbol = '@';
 
     [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
-    public List<string> Mottos = new();
+    public List<string> Mottos = [];
 
     public decimal Cost = 100980.1M;
     public string Escape = "\r\n\t\f\b?{\\r\\n\"\'";
 
     [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
-    public List<Product> product = new();
+    public List<Product> product = [];
 
     public Store()
     {

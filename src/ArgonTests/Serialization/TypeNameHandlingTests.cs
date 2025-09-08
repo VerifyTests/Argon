@@ -272,14 +272,14 @@ public class TypeNameHandlingTests : TestFixtureBase
     {
         var c = new KnownAutoTypes
         {
-            Collection = new List<string>
-            {
+            Collection =
+            [
                 "Collection value!"
-            },
-            List = new List<string>
-            {
+            ],
+            List =
+            [
                 "List value!"
-            },
+            ],
             Dictionary = new Dictionary<string, string>
             {
                 {

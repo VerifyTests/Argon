@@ -345,7 +345,7 @@ public class SerializationEventTests : TestFixtureBase
         IJsonOnDeserializing,
         IJsonOnDeserialized
     {
-        protected IList<string> Events { get; } = new List<string>();
+        protected IList<string> Events { get; } = [];
 
         public IList<string> GetEvents() =>
             Events;

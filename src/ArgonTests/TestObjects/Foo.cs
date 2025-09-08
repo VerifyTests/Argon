@@ -7,5 +7,5 @@ namespace TestObjects;
 public class Foo
 {
     [JsonConverter(typeof(ListOfIds<Bar>))]
-    public List<Bar> Bars { get; set; } = new();
+    public List<Bar> Bars { get; set; } = [];
 }

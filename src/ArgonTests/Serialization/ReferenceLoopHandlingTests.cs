@@ -95,7 +95,7 @@ public class ReferenceLoopHandlingTests : TestFixtureBase
         {
             Text = "Text!"
         };
-        c.SetData(new List<PropertyItemReferenceLoopHandling> {c});
+        c.SetData([c]);
 
         var json = JsonConvert.SerializeObject(c, Formatting.Indented);
 
@@ -264,7 +264,7 @@ public class ReferenceLoopHandlingTests : TestFixtureBase
                 }
 
                 _accessCount++;
-                return new List<PropertyItemReferenceLoopHandling>(_data);
+                return [.. _data];
             }
         }
 

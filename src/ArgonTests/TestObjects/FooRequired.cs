@@ -11,7 +11,7 @@ public class FooRequired
 
     public FooRequired(IEnumerable<string> bars)
     {
-        Bars = new();
+        Bars = [];
         if (bars != null)
         {
             Bars.AddRange(bars);

@@ -12,6 +12,6 @@ public class NonDefaultConstructorWithReadOnlyCollectionProperty
     public NonDefaultConstructorWithReadOnlyCollectionProperty(string title)
     {
         Title = title;
-        Categories = new List<string>();
+        Categories = [];
     }
 }

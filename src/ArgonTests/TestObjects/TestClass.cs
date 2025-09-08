@@ -20,11 +20,11 @@ public class TestClass
     public Address Address1 { get; set; } = new();
 
     [DataMember]
-    public List<Address> Addresses { get; set; } = new();
+    public List<Address> Addresses { get; set; } = [];
 
     [DataMember]
-    public List<string> strings = new();
+    public List<string> strings = [];
 
     [DataMember]
-    public Dictionary<string, int> dictionary = new();
+    public Dictionary<string, int> dictionary = [];
 }

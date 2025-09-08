@@ -8,15 +8,13 @@ public class ListErrorObject
 {
     public string Member { get; set; }
 
-    string _throwError;
-
     public string ThrowError
     {
         get
         {
-            if (_throwError != null)
+            if (field != null)
             {
-                return _throwError;
+                return field;
             }
 
             throw new("ListErrorObject.ThrowError get error!");
@@ -25,7 +23,7 @@ public class ListErrorObject
         {
             if (value != null && value.StartsWith("Handle"))
             {
-                _throwError = value;
+                field = value;
                 return;
             }
 

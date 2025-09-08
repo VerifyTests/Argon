@@ -8,7 +8,7 @@ namespace TestObjects;
 
 public class NoConstructorReadOnlyCollection<T> : ReadOnlyCollection<T>
 {
-    public NoConstructorReadOnlyCollection() : base(new List<T>())
+    public NoConstructorReadOnlyCollection() : base([])
     {
     }
 }

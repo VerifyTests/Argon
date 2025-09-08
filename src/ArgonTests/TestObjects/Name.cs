@@ -4,12 +4,9 @@
 
 namespace TestObjects;
 
-public class Name
+public class Name(string personsName)
 {
-    public string personsName;
+    public string personsName = personsName;
 
-    public List<PhoneNumber> pNumbers = new();
-
-    public Name(string personsName) =>
-        this.personsName = personsName;
+    public List<PhoneNumber> pNumbers = [];
 }
