@@ -4795,12 +4795,12 @@ public class JsonSerializerTest : TestFixtureBase
     {
         var c = new EnumerableClass
         {
-            Enumerable = new List<string>
-            {
+            Enumerable =
+            [
                 "One",
                 "Two",
                 "Three"
-            }
+            ]
         };
 
         var json = JsonConvert.SerializeObject(c, Formatting.Indented);
@@ -6008,12 +6008,12 @@ public class JsonSerializerTest : TestFixtureBase
         {
             EventName = "Blackadder III",
             Venue = "Gryphon Theatre",
-            Performances = new List<DateTime>
-            {
+            Performances =
+            [
                 new(2000, 1, 1),
                 new(2000, 1, 2),
                 new(2000, 1, 3)
-            }
+            ]
         };
 
         var json = JsonConvert.SerializeObject(e, Formatting.Indented);

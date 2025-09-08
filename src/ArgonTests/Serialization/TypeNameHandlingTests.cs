@@ -879,8 +879,8 @@ public class TypeNameHandlingTests : TestFixtureBase
 
         var container = new Container
         {
-            In = new List<Product>(),
-            Out = new List<Product>()
+            In = [],
+            Out = []
         };
 
         var json = JsonConvert.SerializeObject(container, Formatting.Indented,
@@ -1765,15 +1765,15 @@ public class TypeNameHandlingTests : TestFixtureBase
     {
         var c1 = new PropertyItemTypeNameHandling
         {
-            Data = new List<object>
-            {
+            Data =
+            [
                 1,
                 "two",
                 new TestComponentSimple
                 {
                     MyProperty = 1
                 }
-            }
+            ]
         };
 
         var json = JsonConvert.SerializeObject(c1, Formatting.Indented);
@@ -1807,8 +1807,8 @@ public class TypeNameHandlingTests : TestFixtureBase
     {
         var c1 = new PropertyItemTypeNameHandling
         {
-            Data = new List<object>
-            {
+            Data =
+            [
                 new TestComponentSimple
                 {
                     MyProperty = 1
@@ -1820,7 +1820,7 @@ public class TypeNameHandlingTests : TestFixtureBase
                         new List<object>()
                     }
                 }
-            }
+            ]
         };
 
         var json = JsonConvert.SerializeObject(c1, Formatting.Indented);
@@ -2176,24 +2176,24 @@ public class TypeNameHandlingTests : TestFixtureBase
     {
         var input = new List<Stack<string>>
         {
-            new(new List<string>
-            {
+            new(
+            [
                 "One",
                 "Two",
                 "Three"
-            }),
-            new(new List<string>
-            {
+            ]),
+            new(
+            [
                 "Four",
                 "Five",
                 "Six"
-            }),
-            new(new List<string>
-            {
+            ]),
+            new(
+            [
                 "Seven",
                 "Eight",
                 "Nine"
-            })
+            ])
         };
 
         var serialized = JsonConvert.SerializeObject(input,
@@ -2421,7 +2421,7 @@ public class TypeNameHandlingTests : TestFixtureBase
     public class DataType
     {
         [JsonProperty(ItemTypeNameHandling = TypeNameHandling.Auto, TypeNameHandling = TypeNameHandling.Auto)]
-        public Dictionary<string, IEnumerable<IMyInterfaceType>> Rows { get; } = new();
+        public Dictionary<string, IEnumerable<IMyInterfaceType>> Rows { get; } = [];
     }
 
     public interface IMyInterfaceType
