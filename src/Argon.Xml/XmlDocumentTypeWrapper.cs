@@ -1,4 +1,4 @@
-﻿using System.Xml;
+﻿
 // ReSharper disable ReturnTypeCanBeNotNullable
 
 class XmlDocumentTypeWrapper(XmlDocumentType type) :

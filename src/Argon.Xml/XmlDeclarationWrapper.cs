@@ -1,6 +1,4 @@
-﻿using System.Xml;
-
-class XmlDeclarationWrapper(XmlDeclaration declaration) :
+﻿class XmlDeclarationWrapper(XmlDeclaration declaration) :
     XmlNodeWrapper(declaration),
     IXmlDeclaration
 {

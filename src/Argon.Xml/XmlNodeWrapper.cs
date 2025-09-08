@@ -1,6 +1,4 @@
-﻿using System.Xml;
-
-class XmlNodeWrapper(XmlNode node) :
+﻿class XmlNodeWrapper(XmlNode node) :
     IXmlNode
 {
     XmlNode node = node;

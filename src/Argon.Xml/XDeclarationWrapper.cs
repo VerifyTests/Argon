@@ -1,6 +1,4 @@
-﻿using System.Xml;
-
-class XDeclarationWrapper(XDeclaration declaration) :
+﻿class XDeclarationWrapper(XDeclaration declaration) :
     XObjectWrapper(null),
     IXmlDeclaration
 {

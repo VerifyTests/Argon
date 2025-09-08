@@ -1,6 +1,4 @@
-﻿using System.Xml;
-
-interface IXmlNode
+﻿interface IXmlNode
 {
     XmlNodeType NodeType { get; }
     string LocalName { get; }

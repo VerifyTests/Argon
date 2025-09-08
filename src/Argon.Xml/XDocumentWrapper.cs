@@ -1,6 +1,4 @@
-﻿using System.Xml;
-
-class XDocumentWrapper(XDocument document) :
+﻿class XDocumentWrapper(XDocument document) :
     XContainerWrapper(document),
     IXmlDocument
 {

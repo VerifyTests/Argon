@@ -1,6 +1,4 @@
-﻿using System.Xml;
-
-class XObjectWrapper(XObject? o) :
+﻿class XObjectWrapper(XObject? o) :
     IXmlNode
 {
     public object? WrappedNode => o;
