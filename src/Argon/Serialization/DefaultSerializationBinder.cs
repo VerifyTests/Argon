@@ -161,9 +161,14 @@ public class DefaultSerializationBinder :
     static TypeNameKey GetNameKeyFromType(Type type)
     {
         //TODO: map other collection expression types
-        if (type.Name.Contains("__ReadOnlySingleElementList`1"))
+        var name = type.Name;
+        if (name.StartsWith("<>z__"))
         {
-            type = typeof(IEnumerable<>).MakeGenericType(type.GenericTypeArguments.Single());
+            if (name.StartsWith("<>z__ReadOnlySingleElementList`1") ||
+                name.StartsWith("<>z__ReadOnlyArray`1"))
+            {
+                type = typeof(IEnumerable<>).MakeGenericType(type.GenericTypeArguments.Single());
+            }
         }
 
         return new(type.Assembly.FullName, type.FullName!);
