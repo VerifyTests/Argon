@@ -2466,18 +2466,18 @@ public class JsonSerializerTest : TestFixtureBase
                     "three", 3
                 }
             },
-            IListProperty = new List<int>
-            {
+            IListProperty =
+            [
                 1,
                 2,
                 3
-            },
-            IEnumerableProperty = new List<int>
-            {
+            ],
+            IEnumerableProperty =
+            [
                 4,
                 5,
                 6
-            }
+            ]
         };
 
         var json = JsonConvert.SerializeObject(o, Formatting.Indented);

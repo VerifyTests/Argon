@@ -524,10 +524,10 @@ public class TypeNameHandlingTests : TestFixtureBase
     {
         var wrapper = new Wrapper
         {
-            Array = new List<EmployeeReference>
-            {
+            Array =
+            [
                 new()
-            },
+            ],
             Dictionary = new Dictionary<string, EmployeeReference>
             {
                 {

@@ -7,8 +7,6 @@ namespace TestObjects;
 public class PersonError :
     IJsonOnSerializeError
 {
-    List<string> _roles;
-
     public string Name { get; set; }
     public int Age { get; set; }
 
@@ -16,14 +14,14 @@ public class PersonError :
     {
         get
         {
-            if (_roles == null)
+            if (field == null)
             {
                 throw new("Roles not loaded!");
             }
 
-            return _roles;
+            return field;
         }
-        set => _roles = value;
+        set;
     }
 
     public string Title { get; set; }

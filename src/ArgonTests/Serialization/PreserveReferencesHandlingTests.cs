@@ -37,8 +37,8 @@ public class PreserveReferencesHandlingTests : TestFixtureBase
 
     public class Container
     {
-        public List<ContentA> ListA { get; set; } = new();
-        public List<ContentA> ListB { get; set; } = new();
+        public List<ContentA> ListA { get; set; } = [];
+        public List<ContentA> ListB { get; set; } = [];
     }
 
     [Fact]
@@ -1180,10 +1180,10 @@ public class PreserveReferencesHandlingTests : TestFixtureBase
             {
                 Prop1 = c1,
                 Prop2 = c1,
-                Data = new List<TestComponentSimple>
-                {
+                Data =
+                [
                     c1
-                }
+                ]
             }
         };
 

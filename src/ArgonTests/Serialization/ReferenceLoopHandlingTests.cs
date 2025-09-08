@@ -287,7 +287,6 @@ public class ReferenceLoopHandlingTests : TestFixtureBase
     [JsonObject(ItemReferenceLoopHandling = ReferenceLoopHandling.Ignore)]
     public class ReferenceLoopHandlingObjectContainerAttributeWithPropertyOverride
     {
-        ReferenceLoopHandlingObjectContainerAttributeWithPropertyOverride _value;
         int _getCount;
 
         [JsonProperty(ReferenceLoopHandling = ReferenceLoopHandling.Serialize)]
@@ -298,12 +297,12 @@ public class ReferenceLoopHandlingTests : TestFixtureBase
                 if (_getCount < 5)
                 {
                     _getCount++;
-                    return _value;
+                    return field;
                 }
 
                 return null;
             }
-            set => _value = value;
+            set;
         }
     }
 }

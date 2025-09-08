@@ -921,7 +921,9 @@ public class JObjectTests : TestFixtureBase
     [Fact]
     public void IListIsReadOnly()
     {
+#pragma warning disable IDE0028
         IList<JToken> l = new JObject();
+#pragma warning restore IDE0028
         Assert.False(l.IsReadOnly);
     }
 
@@ -1125,7 +1127,9 @@ public class JObjectTests : TestFixtureBase
     [Fact]
     public void GenericListJTokenIsReadOnly()
     {
+#pragma warning disable IDE0028
         IList<JToken> l = new JObject();
+#pragma warning restore IDE0028
         Assert.False(l.IsReadOnly);
     }
 

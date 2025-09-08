@@ -935,7 +935,7 @@ public class XmlNodeConverter :
                     switch (firstChar)
                     {
                         case '@':
-                            attributeNameValues ??= new();
+                            attributeNameValues ??= [];
 
                             attributeName = attributeName[1..];
                             reader.ReadAndAssert();
@@ -961,7 +961,7 @@ public class XmlNodeConverter :
                                     var jsonPrefix = manager.LookupPrefix(jsonNamespaceUri);
                                     if (jsonPrefix == null)
                                     {
-                                        attributeNameValues ??= new();
+                                        attributeNameValues ??= [];
 
                                         // ensure that the prefix used is free
                                         int? i = null;
@@ -991,7 +991,7 @@ public class XmlNodeConverter :
                                         throw JsonSerializationException.Create(reader, $"Unexpected JsonToken: {reader.TokenType}");
                                     }
 
-                                    attributeNameValues ??= new();
+                                    attributeNameValues ??= [];
 
                                     attributeValue = reader.Value?.ToString();
                                     attributeNameValues.Add($"{jsonPrefix}:{attributeName}", attributeValue);

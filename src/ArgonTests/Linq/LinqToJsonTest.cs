@@ -849,11 +849,11 @@ public class LinqToJsonTest : TestFixtureBase
             Title = "Json.NET 1.3 + New license + Now on CodePlex",
             Description = "Announcing the release of Json.NET 1.3, the MIT license and being available on CodePlex",
             Link = "http://james.newtonking.com/projects/json-net.aspx",
-            Categories = new List<string>
-            {
+            Categories =
+            [
                 "Json.NET",
                 "CodePlex"
-            }
+            ]
         }
     ];
 

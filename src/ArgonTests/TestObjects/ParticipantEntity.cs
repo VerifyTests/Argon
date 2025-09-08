@@ -6,8 +6,6 @@ namespace TestObjects;
 
 class ParticipantEntity
 {
-    Dictionary<string, string> _properties;
-
     [Argon.JsonConstructor]
     public ParticipantEntity()
     {
@@ -25,7 +23,7 @@ class ParticipantEntity
     [JsonProperty(PropertyName = "pa_info")]
     public Dictionary<string, string> Properties
     {
-        get => _properties ??= [];
-        set => _properties = value;
+        get => field ??= [];
+        set;
     }
 }

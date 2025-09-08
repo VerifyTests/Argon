@@ -884,7 +884,7 @@ public class JsonSerializerCollectionsTests : TestFixtureBase
 
     public class GenericListTestClass
     {
-        public List<string> GenericList { get; set; } = new();
+        public List<string> GenericList { get; set; } = [];
     }
 
     [Fact]
@@ -1116,10 +1116,9 @@ public class JsonSerializerCollectionsTests : TestFixtureBase
     public class PopulateReadOnlyTestClass
     {
         public IList<int> NonReadOnlyList { get; set; } =
-            new List<int>
-            {
+            [
                 1
-            };
+            ];
 
         public IDictionary<string, int> NonReadOnlyDictionary { get; set; } =
             new Dictionary<string, int>
@@ -2394,8 +2393,7 @@ public class JsonSerializerCollectionsTests : TestFixtureBase
         List<string> storage;
 
         [Argon.JsonConstructor]
-        MyClass() =>
-            storage = new();
+        MyClass() => storage = [];
 
         public MyClass(IEnumerable<string> source) =>
             storage = [..source];
@@ -2526,7 +2524,7 @@ public class JsonSerializerCollectionsTests : TestFixtureBase
 
         void ExtractGroups()
         {
-            Groups = new();
+            Groups = [];
             if (Person.TryGetValue("groups", out var groups))
             {
                 var stringList = groups.Split(',');
@@ -2672,7 +2670,7 @@ public class JsonSerializerCollectionsTests : TestFixtureBase
     public class ReadOnlyCollectionWithArrayArgument<T>(T[] args) :
         IList<T>
     {
-        readonly IList<T> _values = args ?? (IList<T>) new List<T>();
+        readonly IList<T> _values = args ?? (IList<T>) [];
 
         public IEnumerator<T> GetEnumerator() =>
             _values.GetEnumerator();
@@ -2760,7 +2758,7 @@ public class JsonSerializerCollectionsTests : TestFixtureBase
     public class GenericClass<T, TValue> : IEnumerable<T>
         where T : GenericItem<TValue>, new()
     {
-        public IList<T> Items { get; set; } = new List<T>();
+        public IList<T> Items { get; set; } = [];
 
         public IEnumerator<T> GetEnumerator()
         {

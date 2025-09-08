@@ -47,7 +47,7 @@ public class DelegateFactoryTests : TestFixtureBase
 
         var creator = DelegateFactory.CreateParameterizedConstructor(constructor);
 
-        var o = (OutAndRefTestClass) creator(["Input"]);
+        var o = (OutAndRefTestClass) creator("Input");
         Assert.NotNull(o);
         Assert.Equal("Input", o.Input);
     }
@@ -59,7 +59,7 @@ public class DelegateFactoryTests : TestFixtureBase
 
         var creator = DelegateFactory.CreateParameterizedConstructor(constructor);
 
-        var o = (OutAndRefTestClass) creator(["Input", false]);
+        var o = (OutAndRefTestClass) creator("Input", false);
         Assert.NotNull(o);
         Assert.Equal("Input", o.Input);
         Assert.True(o.B1);
@@ -72,7 +72,7 @@ public class DelegateFactoryTests : TestFixtureBase
 
         var creator = DelegateFactory.CreateParameterizedConstructor(constructor);
 
-        var o = (OutAndRefTestClass) creator(["Input", true, null]);
+        var o = (OutAndRefTestClass) creator("Input", true, null);
         Assert.NotNull(o);
         Assert.Equal("Input", o.Input);
         Assert.True(o.B1);

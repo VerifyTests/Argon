@@ -2341,10 +2341,10 @@ public class XmlNodeConverterTest : TestFixtureBase
         var o = new TestComplexArrayClass
         {
             Name = "Hi",
-            Products = new List<Product>
-            {
+            Products =
+            [
                 new() {Name = "First"}
-            }
+            ]
         };
 
         var output = JsonConvert.SerializeObject(o, new IsoDateTimeConverter());
