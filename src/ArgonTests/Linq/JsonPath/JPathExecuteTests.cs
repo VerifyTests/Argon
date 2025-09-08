@@ -659,7 +659,7 @@ public class JPathExecuteTests : TestFixtureBase
         var exception2 = Assert.Throws<JsonException>(() => a.SelectToken("[:-19]", true));
         Assert.Equal("Array slice of * to -19 returned no results.", exception2.Message);
 
-        a = new();
+        a = [];
 
         var exception3 = Assert.Throws<JsonException>(() => a.SelectToken("[:]", true));
         Assert.Equal("Array slice of * to * returned no results.", exception3.Message);

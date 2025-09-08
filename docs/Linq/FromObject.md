@@ -36,11 +36,11 @@ var computer = new Computer
 {
     Cpu = "Intel",
     Memory = 32,
-    Drives = new List<string>
-    {
+    Drives =
+    [
         "DVD",
         "SSD"
-    }
+    ]
 };
 
 var o = (JObject) JToken.FromObject(computer);

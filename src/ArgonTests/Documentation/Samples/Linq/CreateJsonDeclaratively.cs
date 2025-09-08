@@ -21,10 +21,10 @@ public class CreateJsonDeclaratively : TestFixtureBase
         new()
         {
             Title = "Title!",
-            Categories = new List<string>
-            {
+            Categories =
+            [
                 "Category1"
-            },
+            ],
             Description = "Description!",
             Link = "Link!"
         }

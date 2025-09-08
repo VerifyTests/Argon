@@ -8,12 +8,12 @@ This sample deserializes JSON with `Argon.ObjectCreationHandling` set to Replace
 public class UserViewModel
 {
     public string Name { get; set; }
-    public IList<string> Offices { get; } = new List<string>
-    {
+    public IList<string> Offices { get; } =
+    [
         "Auckland",
         "Wellington",
         "Christchurch"
-    };
+    ];
 }
 ```
 <sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/DeserializeObjectCreationHandling.cs#L7-L20' title='Snippet source file'>snippet source</a> | <a href='#snippet-DeserializeObjectCreationHandlingTypes' title='Start of snippet'>anchor</a></sup>

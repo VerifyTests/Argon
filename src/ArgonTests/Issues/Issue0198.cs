@@ -9,7 +9,9 @@ public class Issue0198 : TestFixtureBase
     [Fact]
     public void Test_List()
     {
+#pragma warning disable IDE0028
         IEnumerable<TestClass1> objects = new List<TestClass1>
+#pragma warning restore IDE0028
         {
             new()
             {
@@ -21,7 +23,9 @@ public class Issue0198 : TestFixtureBase
                         MyProperty2 = "Test2",
                     }
                 },
+#pragma warning disable IDE0028
                 Prop2 = new List<string>
+#pragma warning restore IDE0028
                 {
                     "Test1",
                     "Test1"
@@ -100,7 +104,7 @@ public class Issue0198 : TestFixtureBase
 
     abstract class AbstractClass
     {
-        public ICollection<TestClass2> Prop3 { get; set; } = new List<TestClass2>();
+        public ICollection<TestClass2> Prop3 { get; set; } = [];
     }
 
     class TestClass3

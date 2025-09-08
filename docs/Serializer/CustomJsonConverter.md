@@ -52,10 +52,10 @@ var employee = new Employee
 {
     FirstName = "James",
     LastName = "Newton-King",
-    Roles = new List<string>
-    {
+    Roles =
+    [
         "Admin"
-    }
+    ]
 };
 
 var json = JsonConvert.SerializeObject(employee, Formatting.Indented, new KeysJsonConverter(typeof(Employee)));

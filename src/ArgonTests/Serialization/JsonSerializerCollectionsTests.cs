@@ -157,7 +157,7 @@ public class JsonSerializerCollectionsTests : TestFixtureBase
         readonly List<int> _bars;
 
         public TestCollectionPrivateParameterized() =>
-            _bars = new();
+            _bars = [];
 
         [Argon.JsonConstructor]
         TestCollectionPrivateParameterized(IEnumerable<int> bars) =>
@@ -589,7 +589,7 @@ public class JsonSerializerCollectionsTests : TestFixtureBase
     public class EnumerableClass<T>(IEnumerable<T> values) :
         IEnumerable<T>
     {
-        readonly IList<T> _values = new List<T>(values);
+        readonly IList<T> _values = [.. values];
 
         public IEnumerator<T> GetEnumerator() =>
             _values.GetEnumerator();
@@ -619,7 +619,7 @@ public class JsonSerializerCollectionsTests : TestFixtureBase
 
     public class EnumerableClassFailure<T> : IEnumerable<T>
     {
-        readonly IList<T> values = new List<T>();
+        readonly IList<T> values = [];
 
         public IEnumerator<T> GetEnumerator() =>
             values.GetEnumerator();

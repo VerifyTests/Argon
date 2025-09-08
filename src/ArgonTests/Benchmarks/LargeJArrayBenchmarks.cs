@@ -11,7 +11,7 @@ public class LargeJArrayBenchmarks
     [GlobalSetup]
     public void SetupData()
     {
-        largeJArraySample = new();
+        largeJArraySample = [];
         for (var i = 0; i < 100000; i++)
         {
             largeJArraySample.Add(i);

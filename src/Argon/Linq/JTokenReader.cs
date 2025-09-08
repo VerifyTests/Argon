@@ -12,7 +12,6 @@ public class JTokenReader :
     IJsonLineInfo
 {
     readonly JToken root;
-    string? initialPath;
     JToken? parent;
 
     /// <summary>
@@ -32,7 +31,7 @@ public class JTokenReader :
     /// <param name="initialPath">The initial path of the token. It is prepended to the returned <see cref="Path" />.</param>
     public JTokenReader(JToken token, string initialPath) :
         this(token) =>
-        this.initialPath = initialPath;
+        Path = initialPath;
 
     /// <summary>
     /// Reads the next JSON token from the underlying <see cref="JToken" />.
@@ -259,28 +258,29 @@ public class JTokenReader :
     /// <summary>
     /// Gets the path of the current JSON token.
     /// </summary>
+    [field: AllowNull, MaybeNull]
     public override string Path
     {
         get
         {
             var path = base.Path;
 
-            initialPath ??= root.Path;
+            field ??= root.Path;
 
-            if (!initialPath.IsNullOrEmpty())
+            if (!field.IsNullOrEmpty())
             {
                 if (path.IsNullOrEmpty())
                 {
-                    return initialPath;
+                    return field;
                 }
 
                 if (path.StartsWith('['))
                 {
-                    path = initialPath + path;
+                    path = field + path;
                 }
                 else
                 {
-                    path = $"{initialPath}.{path}";
+                    path = $"{field}.{path}";
                 }
             }
 

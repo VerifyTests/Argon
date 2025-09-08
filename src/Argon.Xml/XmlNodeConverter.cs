@@ -225,7 +225,7 @@ public class XmlNodeConverter :
                         }
                         else
                         {
-                            nodesGroupedByName = new();
+                            nodesGroupedByName = [];
                             if (i > 1)
                             {
                                 var nodes = new List<IXmlNode>(i);

@@ -27,11 +27,11 @@ public class CreateJsonAnonymousObject : TestFixtureBase
             {
                 Title = "Episode VII",
                 Description = "Episode VII production",
-                Categories = new List<string>
-                {
+                Categories =
+                [
                     "episode-vii",
                     "movie"
-                },
+                ],
                 Link = "episode-vii-production.aspx"
             }
         };
