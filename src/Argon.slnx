@@ -1,0 +1,24 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="DebugNet9" />
+    <BuildType Name="Release" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="appveyor.yml" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+  </Folder>
+  <Project Path="Argon.DataSets/Argon.DataSets.csproj" />
+  <Project Path="Argon.FSharp.Tests/Argon.FSharp.Tests.fsproj" />
+  <Project Path="Argon.FSharp/Argon.FSharp.csproj" />
+  <Project Path="Argon.InterfaceCallbacks/Argon.InterfaceCallbacks.csproj" />
+  <Project Path="Argon.JsonPath/Argon.JsonPath.csproj" />
+  <Project Path="Argon.NodaTime/Argon.NodaTime.csproj" />
+  <Project Path="Argon.Xml/Argon.Xml.csproj" />
+  <Project Path="Argon/Argon.csproj" />
+  <Project Path="ArgonTests/ArgonTests.csproj" />
+  <Project Path="Benchmark.Tests/Benchmark.Tests.csproj" />
+</Solution>
