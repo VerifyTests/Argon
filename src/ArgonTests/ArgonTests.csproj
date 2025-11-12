@@ -5,6 +5,7 @@
     <TargetFrameworks>$(TargetFrameworks);net8.0;net9.0;net10.0</TargetFrameworks>
     <Nullable>disable</Nullable>
     <RootNamespace>Tests</RootNamespace>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Argon.InterfaceCallbacks\Argon.InterfaceCallbacks.csproj" />
