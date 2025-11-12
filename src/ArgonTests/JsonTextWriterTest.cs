@@ -1460,9 +1460,7 @@ public class CustomJsonTextWriter(TextWriter textWriter) : JsonTextWriter(textWr
             writer.Write(QuoteChar);
         }
 
-        var array = name.ToCharArray();
-        array.Reverse();
-        writer.Write(new string(array));
+        writer.Write(new string(name.Reverse().ToArray()));
 
         if (QuoteName)
         {
