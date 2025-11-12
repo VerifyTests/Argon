@@ -1,7 +1,6 @@
 <Solution>
   <Configurations>
     <BuildType Name="Debug" />
-    <BuildType Name="DebugNet9" />
     <BuildType Name="Release" />
   </Configurations>
   <Folder Name="/Solution Items/">
