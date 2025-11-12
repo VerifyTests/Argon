@@ -4,7 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <!-- Disabled because SourceLink isn't referenced to calculate paths -->
     <DeterministicSourcePaths>false</DeterministicSourcePaths>
-    <Configurations>Debug;Release;DebugNet9</Configurations>
+    <Configurations>Debug;Release;DebugNet10</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FSharp.Core" />
