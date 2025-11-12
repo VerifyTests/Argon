@@ -1,8 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net462;net472;net48;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
-    <TargetFrameworks Condition="$(Configuration) == 'DebugNet9'">net9.0</TargetFrameworks>
-
     <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
   </PropertyGroup>
   <ItemGroup>
@@ -16,4 +14,8 @@
     <PackageReference Include="System.Buffers" />
     <PackageReference Include="System.Memory" />
   </ItemGroup>
+  <Target Name="CheckPackageVersion" BeforeTargets="Build">
+    <Error Condition="'%(PackageVersion.Identity)' == 'System.ValueTuple' AND '%(PackageVersion.Version)' != '4.5.0'" Text="Invalid package version for System.ValueTuple. Expected: 4.5.0." />
+    <Error Condition="'%(PackageVersion.Identity)' == 'System.Collections.Immutable' AND '%(PackageVersion.Version)' != '8.0.0'" Text="Invalid package version for System.Collections.Immutable. Expected: 8.0.0." />
+  </Target>
 </Project>
