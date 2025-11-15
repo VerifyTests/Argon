@@ -5,6 +5,7 @@
 using System.Xml;
 using System.Xml.Linq;
 using BenchmarkDotNet.Attributes;
+using ProjectFilesGenerator;
 
 public class XmlNodeConverterBenchmarks
 {
@@ -12,7 +13,7 @@ public class XmlNodeConverterBenchmarks
     public void ConvertXmlNode()
     {
         var doc = new XmlDocument();
-        using (var file = File.OpenRead("large_sample.xml"))
+        using (var file = ProjectFiles.large_sample_xml.OpenRead())
         {
             doc.Load(file);
         }
