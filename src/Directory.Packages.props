@@ -11,7 +11,7 @@
     <PackageVersion Include="Microsoft.Sbom.Targets" Version="4.1.3" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="NodaTime" Version="3.2.2" />
-    <PackageVersion Include="Polyfill" Version="9.0.3" />
+    <PackageVersion Include="Polyfill" Version="9.1.0" />
     <PackageVersion Include="ProjectDefaults" Version="1.0.162" />
     <PackageVersion Include="ProjectFiles" Version="0.1.0-beta.3" />
     <PackageVersion Include="System.ValueTuple" Version="4.5.0" />
