@@ -5,7 +5,7 @@ public class DocsTests
     [Fact]
     public void Foo()
     {
-        var solutionDirectory = AttributeReader.GetSolutionDirectory();
+        var solutionDirectory = ProjectFiles.SolutionDirectory;
         var docsDirectory = Path.Combine(solutionDirectory, "../docs");
         docsDirectory = Path.GetFullPath(docsDirectory);
         var includeFile = Path.Combine(docsDirectory, "index.include.md");
