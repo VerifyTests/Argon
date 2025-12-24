@@ -11,8 +11,8 @@
     <PackageVersion Include="Microsoft.Sbom.Targets" Version="4.1.5" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="NodaTime" Version="3.2.3" />
-    <PackageVersion Include="Polyfill" Version="9.4.1" />
-    <PackageVersion Include="ProjectDefaults" Version="1.0.168" />
+    <PackageVersion Include="Polyfill" Version="9.5.0" />
+    <PackageVersion Include="ProjectDefaults" Version="1.0.170" />
     <PackageVersion Include="ProjectFiles" Version="0.4.0" />
     <PackageVersion Include="System.ValueTuple" Version="4.5.0" Pinned="true" />
     <PackageVersion Include="Verify.XunitV3" Version="31.9.0" />
