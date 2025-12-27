@@ -15,7 +15,7 @@
     <PackageVersion Include="ProjectDefaults" Version="1.0.170" />
     <PackageVersion Include="ProjectFiles" Version="0.4.0" />
     <PackageVersion Include="System.ValueTuple" Version="4.5.0" Pinned="true" />
-    <PackageVersion Include="Verify.XunitV3" Version="31.9.0" />
+    <PackageVersion Include="Verify.XunitV3" Version="31.9.3" />
     <PackageVersion Include="xunit.v3" Version="3.2.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="System.Buffers" Version="4.6.1" />
