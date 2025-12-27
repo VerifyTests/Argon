@@ -1,6 +1,6 @@
 # <img src='/src/icon.png' height='30px'> Argon
 
-[![Build status](https://ci.appveyor.com/api/projects/status/5bik0q1nkarc6tir/branch/main?svg=true)](https://ci.appveyor.com/project/SimonCropp/Argon)
+[![Build status](https://img.shields.io/appveyor/build/SimonCropp/Argon)](https://ci.appveyor.com/project/SimonCropp/Argon)
 [![NuGet Status](https://img.shields.io/nuget/v/Argon.svg?label=Argon)](https://www.nuget.org/packages/Argon/)
 [![NuGet Status](https://img.shields.io/nuget/v/Argon.DataSets.svg?label=Argon.DataSets)](https://www.nuget.org/packages/Argon.DataSets/)
 [![NuGet Status](https://img.shields.io/nuget/v/Argon.Xml.svg?label=Argon.Xml)](https://www.nuget.org/packages/Argon.Xml/)
