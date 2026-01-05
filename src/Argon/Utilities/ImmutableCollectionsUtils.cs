@@ -24,58 +24,30 @@ static class ImmutableCollectionsUtils
     static ImmutableCollectionsUtils()
     {
         var immutableDictionaryInfo = new TypeInfo(typeof(ImmutableDictionary<,>), GetDictionaryCreateRange(typeof(ImmutableDictionary)));
-        dictionaryDefinitions = new Dictionary<Type, TypeInfo>
-            {
-                {
-                    typeof(IImmutableDictionary<,>), immutableDictionaryInfo
-                },
-                {
-                    typeof(ImmutableSortedDictionary<,>), new(typeof(ImmutableSortedDictionary<,>), GetDictionaryCreateRange(typeof(ImmutableSortedDictionary)))
-                },
-                {
-                    typeof(ImmutableDictionary<,>), immutableDictionaryInfo
-                }
-            }
-            .ToFrozenDictionary();
+        dictionaryDefinitions = FrozenDictionary.Create<Type, TypeInfo>(
+            [
+                new(typeof(IImmutableDictionary<,>), immutableDictionaryInfo),
+                new(typeof(ImmutableSortedDictionary<,>), new(typeof(ImmutableSortedDictionary<,>), GetDictionaryCreateRange(typeof(ImmutableSortedDictionary)))),
+                new(typeof(ImmutableDictionary<,>), immutableDictionaryInfo),
+            ]);
 
         var immutableListInfo = new TypeInfo(typeof(ImmutableList<>), GetArrayCreateRange(typeof(ImmutableList)));
         var immutableStackInfo = new TypeInfo(typeof(ImmutableStack<>), GetArrayCreateRange(typeof(ImmutableStack)));
         var immutableHashSetInfo = new TypeInfo(typeof(ImmutableHashSet<>), GetArrayCreateRange(typeof(ImmutableHashSet)));
         var immutableQueueCreateRange = GetArrayCreateRange(typeof(ImmutableQueue));
-        arrayDefinitions = new Dictionary<Type, TypeInfo>
-            {
-                {
-                    typeof(IImmutableList<>), immutableListInfo
-                },
-                {
-                    typeof(ImmutableList<>), immutableListInfo
-                },
-                {
-                    typeof(IImmutableQueue<>), new(typeof(IImmutableQueue<>), immutableQueueCreateRange)
-                },
-                {
-                    typeof(ImmutableQueue<>), new(typeof(ImmutableQueue<>), immutableQueueCreateRange)
-                },
-                {
-                    typeof(IImmutableStack<>), immutableStackInfo
-                },
-                {
-                    typeof(ImmutableStack<>), immutableStackInfo
-                },
-                {
-                    typeof(IImmutableSet<>), immutableHashSetInfo
-                },
-                {
-                    typeof(ImmutableSortedSet<>), new(typeof(ImmutableSortedSet<>), GetArrayCreateRange(typeof(ImmutableSortedSet)))
-                },
-                {
-                    typeof(ImmutableHashSet<>), immutableHashSetInfo
-                },
-                {
-                    typeof(ImmutableArray<>), new(typeof(ImmutableArray<>), GetArrayCreateRange(typeof(ImmutableArray)))
-                }
-            }
-            .ToFrozenDictionary();
+        arrayDefinitions = FrozenDictionary.Create<Type, TypeInfo>(
+            [
+                new(typeof(IImmutableList<>), immutableListInfo),
+                new(typeof(ImmutableList<>), immutableListInfo),
+                new(typeof(IImmutableQueue<>), new(typeof(IImmutableQueue<>), immutableQueueCreateRange)),
+                new(typeof(ImmutableQueue<>), new(typeof(ImmutableQueue<>), immutableQueueCreateRange)),
+                new(typeof(IImmutableStack<>), immutableStackInfo),
+                new(typeof(ImmutableStack<>), immutableStackInfo),
+                new(typeof(IImmutableSet<>), immutableHashSetInfo),
+                new(typeof(ImmutableSortedSet<>), new(typeof(ImmutableSortedSet<>), GetArrayCreateRange(typeof(ImmutableSortedSet)))),
+                new(typeof(ImmutableHashSet<>), immutableHashSetInfo),
+                new(typeof(ImmutableArray<>), new(typeof(ImmutableArray<>), GetArrayCreateRange(typeof(ImmutableArray)))),
+            ]);
     }
 
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]

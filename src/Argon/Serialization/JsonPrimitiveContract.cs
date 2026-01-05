@@ -29,20 +29,20 @@ public class JsonPrimitiveContract : JsonContract
         }
     }
 
-    static readonly FrozenDictionary<Type, ReadType> readTypeMap = new Dictionary<Type, ReadType>
-        {
-            [typeof(byte[])] = ReadType.ReadAsBytes,
-            [typeof(byte)] = ReadType.ReadAsInt32,
-            [typeof(short)] = ReadType.ReadAsInt32,
-            [typeof(int)] = ReadType.ReadAsInt32,
-            [typeof(decimal)] = ReadType.ReadAsDecimal,
-            [typeof(bool)] = ReadType.ReadAsBoolean,
-            [typeof(string)] = ReadType.ReadAsString,
-            [typeof(DateTime)] = ReadType.ReadAsDateTime,
-            [typeof(DateTimeOffset)] = ReadType.ReadAsDateTimeOffset,
-            [typeof(float)] = ReadType.ReadAsDouble,
-            [typeof(double)] = ReadType.ReadAsDouble,
-            [typeof(long)] = ReadType.ReadAsInt64
-        }
-        .ToFrozenDictionary();
+    static readonly FrozenDictionary<Type, ReadType> readTypeMap =
+        FrozenDictionary.Create<Type, ReadType>(
+        [
+            new(typeof(byte[]), ReadType.ReadAsBytes),
+            new(typeof(byte), ReadType.ReadAsInt32),
+            new(typeof(short), ReadType.ReadAsInt32),
+            new(typeof(int), ReadType.ReadAsInt32),
+            new(typeof(decimal), ReadType.ReadAsDecimal),
+            new(typeof(bool), ReadType.ReadAsBoolean),
+            new(typeof(string), ReadType.ReadAsString),
+            new(typeof(DateTime), ReadType.ReadAsDateTime),
+            new(typeof(DateTimeOffset), ReadType.ReadAsDateTimeOffset),
+            new(typeof(float), ReadType.ReadAsDouble),
+            new(typeof(double), ReadType.ReadAsDouble),
+            new(typeof(long), ReadType.ReadAsInt64),
+        ]);
 }
