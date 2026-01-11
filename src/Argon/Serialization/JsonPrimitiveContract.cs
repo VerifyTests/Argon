@@ -30,8 +30,8 @@ public class JsonPrimitiveContract : JsonContract
     }
 
     static readonly FrozenDictionary<Type, ReadType> readTypeMap =
-        FrozenDictionary.Create<Type, ReadType>(
-        [
+        new KeyValuePair<Type, ReadType>[]
+        {
             new(typeof(byte[]), ReadType.ReadAsBytes),
             new(typeof(byte), ReadType.ReadAsInt32),
             new(typeof(short), ReadType.ReadAsInt32),
@@ -44,5 +44,5 @@ public class JsonPrimitiveContract : JsonContract
             new(typeof(float), ReadType.ReadAsDouble),
             new(typeof(double), ReadType.ReadAsDouble),
             new(typeof(long), ReadType.ReadAsInt64),
-        ]);
+        }.ToFrozenDictionary();
 }

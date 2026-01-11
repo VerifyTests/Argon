@@ -24,19 +24,19 @@ static class ImmutableCollectionsUtils
     static ImmutableCollectionsUtils()
     {
         var immutableDictionaryInfo = new TypeInfo(typeof(ImmutableDictionary<,>), GetDictionaryCreateRange(typeof(ImmutableDictionary)));
-        dictionaryDefinitions = FrozenDictionary.Create<Type, TypeInfo>(
-            [
+        dictionaryDefinitions = new KeyValuePair<Type, TypeInfo>[]
+            {
                 new(typeof(IImmutableDictionary<,>), immutableDictionaryInfo),
                 new(typeof(ImmutableSortedDictionary<,>), new(typeof(ImmutableSortedDictionary<,>), GetDictionaryCreateRange(typeof(ImmutableSortedDictionary)))),
                 new(typeof(ImmutableDictionary<,>), immutableDictionaryInfo),
-            ]);
+            }.ToFrozenDictionary();
 
         var immutableListInfo = new TypeInfo(typeof(ImmutableList<>), GetArrayCreateRange(typeof(ImmutableList)));
         var immutableStackInfo = new TypeInfo(typeof(ImmutableStack<>), GetArrayCreateRange(typeof(ImmutableStack)));
         var immutableHashSetInfo = new TypeInfo(typeof(ImmutableHashSet<>), GetArrayCreateRange(typeof(ImmutableHashSet)));
         var immutableQueueCreateRange = GetArrayCreateRange(typeof(ImmutableQueue));
-        arrayDefinitions = FrozenDictionary.Create<Type, TypeInfo>(
-            [
+        arrayDefinitions = new KeyValuePair<Type, TypeInfo>[]
+            {
                 new(typeof(IImmutableList<>), immutableListInfo),
                 new(typeof(ImmutableList<>), immutableListInfo),
                 new(typeof(IImmutableQueue<>), new(typeof(IImmutableQueue<>), immutableQueueCreateRange)),
@@ -47,7 +47,7 @@ static class ImmutableCollectionsUtils
                 new(typeof(ImmutableSortedSet<>), new(typeof(ImmutableSortedSet<>), GetArrayCreateRange(typeof(ImmutableSortedSet)))),
                 new(typeof(ImmutableHashSet<>), immutableHashSetInfo),
                 new(typeof(ImmutableArray<>), new(typeof(ImmutableArray<>), GetArrayCreateRange(typeof(ImmutableArray)))),
-            ]);
+            }.ToFrozenDictionary();
     }
 
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]

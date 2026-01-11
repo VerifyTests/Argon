@@ -9,8 +9,8 @@
 static class ConvertUtils
 {
     static readonly FrozenDictionary<Type, PrimitiveTypeCode> TypeCodeMap =
-        FrozenDictionary.Create<Type, PrimitiveTypeCode>(
-        [
+        new KeyValuePair<Type, PrimitiveTypeCode>[]
+        {
             new(typeof(char), PrimitiveTypeCode.Char),
             new(typeof(char?), PrimitiveTypeCode.CharNullable),
             new(typeof(bool), PrimitiveTypeCode.Boolean),
@@ -51,7 +51,7 @@ static class ConvertUtils
             new(typeof(string), PrimitiveTypeCode.String),
             new(typeof(byte[]), PrimitiveTypeCode.Bytes),
             new(typeof(DBNull), PrimitiveTypeCode.DBNull),
-        ]);
+        }.ToFrozenDictionary();
 
     static readonly TypeInformation[] PrimitiveTypeCodes =
     [
