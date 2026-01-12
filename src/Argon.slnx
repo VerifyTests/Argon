@@ -20,4 +20,5 @@
   <Project Path="Argon/Argon.csproj" />
   <Project Path="ArgonTests/ArgonTests.csproj" />
   <Project Path="Benchmark.Tests/Benchmark.Tests.csproj" />
+  <Project Path="Argon.AotTests/Argon.AotTests.csproj" />
 </Solution>

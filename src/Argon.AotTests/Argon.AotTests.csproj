@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PublishAot>true</PublishAot>
+    <PublishTrimmed>true</PublishTrimmed>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Default RID for AOT publish; override with -r flag if needed -->
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(PublishAot)' == 'true'">win-x64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Argon\Argon.csproj" />
+    <ProjectReference Include="..\Argon.DataSets\Argon.DataSets.csproj" />
+    <ProjectReference Include="..\Argon.FSharp\Argon.FSharp.csproj" />
+    <ProjectReference Include="..\Argon.InterfaceCallbacks\Argon.InterfaceCallbacks.csproj" />
+    <ProjectReference Include="..\Argon.JsonPath\Argon.JsonPath.csproj" />
+    <ProjectReference Include="..\Argon.NodaTime\Argon.NodaTime.csproj" />
+    <ProjectReference Include="..\Argon.SourceGeneration\Argon.SourceGeneration.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Argon.Xml\Argon.Xml.csproj" />
+  </ItemGroup>
+
+</Project>
