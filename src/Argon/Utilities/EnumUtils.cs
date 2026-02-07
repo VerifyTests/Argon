@@ -74,9 +74,11 @@ static class EnumUtils
         var values = entry.Values;
 
         var index = values.Length - 1;
-        var stringBuilder = new StringBuilder();
-        var firstTime = true;
         var saveResult = result;
+
+        // Collect matched names in forward order to avoid O(n²) StringBuilder.Insert(0, ...)
+        var matchedCount = 0;
+        Span<int> matchedIndices = stackalloc int[values.Length];
 
         // We will not optimize this code further to keep it maintainable. There are some boundary checks that can be applied
         // to minimize the comparisons required. This code works the same for the best/worst case. In general the number of
@@ -92,14 +94,7 @@ static class EnumUtils
             if ((result & value) == value)
             {
                 result -= value;
-                if (!firstTime)
-                {
-                    stringBuilder.Insert(0, EnumSeparatorString);
-                }
-
-                var resolvedName = resolvedNames[index];
-                stringBuilder.Insert(0, resolvedName);
-                firstTime = false;
+                matchedIndices[matchedCount++] = index;
             }
 
             index--;
@@ -120,6 +115,18 @@ static class EnumUtils
             }
 
             return null;
+        }
+
+        var stringBuilder = new StringBuilder();
+        // matched indices are in reverse order (high-to-low), iterate backwards for forward order
+        for (var i = matchedCount - 1; i >= 0; i--)
+        {
+            if (i < matchedCount - 1)
+            {
+                stringBuilder.Append(EnumSeparatorString);
+            }
+
+            stringBuilder.Append(resolvedNames[matchedIndices[i]]);
         }
 
         return stringBuilder.ToString(); // Return the string representation
