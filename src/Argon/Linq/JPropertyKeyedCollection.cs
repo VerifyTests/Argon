@@ -33,7 +33,7 @@ class JPropertyKeyedCollection() :
     }
 
     void EnsureDictionary() =>
-        dictionary ??= new(comparer);
+        dictionary ??= new(Count, comparer);
 
     static string GetKeyForItem(JToken item) =>
         ((JProperty) item).Name;

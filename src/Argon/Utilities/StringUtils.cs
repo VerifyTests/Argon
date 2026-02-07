@@ -85,7 +85,7 @@ static class StringUtils
             return s;
         }
 
-        var stringBuilder = new StringBuilder();
+        var stringBuilder = new StringBuilder(s.Length + s.Length / 4);
         var state = SeparatedCaseState.Start;
 
         for (var i = 0; i < s.Length; i++)
