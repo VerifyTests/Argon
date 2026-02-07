@@ -206,7 +206,10 @@ static class JavaScriptUtils
                 continue;
             }
 
-            var isEscapedUnicodeText = string.Equals(escapedValue, escapedUnicodeText, StringComparison.Ordinal);
+            // Safe to use ReferenceEquals: escapedValue is either null (handled above),
+            // a string literal from the switch branches, or the escapedUnicodeText sentinel
+            // assigned directly at line 199. No other branch produces a string equal to "!".
+            var isEscapedUnicodeText = ReferenceEquals(escapedValue, escapedUnicodeText);
 
             if (i > lastWritePosition)
             {
