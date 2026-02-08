@@ -2,7 +2,7 @@
   <PropertyGroup>
     <NoWarn>CS1591;CS1573;NU1605;NU1608;NU1109</NoWarn>
     <LangVersion>preview</LangVersion>
-    <Version>0.33.3</Version>
+    <Version>0.33.4</Version>
     <AssemblyVersion>1.0.0</AssemblyVersion>
     <Copyright>Copyright © James Newton-King 2008, Copyright © Simon Cropp 2022</Copyright>
     <PackageTags>Json</PackageTags>
