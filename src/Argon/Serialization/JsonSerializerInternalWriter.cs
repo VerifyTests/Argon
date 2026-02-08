@@ -896,26 +896,29 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
 
         var keyContract = contract.KeyContract ??= Serializer.ContractResolver.ResolveContract(contract.DictionaryKeyType ?? typeof(object));
 
-        if (contract is {OrderByKey: true, IsSortable: true})
+        static IEnumerable<DictionaryEntry> Items(IDictionary values)
         {
-            var entries = new List<DictionaryEntry>();
             foreach (DictionaryEntry entry in values)
             {
-                entries.Add(entry);
+                yield return entry;
             }
+        }
 
+        if (contract is {OrderByKey: true, IsSortable: true})
+        {
             if (contract.DictionaryKeyType == typeof(string))
             {
-                entries.Sort((a, b) => StringComparer.OrdinalIgnoreCase.Compare((string) a.Key, (string) b.Key));
+                foreach (var entry in Items(values).OrderBy(_ => ((string) _.Key, StringComparer.OrdinalIgnoreCase)))
+                {
+                    SerializeDictionaryItem(writer, contract, member, entry.Key, entry.Value, keyContract, underlying);
+                }
             }
             else
             {
-                entries.Sort((a, b) => Comparer.Default.Compare(a.Key, b.Key));
-            }
-
-            foreach (var entry in entries)
-            {
-                SerializeDictionaryItem(writer, contract, member, entry.Key, entry.Value, keyContract, underlying);
+                foreach (var entry in Items(values).OrderBy(_ => _.Key))
+                {
+                    SerializeDictionaryItem(writer, contract, member, entry.Key, entry.Value, keyContract, underlying);
+                }
             }
         }
         else
