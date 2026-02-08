@@ -906,7 +906,7 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
 
             if (contract.DictionaryKeyType == typeof(string))
             {
-                entries.Sort((a, b) => StringComparer.Ordinal.Compare((string) a.Key, (string) b.Key));
+                entries.Sort((a, b) => StringComparer.OrdinalIgnoreCase.Compare((string) a.Key, (string) b.Key));
             }
             else
             {

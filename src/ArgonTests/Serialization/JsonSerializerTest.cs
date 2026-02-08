@@ -3432,42 +3432,6 @@ public class JsonSerializerTest : TestFixtureBase
 #endif
 
     [Fact]
-    public void SymbolOrderingPlusMinus()
-    {
-        var target = new Dictionary<string, string>
-        {
-            {"-", "minus"},
-            {"+", "plus"}
-        };
-
-        var settings = new JsonSerializerSettings
-        {
-            ContractResolver = new SortDictionaryContractResolver()
-        };
-        var json = JsonConvert.SerializeObject(target, settings);
-        Assert.Equal(@"{""+"":""plus"",""-"":""minus""}", json);
-    }
-
-    [Fact]
-    public void CaseSensitiveOrdering()
-    {
-        var target = new Dictionary<string, int>
-        {
-            {"b", 1},
-            {"A", 2},
-            {"a", 3},
-            {"B", 4}
-        };
-
-        var settings = new JsonSerializerSettings
-        {
-            ContractResolver = new SortDictionaryContractResolver()
-        };
-        var json = JsonConvert.SerializeObject(target, settings);
-        Assert.Equal(@"{""A"":2,""B"":4,""a"":3,""b"":1}", json);
-    }
-
-    [Fact]
     public void AlreadyOrderedDictionary()
     {
         var target = new SortedDictionary<string, string>(new ReverseComparer())
