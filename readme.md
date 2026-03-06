@@ -26,11 +26,6 @@ Argon is a JSON framework for .NET. It is a hard fork of [Newtonsoft.Json](https
 [![JetBrains logo.](https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg)](https://jb.gg/OpenSourceSupport)<!-- endInclude -->
 
 
-### JetBrains
-
-[![JetBrains logo.](https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg)](https://jb.gg/OpenSourceSupport)
-
-
 ## NuGet
 
  * https://www.nuget.org/packages/Argon
