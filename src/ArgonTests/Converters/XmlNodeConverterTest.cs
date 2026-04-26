@@ -2543,7 +2543,7 @@ public class XmlNodeConverterTest : TestFixtureBase
 
         var xmlString = System.Text.Encoding.UTF8.GetString(xml.ToArray());
 
-        Assert.Equal("""﻿<?xml version="1.0" encoding="utf-8"?><root booleanType="true" />""", xmlString);
+        Assert.Equal("""<?xml version="1.0" encoding="utf-8"?><root booleanType="true" />""", xmlString);
     }
 
     [Fact]
