@@ -539,7 +539,11 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
 
         serializeStack.Add(value);
 
+        OnSerializing(writer, value);
+
         converter.WriteJson(writer, value, GetInternalSerializer());
+
+        OnSerialized(writer, value);
 
         serializeStack.RemoveAt(serializeStack.Count - 1);
     }

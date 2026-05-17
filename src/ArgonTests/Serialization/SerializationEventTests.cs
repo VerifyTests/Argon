@@ -6,10 +6,81 @@ using TestObjects;
 
 public class SerializationEventTests : TestFixtureBase
 {
+    public class ConverterHandled
+    {
+        public string Inner { get; set; } = "x";
+    }
+
+    public class ConverterHandledConverter :
+        JsonConverter<ConverterHandled>
+    {
+        public override void WriteJson(JsonWriter writer, ConverterHandled value, JsonSerializer serializer) =>
+            writer.WriteValue(value.Inner);
+
+        public override ConverterHandled ReadJson(JsonReader reader, Type type, ConverterHandled existing, bool hasExisting, JsonSerializer serializer) =>
+            new() {Inner = (string) reader.Value ?? ""};
+    }
+
+    [Fact]
+    public void SerializingFiresForConverterHandledValue()
+    {
+        var settings = new JsonSerializerSettings
+        {
+            Converters =
+            {
+                new ConverterHandledConverter()
+            }
+        };
+        var serializing = new List<object>();
+        var serialized = new List<object>();
+        settings.Serializing += (_, value) => serializing.Add(value);
+        settings.Serialized += (_, value) => serialized.Add(value);
+
+        JsonConvert.SerializeObject(new ConverterHandled(), settings);
+
+        Assert.Contains(serializing, _ => _ is ConverterHandled);
+        Assert.Contains(serialized, _ => _ is ConverterHandled);
+    }
+
+    [Fact]
+    public void SerializingFiresForJObjectRoot()
+    {
+        // Repro for VerifyTests/Verify.Assertions#2: a JsonConverter registered for JObject
+        // (as Verify does internally) must not swallow the Serializing event for the root JObject.
+        var settings = new JsonSerializerSettings
+        {
+            Converters =
+            {
+                new JObjectAsStringConverter()
+            }
+        };
+        var serializing = new List<object>();
+        settings.Serializing += (_, value) => serializing.Add(value);
+
+        var jObject = JObject.Parse("""{"a":1}""");
+        JsonConvert.SerializeObject(jObject, settings);
+
+        Assert.Contains(serializing, _ => ReferenceEquals(_, jObject));
+    }
+
+    class JObjectAsStringConverter :
+        JsonConverter<JObject>
+    {
+        public override void WriteJson(JsonWriter writer, JObject value, JsonSerializer serializer) =>
+            writer.WriteValue(value.ToString(Formatting.None));
+
+        public override JObject ReadJson(JsonReader reader, Type type, JObject existing, bool hasExisting, JsonSerializer serializer) =>
+            JObject.Parse((string) reader.Value);
+    }
+
     [Fact]
     public void ObjectEvents()
     {
-        var objs = new[] {new SerializationEventTestObject(), new DerivedSerializationEventTestObject()};
+        var objs = new[]
+        {
+            new SerializationEventTestObject(),
+            new DerivedSerializationEventTestObject()
+        };
 
         foreach (var current in objs)
         {
