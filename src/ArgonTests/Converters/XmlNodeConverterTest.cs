@@ -2626,7 +2626,11 @@ public class XmlNodeConverterTest : TestFixtureBase
             throw new JsonSerializationException("Additional text found in JSON string after finishing deserializing object.");
         }
 
-        using var writer = XmlWriter.Create(xml);
+        var writerSettings = new XmlWriterSettings
+        {
+            Encoding = new System.Text.UTF8Encoding(false)
+        };
+        using var writer = XmlWriter.Create(xml, writerSettings);
         doc.Save(writer);
     }
 
