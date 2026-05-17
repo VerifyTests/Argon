@@ -55,7 +55,7 @@ public class AotCompatibilityTests
         // Pin SDK version to avoid .NET 11 preview SDK issues
         File.WriteAllText(
             Path.Combine(tempDir, "global.json"),
-            """{"sdk":{"version":"10.0.103","allowPrerelease":false,"rollForward":"latestFeature"}}""");
+            """{"sdk":{"version":"10.0.300","allowPrerelease":false,"rollForward":"latestFeature"}}""");
 
         var (publishSuccess, publishOutput) = await PublishProject(tempDir);
         Assert.True(publishSuccess, $"Publish failed: {publishOutput}");
