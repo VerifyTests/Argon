@@ -657,9 +657,9 @@ public class JValue :
     /// <param name="converters">A collection of <see cref="JsonConverter" />s which will be used when writing the token.</param>
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
-    public override void WriteTo(JsonWriter writer, params JsonConverter[] converters)
+    public override void WriteTo(JsonWriter writer, params IList<JsonConverter> converters)
     {
-        if (converters is {Length: > 0} && value != null)
+        if (converters.Count > 0 && value != null)
         {
             var matchingConverter = JsonSerializer.GetMatchingConverter(converters, value.GetType());
             if (matchingConverter is {CanWrite: true})
@@ -819,7 +819,7 @@ public class JValue :
     /// </summary>
     /// <remarks>
     /// <c>ToString()</c> returns a non-JSON string value for tokens with a type of <see cref="JTokenType.String" />.
-    /// If you want the JSON for all token types then you should use <see cref="WriteTo(JsonWriter, JsonConverter[])" />.
+    /// If you want the JSON for all token types then you should use <see cref="WriteTo(JsonWriter, IList{JsonConverter})" />.
     /// </remarks>
     /// <returns>
     /// A <see cref="String" /> that represents this instance.

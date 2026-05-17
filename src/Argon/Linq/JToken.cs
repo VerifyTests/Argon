@@ -419,21 +419,21 @@ public abstract class JToken :
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "WriteTo without converters is safe.")]
     [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "WriteTo without converters is safe.")]
     public void WriteTo(JsonWriter writer) =>
-        WriteTo(writer, CollectionUtils.ArrayEmpty<JsonConverter>());
+        WriteTo(writer, []);
 
     /// <summary>
     /// Writes this token to a <see cref="JsonWriter" />.
     /// </summary>
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
-    public abstract void WriteTo(JsonWriter writer, params JsonConverter[] converters);
+    public abstract void WriteTo(JsonWriter writer, params IList<JsonConverter> converters);
 
     /// <summary>
     /// Returns the indented JSON for this token.
     /// </summary>
     /// <remarks>
     /// <c>ToString()</c> returns a non-JSON string value for tokens with a type of <see cref="JTokenType.String" />.
-    /// If you want the JSON for all token types then you should use <see cref="WriteTo(JsonWriter, JsonConverter[])" />.
+    /// If you want the JSON for all token types then you should use <see cref="WriteTo(JsonWriter, IList{JsonConverter})" />.
     /// </remarks>
     /// <returns>
     /// The indented JSON for this token.
