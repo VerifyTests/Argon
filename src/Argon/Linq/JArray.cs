@@ -174,7 +174,7 @@ public class JArray :
     /// </summary>
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
-    public override void WriteTo(JsonWriter writer, params JsonConverter[] converters)
+    public override void WriteTo(JsonWriter writer, params IList<JsonConverter> converters)
     {
         writer.WriteStartArray();
 

@@ -158,7 +158,7 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
             case JsonContractType.Linq:
                 var token = (JToken) value;
                 OnSerializing(writer, token);
-                token.WriteTo(writer, Serializer.Converters.ToArray());
+                token.WriteTo(writer, Serializer.Converters);
                 OnSerialized(writer, token);
                 break;
         }
