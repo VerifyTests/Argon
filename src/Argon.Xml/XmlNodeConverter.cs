@@ -695,8 +695,7 @@ public class XmlNodeConverter :
                     case JsonTypeReflector.ArrayValuesPropertyName:
                         propertyName = propertyName[1..];
                         elementPrefix = manager.LookupPrefix(jsonNamespaceUri);
-                        CreateElement(reader, document, currentNode, propertyName, manager, elementPrefix, attributeNameValues);
-                        return;
+                        break;
                     case JsonTypeReflector.IdPropertyName:
                     case JsonTypeReflector.RefPropertyName:
                     case JsonTypeReflector.TypePropertyName:
