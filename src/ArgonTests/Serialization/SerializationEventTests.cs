@@ -26,7 +26,10 @@ public class SerializationEventTests : TestFixtureBase
     {
         var settings = new JsonSerializerSettings
         {
-            Converters = {new ConverterHandledConverter()}
+            Converters =
+            {
+                new ConverterHandledConverter()
+            }
         };
         var serializing = new List<object>();
         var serialized = new List<object>();
@@ -46,7 +49,10 @@ public class SerializationEventTests : TestFixtureBase
         // (as Verify does internally) must not swallow the Serializing event for the root JObject.
         var settings = new JsonSerializerSettings
         {
-            Converters = {new JObjectAsStringConverter()}
+            Converters =
+            {
+                new JObjectAsStringConverter()
+            }
         };
         var serializing = new List<object>();
         settings.Serializing += (_, value) => serializing.Add(value);
@@ -70,7 +76,11 @@ public class SerializationEventTests : TestFixtureBase
     [Fact]
     public void ObjectEvents()
     {
-        var objs = new[] {new SerializationEventTestObject(), new DerivedSerializationEventTestObject()};
+        var objs = new[]
+        {
+            new SerializationEventTestObject(),
+            new DerivedSerializationEventTestObject()
+        };
 
         foreach (var current in objs)
         {
