@@ -52,10 +52,9 @@ public class AotCompatibilityTests
         File.WriteAllText(Path.Combine(tempDir, "AotTestApp.csproj"), csprojContent);
         File.WriteAllText(Path.Combine(tempDir, "Program.cs"), programContent);
 
-        // Pin SDK version to avoid .NET 11 preview SDK issues
         File.WriteAllText(
             Path.Combine(tempDir, "global.json"),
-            """{"sdk":{"version":"10.0.300","allowPrerelease":false,"rollForward":"latestFeature"}}""");
+            """{"sdk":{"version":"11.0.100-preview.4.26230.115","allowPrerelease":true,"rollForward":"latestFeature"}}""");
 
         var (publishSuccess, publishOutput) = await PublishProject(tempDir);
         Assert.True(publishSuccess, $"Publish failed: {publishOutput}");
