@@ -676,7 +676,24 @@ public class DefaultContractResolver : IContractResolver
             properties.AddProperty(property);
         }
 
-        return properties.OrderBy(_ => _.Order ?? -1).ToList();
+        var list = new List<JsonProperty>(properties);
+
+        var needsSort = false;
+        foreach (var property in list)
+        {
+            if (property.Order != null)
+            {
+                needsSort = true;
+                break;
+            }
+        }
+
+        if (needsSort)
+        {
+            list.Sort(static (a, b) => (a.Order ?? -1).CompareTo(b.Order ?? -1));
+        }
+
+        return list;
     }
 
     public virtual JsonNameTable GetNameTable() => nameTable;
