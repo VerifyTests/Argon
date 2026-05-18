@@ -725,7 +725,15 @@ public class XmlNodeConverter :
                 var encoded = XmlConvert.EncodeName(nameValue.Key);
                 var attributePrefix = XmlUtils.GetPrefix(nameValue.Key);
 
-                var attribute = attributePrefix.IsNullOrEmpty() ? document.CreateAttribute(encoded, nameValue.Value!) : document.CreateAttribute(encoded, manager.LookupNamespace(attributePrefix) ?? string.Empty, nameValue.Value!);
+                IXmlNode attribute;
+                if (attributePrefix.IsNullOrEmpty())
+                {
+                    attribute = document.CreateAttribute(encoded, nameValue.Value!);
+                }
+                else
+                {
+                    attribute = document.CreateAttribute(encoded, manager.LookupNamespace(attributePrefix) ?? string.Empty, nameValue.Value!);
+                }
 
                 element.SetAttributeNode(attribute);
             }
