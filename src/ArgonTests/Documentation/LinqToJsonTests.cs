@@ -555,13 +555,13 @@ public class LinqToJsonTests : TestFixtureBase
         #region SelectTokenLinq
 
         var storeNames = o
-            .SelectToken("Stores")
+            .SelectToken("Stores")!
             .Select(s => (string) s)
             .ToList();
         // Lambton Quay
         // Willis Street
 
-        var firstProductNames = o["Manufacturers"]
+        var firstProductNames = o["Manufacturers"]!
             .Select(m => (string) m.SelectToken("Products[1].Name"))
             .ToList();
         // null

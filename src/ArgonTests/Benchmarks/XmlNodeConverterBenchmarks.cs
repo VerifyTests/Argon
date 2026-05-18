@@ -5,7 +5,6 @@
 using System.Xml;
 using System.Xml.Linq;
 using BenchmarkDotNet.Attributes;
-using ProjectFilesGenerator;
 
 public class XmlNodeConverterBenchmarks
 {

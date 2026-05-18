@@ -130,13 +130,13 @@ SelectToken can be used in combination with standard LINQ methods.
 <a id='snippet-SelectTokenLinq'></a>
 ```cs
 var storeNames = o
-    .SelectToken("Stores")
+    .SelectToken("Stores")!
     .Select(s => (string) s)
     .ToList();
 // Lambton Quay
 // Willis Street
 
-var firstProductNames = o["Manufacturers"]
+var firstProductNames = o["Manufacturers"]!
     .Select(m => (string) m.SelectToken("Products[1].Name"))
     .ToList();
 // null

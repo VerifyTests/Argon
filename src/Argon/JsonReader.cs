@@ -359,7 +359,7 @@ public abstract class JsonReader : IDisposable
         throw JsonReaderException.Create(this, $"Could not convert string to integer: {s}.");
     }
 
-    internal int? ReadInt32String(ReadOnlySpan<char> s)
+    internal int? ReadInt32String(CharSpan s)
     {
         if (s.IsEmpty)
         {
@@ -577,7 +577,7 @@ public abstract class JsonReader : IDisposable
         throw JsonReaderException.Create(this, $"Error reading double. Unexpected token: {token}.");
     }
 
-    internal double? ReadDoubleString(ReadOnlySpan<char> s)
+    internal double? ReadDoubleString(CharSpan s)
     {
         if (s.IsEmpty)
         {
@@ -669,7 +669,7 @@ public abstract class JsonReader : IDisposable
         throw JsonReaderException.Create(this, $"Could not convert string to boolean: {s}.");
     }
 
-    internal bool? ReadBooleanString(ReadOnlySpan<char> s)
+    internal bool? ReadBooleanString(CharSpan s)
     {
         if (s.IsEmpty)
         {
@@ -768,7 +768,7 @@ public abstract class JsonReader : IDisposable
         throw JsonReaderException.Create(this, $"Could not convert string to decimal: {s}.");
     }
 
-    internal decimal? ReadDecimalString(ReadOnlySpan<char> s)
+    internal decimal? ReadDecimalString(CharSpan s)
     {
         if (s.IsEmpty)
         {

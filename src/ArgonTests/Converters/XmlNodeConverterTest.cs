@@ -2628,7 +2628,7 @@ public class XmlNodeConverterTest : TestFixtureBase
 
         var writerSettings = new XmlWriterSettings
         {
-            Encoding = new System.Text.UTF8Encoding(false)
+            Encoding = new UTF8Encoding(false)
         };
         using var writer = XmlWriter.Create(xml, writerSettings);
         doc.Save(writer);

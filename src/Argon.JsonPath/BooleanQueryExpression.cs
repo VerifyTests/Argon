@@ -50,7 +50,7 @@ class BooleanQueryExpression(QueryOperator @operator, object left, object? right
         return false;
     }
 
-    bool MatchTokens(JToken leftResult, JToken rightResult, JsonSelectSettings settings)
+    bool MatchTokens(JToken? leftResult, JToken? rightResult, JsonSelectSettings settings)
     {
         if (leftResult is JValue leftValue &&
             rightResult is JValue rightValue)
@@ -141,7 +141,8 @@ class BooleanQueryExpression(QueryOperator @operator, object left, object? right
 
     static bool RegexEquals(JValue input, JValue pattern, JsonSelectSettings settings)
     {
-        if (input.Type != JTokenType.String || pattern.Type != JTokenType.String)
+        if (input.Type != JTokenType.String ||
+            pattern.Type != JTokenType.String)
         {
             return false;
         }
