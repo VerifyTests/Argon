@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net462;net472;net48;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net462;net472;net48;net6.0;net7.0;net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
     <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
   </PropertyGroup>
   <ItemGroup>
@@ -8,7 +8,7 @@
     <PackageReference Include="Polyfill" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Sbom.Targets" PrivateAssets="all" Condition="'$(CI)' == 'true'" />
     <PackageReference Include="System.ValueTuple" Condition="'$(TargetFramework)' == 'net462'" />
-    <PackageReference Include="System.Collections.Immutable" Condition="'$(TargetFramework)' != 'net8.0' AND '$(TargetFramework)' != 'net9.0' AND '$(TargetFramework)' != 'net10.0' " />
+    <PackageReference Include="System.Collections.Immutable" Condition="'$(TargetFramework)' != 'net8.0' AND '$(TargetFramework)' != 'net9.0' AND '$(TargetFramework)' != 'net10.0' AND '$(TargetFramework)' != 'net11.0' " />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net462' OR '$(TargetFramework)' == 'net472'">
     <PackageReference Include="System.Buffers" />
