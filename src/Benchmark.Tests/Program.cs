@@ -11,7 +11,7 @@ public class Program
         var attribute = (AssemblyFileVersionAttribute)typeof(JsonConvert).Assembly.GetCustomAttribute(typeof(AssemblyFileVersionAttribute))!;
         Console.WriteLine($"Json.NET Version: {attribute.Version}");
 
-        var switcher = new BenchmarkSwitcher([typeof(WriteEscapedJavaScriptString), typeof(SerializeJTokenList), typeof(ReadQuotedNumbers), typeof(WriteBase64Benchmark)]);
+        var switcher = new BenchmarkSwitcher([typeof(WriteEscapedJavaScriptString), typeof(SerializeJTokenList), typeof(ReadQuotedNumbers), typeof(WriteBase64Benchmark), typeof(PropertyOrderBenchmark)]);
         if (args.Length == 0)
         {
             switcher.Run(["*"]);
