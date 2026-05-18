@@ -10,6 +10,63 @@ interface IWrappedDictionary
     object UnderlyingDictionary { get; }
 }
 
+sealed class ReadOnlyCollectionWrapper<T>(IEnumerable<T> source, int count)
+    : ICollection<T>, ICollection
+{
+    public int Count => count;
+
+    public bool IsReadOnly => true;
+
+    bool ICollection.IsSynchronized => false;
+
+    object ICollection.SyncRoot => this;
+
+    public IEnumerator<T> GetEnumerator() =>
+        source.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() =>
+        source.GetEnumerator();
+
+    public bool Contains(T item)
+    {
+        var comparer = EqualityComparer<T>.Default;
+        foreach (var x in source)
+        {
+            if (comparer.Equals(x, item))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void CopyTo(T[] array, int arrayIndex)
+    {
+        foreach (var x in source)
+        {
+            array[arrayIndex++] = x;
+        }
+    }
+
+    void ICollection.CopyTo(Array array, int index)
+    {
+        foreach (var x in source)
+        {
+            array.SetValue(x, index++);
+        }
+    }
+
+    public void Add(T item) =>
+        throw new NotSupportedException();
+
+    public void Clear() =>
+        throw new NotSupportedException();
+
+    public bool Remove(T item) =>
+        throw new NotSupportedException();
+}
+
 class DictionaryWrapper<TKey, TValue> : IDictionary<TKey, TValue>, IWrappedDictionary
 {
     readonly IDictionary dictionary;
@@ -65,12 +122,12 @@ class DictionaryWrapper<TKey, TValue> : IDictionary<TKey, TValue>, IWrappedDicti
         {
             if (dictionary != null)
             {
-                return dictionary.Keys.Cast<TKey>().ToList();
+                return new ReadOnlyCollectionWrapper<TKey>(dictionary.Keys.Cast<TKey>(), dictionary.Count);
             }
 
             if (readOnlyDictionary != null)
             {
-                return readOnlyDictionary.Keys.ToList();
+                return new ReadOnlyCollectionWrapper<TKey>(readOnlyDictionary.Keys, readOnlyDictionary.Count);
             }
 
             return genericDictionary.Keys;
@@ -126,12 +183,12 @@ class DictionaryWrapper<TKey, TValue> : IDictionary<TKey, TValue>, IWrappedDicti
         {
             if (dictionary != null)
             {
-                return dictionary.Values.Cast<TValue>().ToList();
+                return new ReadOnlyCollectionWrapper<TValue>(dictionary.Values.Cast<TValue>(), dictionary.Count);
             }
 
             if (readOnlyDictionary != null)
             {
-                return readOnlyDictionary.Values.ToList();
+                return new ReadOnlyCollectionWrapper<TValue>(readOnlyDictionary.Values, readOnlyDictionary.Count);
             }
 
             return genericDictionary.Values;
@@ -458,12 +515,12 @@ class DictionaryWrapper<TKey, TValue> : IDictionary<TKey, TValue>, IWrappedDicti
         {
             if (genericDictionary != null)
             {
-                return genericDictionary.Keys.ToList();
+                return new ReadOnlyCollectionWrapper<TKey>(genericDictionary.Keys, genericDictionary.Count);
             }
 
             if (readOnlyDictionary != null)
             {
-                return readOnlyDictionary.Keys.ToList();
+                return new ReadOnlyCollectionWrapper<TKey>(readOnlyDictionary.Keys, readOnlyDictionary.Count);
             }
 
             return dictionary!.Keys;
@@ -492,12 +549,12 @@ class DictionaryWrapper<TKey, TValue> : IDictionary<TKey, TValue>, IWrappedDicti
         {
             if (genericDictionary != null)
             {
-                return genericDictionary.Values.ToList();
+                return new ReadOnlyCollectionWrapper<TValue>(genericDictionary.Values, genericDictionary.Count);
             }
 
             if (readOnlyDictionary != null)
             {
-                return readOnlyDictionary.Values.ToList();
+                return new ReadOnlyCollectionWrapper<TValue>(readOnlyDictionary.Values, readOnlyDictionary.Count);
             }
 
             return dictionary!.Values;
