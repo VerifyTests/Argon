@@ -118,7 +118,7 @@ public class DefaultSerializationBinder :
                     --scope;
                     if (scope == 0)
                     {
-                        var typeArgAssemblyQualifiedName = typeName.Substring(typeArgStartIndex, i - typeArgStartIndex);
+                        var typeArgAssemblyQualifiedName = typeName.AsSpan(typeArgStartIndex, i - typeArgStartIndex);
 
                         var typeNameKey = ReflectionUtils.SplitFullyQualifiedTypeName(typeArgAssemblyQualifiedName);
                         genericTypeArguments.Add(GetTypeByName(typeNameKey));
