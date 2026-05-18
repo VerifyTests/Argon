@@ -572,6 +572,21 @@ public class ReadTests : TestFixtureBase
     }
 
     [Fact]
+    public void ReadAsInt32_QuotedNumber_Success()
+    {
+        var reader = new JsonTextReader(new StringReader("'42'"));
+        Assert.Equal(42, reader.ReadAsInt32());
+    }
+
+    [Fact]
+    public void ReadAsDecimal_QuotedNumber_Failure()
+    {
+        var reader = new JsonTextReader(new StringReader("'blah'"));
+        var exception = Assert.Throws<JsonReaderException>(() => reader.ReadAsDecimal());
+        Assert.Equal("Could not convert string to decimal: blah. Path '', line 1, position 6.", exception.Message);
+    }
+
+    [Fact]
     public void ReadAsDouble_Success()
     {
         var reader = new JsonTextReader(new StringReader("'12.34'"));

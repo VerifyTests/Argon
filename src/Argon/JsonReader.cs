@@ -359,6 +359,25 @@ public abstract class JsonReader : IDisposable
         throw JsonReaderException.Create(this, $"Could not convert string to integer: {s}.");
     }
 
+    internal int? ReadInt32String(ReadOnlySpan<char> s)
+    {
+        if (s.IsEmpty)
+        {
+            SetNullToken();
+            return null;
+        }
+
+        if (int.TryParse(s, NumberStyles.Integer, InvariantCulture, out var i))
+        {
+            SetToken(i);
+            return i;
+        }
+
+        var text = s.ToString();
+        SetToken(text);
+        throw JsonReaderException.Create(this, $"Could not convert string to integer: {text}.");
+    }
+
     /// <summary>
     /// Reads the next JSON token from the source as a <see cref="String" />.
     /// </summary>
@@ -558,6 +577,25 @@ public abstract class JsonReader : IDisposable
         throw JsonReaderException.Create(this, $"Error reading double. Unexpected token: {token}.");
     }
 
+    internal double? ReadDoubleString(ReadOnlySpan<char> s)
+    {
+        if (s.IsEmpty)
+        {
+            SetNullToken();
+            return null;
+        }
+
+        if (double.TryParse(s, NumberStyles.Float | NumberStyles.AllowThousands, InvariantCulture, out var d))
+        {
+            SetToken(d);
+            return d;
+        }
+
+        var text = s.ToString();
+        SetToken(text);
+        throw JsonReaderException.Create(this, $"Could not convert string to double: {text}.");
+    }
+
     internal double? ReadDoubleString(string? s)
     {
         if (s.IsNullOrEmpty())
@@ -631,6 +669,32 @@ public abstract class JsonReader : IDisposable
         throw JsonReaderException.Create(this, $"Could not convert string to boolean: {s}.");
     }
 
+    internal bool? ReadBooleanString(ReadOnlySpan<char> s)
+    {
+        if (s.IsEmpty)
+        {
+            SetNullToken();
+            return null;
+        }
+
+        var trimmed = s.Trim();
+        if (trimmed.Equals("true".AsSpan(), StringComparison.OrdinalIgnoreCase))
+        {
+            SetToken(true);
+            return true;
+        }
+
+        if (trimmed.Equals("false".AsSpan(), StringComparison.OrdinalIgnoreCase))
+        {
+            SetToken(false);
+            return false;
+        }
+
+        var text = s.ToString();
+        SetToken(text);
+        throw JsonReaderException.Create(this, $"Could not convert string to boolean: {text}.");
+    }
+
     /// <summary>
     /// Reads the next JSON token from the source as a <see cref="Nullable{T}" /> of <see cref="Decimal" />.
     /// </summary>
@@ -702,6 +766,33 @@ public abstract class JsonReader : IDisposable
 
         SetToken(s);
         throw JsonReaderException.Create(this, $"Could not convert string to decimal: {s}.");
+    }
+
+    internal decimal? ReadDecimalString(ReadOnlySpan<char> s)
+    {
+        if (s.IsEmpty)
+        {
+            SetNullToken();
+            return null;
+        }
+
+        if (decimal.TryParse(s, NumberStyles.Number, InvariantCulture, out var d))
+        {
+            SetToken(d);
+            return d;
+        }
+
+        // fallback handles strings like "96.014e-05" not supported by decimal.TryParse
+        var chars = s.ToArray();
+        if (ConvertUtils.DecimalTryParse(chars, 0, chars.Length, out d) == ParseResult.Success)
+        {
+            SetToken(d);
+            return d;
+        }
+
+        var text = s.ToString();
+        SetToken(text);
+        throw JsonReaderException.Create(this, $"Could not convert string to decimal: {text}.");
     }
 
     /// <summary>

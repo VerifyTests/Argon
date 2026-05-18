@@ -648,7 +648,7 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
                         case '"':
                         case '\'':
                             ParseString(currentChar, ReadType.Read);
-                            return ReadBooleanString(stringReference.ToString());
+                            return ReadBooleanString(stringReference.AsSpan());
                         case 'n':
                             HandleNull();
                             return null;
@@ -864,11 +864,11 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
         switch (readType)
         {
             case ReadType.ReadAsInt32:
-                return ReadInt32String(stringReference.ToString());
+                return ReadInt32String(stringReference.AsSpan());
             case ReadType.ReadAsDecimal:
-                return ReadDecimalString(stringReference.ToString());
+                return ReadDecimalString(stringReference.AsSpan());
             case ReadType.ReadAsDouble:
-                return ReadDoubleString(stringReference.ToString());
+                return ReadDoubleString(stringReference.AsSpan());
             default:
                 throw new ArgumentOutOfRangeException(nameof(readType));
         }

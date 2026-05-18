@@ -12,6 +12,9 @@ readonly struct StringReference(char[] chars, int startIndex, int length)
 
     public int Length { get; } = length;
 
+    public ReadOnlySpan<char> AsSpan() =>
+        Chars.AsSpan(StartIndex, Length);
+
     public override string ToString() =>
         new(Chars, StartIndex, Length);
 }
