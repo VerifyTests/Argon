@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">net48</TargetFrameworks>
-    <TargetFrameworks>$(TargetFrameworks);net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworks);net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
     <Nullable>disable</Nullable>
     <RootNamespace>Tests</RootNamespace>
     <OutputType>Exe</OutputType>
