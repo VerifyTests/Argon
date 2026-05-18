@@ -444,7 +444,7 @@ static class ReflectionUtils
 
     public static TypeNameKey SplitFullyQualifiedTypeName(string fullTypeName)
     {
-        var assemblyDelimiterIndex = GetAssemblyDelimiterIndex(fullTypeName);
+        var assemblyDelimiterIndex = GetAssemblyDelimiterIndex(fullTypeName.AsSpan());
 
         if (assemblyDelimiterIndex == null)
         {
@@ -452,12 +452,27 @@ static class ReflectionUtils
         }
 
         var delimiterIndex = assemblyDelimiterIndex.Value;
-        var type = fullTypeName.Trim(0, delimiterIndex);
-        var assembly = fullTypeName.Trim(delimiterIndex + 1, fullTypeName.Length - delimiterIndex - 1);
+        var type = fullTypeName.AsSpan(0, delimiterIndex).Trim().ToString();
+        var assembly = fullTypeName.AsSpan(delimiterIndex + 1).Trim().ToString();
         return new(assembly, type);
     }
 
-    static int? GetAssemblyDelimiterIndex(string fullyQualifiedTypeName)
+    public static TypeNameKey SplitFullyQualifiedTypeName(CharSpan fullTypeName)
+    {
+        var assemblyDelimiterIndex = GetAssemblyDelimiterIndex(fullTypeName);
+
+        if (assemblyDelimiterIndex == null)
+        {
+            return new(null, fullTypeName.ToString());
+        }
+
+        var delimiterIndex = assemblyDelimiterIndex.Value;
+        var type = fullTypeName[..delimiterIndex].Trim().ToString();
+        var assembly = fullTypeName[(delimiterIndex + 1)..].Trim().ToString();
+        return new(assembly, type);
+    }
+
+    static int? GetAssemblyDelimiterIndex(CharSpan fullyQualifiedTypeName)
     {
         // we need to get the first comma following all surrounded in brackets because of generic types
         // e.g. System.Collections.Generic.Dictionary`2[[System.String, mscorlib,Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
