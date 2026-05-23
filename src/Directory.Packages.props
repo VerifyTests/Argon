@@ -13,7 +13,7 @@
     <PackageVersion Include="NodaTime" Version="3.3.2" />
     <PackageVersion Include="Polyfill" Version="10.7.0" />
     <PackageVersion Include="ProjectDefaults" Version="1.0.174" />
-    <PackageVersion Include="ProjectFiles" Version="1.1.1" />
+    <PackageVersion Include="ProjectFiles" Version="1.2.0" />
     <PackageVersion Include="System.ValueTuple" Version="4.5.0" Pinned="true" />
     <PackageVersion Include="Verify.XunitV3" Version="31.17.0" />
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
