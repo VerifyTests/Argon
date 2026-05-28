@@ -6,7 +6,7 @@
   <ItemGroup>
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.0" Pinned="true" />
     <PackageVersion Include="FSharp.Core" Version="11.0.100" />
-    <PackageVersion Include="MarkdownSnippets.MsBuild" Version="28.2.0" />
+    <PackageVersion Include="MarkdownSnippets.MsBuild" Version="28.3.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.6.0" />
     <PackageVersion Include="Microsoft.Sbom.Targets" Version="4.1.5" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
