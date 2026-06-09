@@ -8,7 +8,7 @@
     <File Path="appveyor.yml" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
-    <File Path="global.json" />
+    <File Path="../global.json" />
   </Folder>
   <Project Path="Argon.DataSets/Argon.DataSets.csproj" />
   <Project Path="Argon.FSharp.Tests/Argon.FSharp.Tests.fsproj" />
