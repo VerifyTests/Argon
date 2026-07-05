@@ -402,8 +402,10 @@ public abstract class JContainer :
             var multiIndex = index;
             foreach (var c in enumerable)
             {
-                TryAddInternal(multiIndex, c, skipParentCheck);
-                multiIndex++;
+                if (TryAddInternal(multiIndex, c, skipParentCheck))
+                {
+                    multiIndex++;
+                }
             }
 
             return true;

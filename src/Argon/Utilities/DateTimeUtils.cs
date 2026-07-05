@@ -52,6 +52,14 @@ static class DateTimeUtils
                 break;
         }
 
+        // DateTimeOffset only permits offsets within +/- 14 hours. The ISO parser accepts
+        // larger zone hour/minute values, so reject them here instead of throwing from the ctor.
+        if (Math.Abs(offset.Ticks) > 14 * TimeSpan.TicksPerHour)
+        {
+            dt = default;
+            return false;
+        }
+
         var ticks = d.Ticks - offset.Ticks;
         if (ticks is < 0 or > 3155378975999999999)
         {

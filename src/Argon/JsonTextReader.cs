@@ -2171,9 +2171,15 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
     /// </summary>
     public override void Close()
     {
+        if (CurrentState == State.Closed)
+        {
+            return;
+        }
+
         base.Close();
 
         BufferUtils.ReturnBuffer(charBuffer);
+        charBuffer = [];
 
         if (CloseInput)
         {

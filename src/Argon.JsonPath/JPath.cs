@@ -553,7 +553,7 @@ class JPath
             while (currentIndex < expression.Length)
             {
                 currentChar = expression[currentIndex];
-                if (currentChar is ' ' or ')')
+                if (currentChar is ' ' or ')' or '&' or '|')
                 {
                     var numberText = stringBuilder.ToString();
 

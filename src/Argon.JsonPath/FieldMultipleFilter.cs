@@ -17,8 +17,7 @@ class FieldMultipleFilter(List<string> names) :
                     {
                         yield return v;
                     }
-
-                    if (settings?.ErrorWhenNoMatch ?? false)
+                    else if (settings?.ErrorWhenNoMatch ?? false)
                     {
                         throw new JsonException($"Property '{name}' does not exist on JObject.");
                     }

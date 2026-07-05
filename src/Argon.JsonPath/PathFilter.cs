@@ -6,7 +6,7 @@ abstract class PathFilter
     {
         if (t is JArray a)
         {
-            if (a.Count <= index)
+            if (index < 0 || a.Count <= index)
             {
                 if (settings.ErrorWhenNoMatch)
                 {

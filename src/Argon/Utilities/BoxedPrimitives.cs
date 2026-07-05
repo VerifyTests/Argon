@@ -78,16 +78,21 @@ static class BoxedPrimitives
         {
             Span<int> bits = stackalloc int[4];
             decimal.GetBits(value, bits);
-            var scale = (byte) (bits[3] >> ScaleShift);
-            // Only use cached boxed value if value is zero and there is zero or one trailing zeros.
-            if (scale == 0)
+            // Preserve the sign of negative zero (-0.0m). The cached boxes are positive zero,
+            // so only use them for positive zero - consistent across scales and with Get(double).
+            if ((bits[3] & int.MinValue) == 0)
             {
-                return DecimalZero;
-            }
+                var scale = (byte) (bits[3] >> ScaleShift);
+                // Only use cached boxed value if value is zero and there is zero or one trailing zeros.
+                if (scale == 0)
+                {
+                    return DecimalZero;
+                }
 
-            if (scale == 1)
-            {
-                return DecimalZeroWithTrailingZero;
+                if (scale == 1)
+                {
+                    return DecimalZeroWithTrailingZero;
+                }
             }
         }
 #endif

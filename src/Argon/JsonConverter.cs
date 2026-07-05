@@ -65,7 +65,7 @@ public abstract class JsonConverter<T> : JsonConverter
             throw new JsonSerializationException($"Converter cannot read JSON with the specified existing value. {typeof(T)} is required.");
         }
 
-        if (reader.Value is null)
+        if (reader.TokenType is JsonToken.Null or JsonToken.Undefined)
         {
             return null;
         }

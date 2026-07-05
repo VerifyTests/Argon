@@ -129,12 +129,15 @@ public class JsonSerializer
 
     public JsonContract ResolveContract(Type type)
     {
-        if (contractResolver == null)
+        // Read through the virtual ContractResolver property so that subclasses
+        // (e.g. JsonSerializerProxy handed to converters) can redirect resolution.
+        var resolver = ContractResolver;
+        if (resolver == null)
         {
             return DefaultContractResolver.Instance.ResolveContract(type);
         }
 
-        return contractResolver.ResolveContract(type);
+        return resolver.ResolveContract(type);
     }
 
     /// <summary>

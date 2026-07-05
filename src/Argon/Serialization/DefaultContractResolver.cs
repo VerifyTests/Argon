@@ -37,7 +37,6 @@ public class DefaultContractResolver : IContractResolver
         new EncodingConverter(),
         new PathInfoConverter(),
         new RegexConverter(),
-        new EncodingConverter(),
         new TimeZoneInfoConverter(),
         new VersionConverter(),
         new StringWriterConverter()
@@ -690,7 +689,9 @@ public class DefaultContractResolver : IContractResolver
 
         if (needsSort)
         {
-            list.Sort(static (a, b) => (a.Order ?? -1).CompareTo(b.Order ?? -1));
+            // OrderBy is a stable sort, so properties without an explicit Order keep
+            // their declaration order. List.Sort (introsort) is unstable above 16 items.
+            return list.OrderBy(_ => _.Order ?? -1).ToList();
         }
 
         return list;

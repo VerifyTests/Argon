@@ -712,6 +712,7 @@ static class ReflectionUtils
             case PrimitiveTypeCode.Boolean:
                 return false;
             case PrimitiveTypeCode.Char:
+                return '\0';
             case PrimitiveTypeCode.SByte:
             case PrimitiveTypeCode.Byte:
             case PrimitiveTypeCode.Int16:

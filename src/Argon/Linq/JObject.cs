@@ -458,7 +458,10 @@ public class JObject :
         return true;
     }
 
-    ICollection<JToken?> IDictionary<string, JToken?>.Values => throw new NotImplementedException();
+    ICollection<JToken?> IDictionary<string, JToken?>.Values =>
+        Properties()
+            .Select(_ => (JToken?) _.Value)
+            .ToList();
 
     #endregion
 

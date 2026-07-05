@@ -459,7 +459,7 @@ public class JsonTextWriter : JsonWriter
     public override void WriteValue(char value)
     {
         InternalWriteValue(JsonToken.String);
-        WriteValueInternal(JsonConvert.ToString(value));
+        WriteEscapedString([value], QuoteValue);
     }
 
     /// <summary>

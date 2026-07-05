@@ -21,7 +21,7 @@
         new XmlDeclarationWrapper(document.CreateXmlDeclaration(version, encoding, standalone));
 
     public IXmlNode CreateXmlDocumentType(string name, string? publicId, string? systemId, string? internalSubset) =>
-        new XmlDocumentTypeWrapper(document.CreateDocumentType(name, publicId, systemId, null));
+        new XmlDocumentTypeWrapper(document.CreateDocumentType(name, publicId, systemId, internalSubset));
 
     public IXmlNode CreateProcessingInstruction(string target, string data) =>
         new XmlNodeWrapper(document.CreateProcessingInstruction(target, data));

@@ -176,13 +176,13 @@ public class JValue :
         // check for fraction if result is two numbers are equal
         if (i2 is decimal d1)
         {
-            return 0m.CompareTo(Math.Abs(d1 - Math.Truncate(d1)));
+            return 0m.CompareTo(d1 - Math.Truncate(d1));
         }
 
         if (i2 is double or float)
         {
             var d = Convert.ToDouble(i2, InvariantCulture);
-            return 0d.CompareTo(Math.Abs(d - Math.Truncate(d)));
+            return 0d.CompareTo(d - Math.Truncate(d));
         }
 
         return result;
@@ -759,13 +759,32 @@ public class JValue :
         throw MiscellaneousUtils.CreateArgumentOutOfRangeException(nameof(Type), valueType, "Unexpected token type.");
     }
 
-    internal override int GetDeepHashCode()
+    // Numeric JValues of the same JTokenType are equal by numeric value regardless of the
+    // backing CLR type (int vs long, decimal vs double, BigInteger). Hash a canonical double
+    // so GetHashCode stays consistent with Equals for exact numeric values. Values that are
+    // only approximately equal cannot share a hash - that is inherent to the approximate float
+    // comparison used by Equals.
+    int GetValueHashCode()
     {
-        var valueHashCode = value?.GetHashCode() ?? 0;
+        if (value == null)
+        {
+            return 0;
+        }
 
-        // GetHashCode on an enum boxes so cast to int
-        return ((int) valueType).GetHashCode() ^ valueHashCode;
+        if (valueType is JTokenType.Integer or JTokenType.Float)
+        {
+            var d = value is BigInteger bigInteger
+                ? (double) bigInteger
+                : Convert.ToDouble(value, InvariantCulture);
+            return d.GetHashCode();
+        }
+
+        return value.GetHashCode();
     }
+
+    internal override int GetDeepHashCode() =>
+        // GetHashCode on an enum boxes so cast to int
+        ((int) valueType).GetHashCode() ^ GetValueHashCode();
 
     static bool ValuesEquals(JValue v1, JValue v2) =>
         v1 == v2 || (v1.valueType == v2.valueType && Compare(v1.valueType, v1.value, v2.value) == 0);
@@ -804,15 +823,8 @@ public class JValue :
     /// <returns>
     /// A hash code for the current <see cref="Object" />.
     /// </returns>
-    public override int GetHashCode()
-    {
-        if (value == null)
-        {
-            return 0;
-        }
-
-        return value.GetHashCode();
-    }
+    public override int GetHashCode() =>
+        GetValueHashCode();
 
     /// <summary>
     /// Returns a <see cref="String" /> that represents this instance.
