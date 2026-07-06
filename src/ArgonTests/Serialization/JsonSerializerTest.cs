@@ -6,7 +6,6 @@
 using System.Web.Script.Serialization;
 using System.Drawing;
 #endif
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel.DataAnnotations;
 using System.Dynamic;

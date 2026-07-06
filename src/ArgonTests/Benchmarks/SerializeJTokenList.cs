@@ -17,13 +17,14 @@ public class SerializeJTokenList
         tokens = [];
         for (var i = 0; i < 100; i++)
         {
-            tokens.Add(new JObject
-            {
-                ["id"] = i,
-                ["name"] = $"item-{i}",
-                ["active"] = i % 2 == 0,
-                ["score"] = i * 1.5
-            });
+            tokens.Add(
+                new()
+                {
+                    ["id"] = i,
+                    ["name"] = $"item-{i}",
+                    ["active"] = i % 2 == 0,
+                    ["score"] = i * 1.5
+                });
         }
 
         defaultSerializer = JsonSerializer.CreateDefault();

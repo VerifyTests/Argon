@@ -11,15 +11,15 @@ public class LinqDomBugFixes : TestFixtureBase
     public void BigInteger_compares_correctly_against_negative_fraction()
     {
         // -5 > -5.5
-        Assert.True(new JValue(BigInteger.Parse("-5")).CompareTo(new JValue(-5.5)) > 0);
-        Assert.True(new JValue(-5.5).CompareTo(new JValue(BigInteger.Parse("-5"))) < 0);
+        Assert.True(new JValue(BigInteger.Parse("-5")).CompareTo(new(-5.5)) > 0);
+        Assert.True(new JValue(-5.5).CompareTo(new(BigInteger.Parse("-5"))) < 0);
 
         // 5 < 5.5 (positive fraction still correct)
-        Assert.True(new JValue(BigInteger.Parse("5")).CompareTo(new JValue(5.5)) < 0);
-        Assert.True(new JValue(5.5).CompareTo(new JValue(BigInteger.Parse("5"))) > 0);
+        Assert.True(new JValue(BigInteger.Parse("5")).CompareTo(new(5.5)) < 0);
+        Assert.True(new JValue(5.5).CompareTo(new(BigInteger.Parse("5"))) > 0);
 
         // equal integers
-        Assert.Equal(0, new JValue(BigInteger.Parse("5")).CompareTo(new JValue(5.0)));
+        Assert.Equal(0, new JValue(BigInteger.Parse("5")).CompareTo(new(5.0)));
     }
 
     // Bug: GetHashCode/GetDeepHashCode hashed the boxed CLR value, so numerically-equal

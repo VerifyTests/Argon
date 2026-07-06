@@ -23,5 +23,5 @@ public void FloatPrecision()
     Assert.Equal("[1.123,1.123]", json);
 }
 ```
-<sup><a href='/src/ArgonTests/Serialization/JsonSerializerTest.cs#L6349-L6369' title='Snippet source file'>snippet source</a> | <a href='#snippet-FloatPrecision' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Serialization/JsonSerializerTest.cs#L6348-L6368' title='Snippet source file'>snippet source</a> | <a href='#snippet-FloatPrecision' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

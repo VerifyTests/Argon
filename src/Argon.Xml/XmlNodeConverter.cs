@@ -1124,7 +1124,12 @@ public class XmlNodeConverter :
         var encodeName = EncodeSpecialCharacters ? XmlConvert.EncodeLocalName(elementName) : XmlConvert.EncodeName(elementName);
         var ns = elementPrefix.IsNullOrEmpty() ? manager.DefaultNamespace : manager.LookupNamespace(elementPrefix);
 
-        return ns.IsNullOrEmpty() ? document.CreateElement(encodeName) : document.CreateElement(encodeName, ns);
+        if (ns.IsNullOrEmpty())
+        {
+            return document.CreateElement(encodeName);
+        }
+
+        return document.CreateElement(encodeName, ns);
     }
 
     void DeserializeNode(JsonReader reader, IXmlDocument document, XmlNamespaceManager manager, IXmlNode currentNode)

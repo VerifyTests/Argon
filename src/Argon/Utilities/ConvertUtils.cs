@@ -8,7 +8,7 @@
 
 static class ConvertUtils
 {
-    static readonly FrozenDictionary<Type, PrimitiveTypeCode> TypeCodeMap =
+    static readonly FrozenDictionary<Type, PrimitiveTypeCode> typeCodeMap =
         new KeyValuePair<Type, PrimitiveTypeCode>[]
         {
             new(typeof(char), PrimitiveTypeCode.Char),
@@ -53,7 +53,7 @@ static class ConvertUtils
             new(typeof(DBNull), PrimitiveTypeCode.DBNull),
         }.ToFrozenDictionary();
 
-    static readonly TypeInformation[] PrimitiveTypeCodes =
+    static readonly TypeInformation[] primitiveTypeCodes =
     [
         // need all of these. lookup against the index with TypeCode value
         new(typeof(object), PrimitiveTypeCode.Empty),
@@ -83,7 +83,7 @@ static class ConvertUtils
     [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "Nullable<T> instantiated over primitive types are kept by TypeCodeMap")]
     public static PrimitiveTypeCode GetTypeCode(Type type, out bool isEnum)
     {
-        if (TypeCodeMap.TryGetValue(type, out var typeCode))
+        if (typeCodeMap.TryGetValue(type, out var typeCode))
         {
             isEnum = false;
             return typeCode;
@@ -108,7 +108,7 @@ static class ConvertUtils
     }
 
     public static TypeInformation GetTypeInformation(IConvertible convertible) =>
-        PrimitiveTypeCodes[(int) convertible.GetTypeCode()];
+        primitiveTypeCodes[(int) convertible.GetTypeCode()];
 
     public static bool IsConvertible(this Type type) =>
         type.IsAssignableTo<IConvertible>();
@@ -422,7 +422,7 @@ static class ConvertUtils
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (fromConverter != null && fromConverter.CanConvertFrom(initialType))
         {
-            value = fromConverter.ConvertFrom(null, InvariantCulture, initialValue);
+            value = fromConverter.ConvertFrom(null!, InvariantCulture, initialValue);
             return ConvertResult.Success;
         }
 

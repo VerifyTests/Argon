@@ -2,8 +2,6 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
-using System.Collections;
-using System.Collections.ObjectModel;
 using BenchmarkDotNet.Attributes;
 
 [MemoryDiagnoser]
@@ -32,7 +30,7 @@ public class DictionaryWrapperKeysBenchmark
         }
 
         readOnlyDictionary = new(dictionary);
-        wrapperHashtable = new((IDictionary) hashtable);
+        wrapperHashtable = new(hashtable);
         wrapperReadOnly = new((IReadOnlyDictionary<string, int>) readOnlyDictionary);
         wrapperGeneric = new((IDictionary<string, int>) dictionary);
     }
@@ -75,7 +73,7 @@ public class DictionaryWrapperKeysBenchmark
 
     [Benchmark]
     public ICollection<string> ReadOnly_Old() =>
-        readOnlyDictionary.Keys.ToList();
+        readOnlyDictionary.Keys!.ToList();
 
     [Benchmark]
     public ICollection<string> ReadOnly_New() =>
