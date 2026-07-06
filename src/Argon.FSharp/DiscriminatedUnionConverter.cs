@@ -165,6 +165,10 @@ public class DiscriminatedUnionConverter :
     /// <returns>
     /// <c>true</c> if this instance can convert the specified object type; otherwise, <c>false</c>.
     /// </returns>
+    // memoized: CanConvert runs for every value (de)serialized once this converter is
+    // registered, and FSharpType.IsUnion does attribute reflection on each call
+    static readonly ThreadSafeStore<Type, bool> isUnionCache = new(_ => FSharpType.IsUnion(_, null));
+
     public override bool CanConvert(Type type) =>
-        FSharpType.IsUnion(type, null);
+        isUnionCache.Get(type);
 }

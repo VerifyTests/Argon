@@ -31,34 +31,45 @@ static class StringUtils
 
     public static JsonProperty? ForgivingCaseSensitiveFind(this JsonPropertyCollection source, string testValue)
     {
-        if (source.Count == 0)
+        // single allocation-free pass; runs per unmatched member for every object
+        // deserialized through a parameterized constructor
+        JsonProperty? caseInsensitiveMatch = null;
+        var caseInsensitiveCount = 0;
+        JsonProperty? caseSensitiveMatch = null;
+        var caseSensitiveCount = 0;
+
+        foreach (var property in source.List)
         {
-            return null;
+            if (!string.Equals(property.PropertyName, testValue, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            caseInsensitiveCount++;
+            caseInsensitiveMatch ??= property;
+
+            if (string.Equals(property.PropertyName, testValue, StringComparison.Ordinal))
+            {
+                caseSensitiveCount++;
+                caseSensitiveMatch ??= property;
+            }
         }
 
-        var caseInsensitiveResults = source.Where(_ => string.Equals(_.PropertyName, testValue, StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-        if (caseInsensitiveResults.Length == 0)
+        switch (caseInsensitiveCount)
         {
-            return null;
+            case 0:
+                return null;
+            case 1:
+                return caseInsensitiveMatch;
         }
 
-        if (caseInsensitiveResults.Length == 1)
+        // multiple case-insensitive results. now filter using case sensitivity
+        switch (caseSensitiveCount)
         {
-            return caseInsensitiveResults[0];
-        }
-
-        // multiple results returned. now filter using case sensitivity
-        var caseSensitiveResults = source.Where(_ => string.Equals(_.PropertyName, testValue, StringComparison.Ordinal))
-            .ToArray();
-        if (caseSensitiveResults.Length == 0)
-        {
-            return null;
-        }
-
-        if (caseSensitiveResults.Length == 1)
-        {
-            return caseSensitiveResults[0];
+            case 0:
+                return null;
+            case 1:
+                return caseSensitiveMatch;
         }
 
         throw new("Multiple matches found for testValue");
@@ -81,6 +92,24 @@ static class StringUtils
     static string ToSeparatedCase(string s, char separator)
     {
         if (IsNullOrEmpty(s))
+        {
+            return s;
+        }
+
+        // no upper-case char and no space means the transform is the identity:
+        // lower chars, digits and separators are copied through verbatim.
+        // Common for dictionary keys that are already snake/kebab cased.
+        var needsTransform = false;
+        foreach (var ch in s)
+        {
+            if (ch == ' ' || char.IsUpper(ch))
+            {
+                needsTransform = true;
+                break;
+            }
+        }
+
+        if (!needsTransform)
         {
             return s;
         }

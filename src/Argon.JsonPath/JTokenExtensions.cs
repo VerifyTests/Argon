@@ -1,8 +1,34 @@
-﻿/// <summary>
+﻿using System.Collections.Concurrent;
+
+/// <summary>
 /// Extensions to <see cref="JToken" />.
 /// </summary>
 public static class JTokenExtensions
 {
+    // A parsed JPath is immutable and evaluation holds no per-query state, so parsing
+    // (per-segment substrings + filter tree) can be paid once per distinct expression.
+    // The wholesale clear keeps the cache bounded for pathological dynamic paths.
+    const int pathCacheLimit = 512;
+    static readonly ConcurrentDictionary<string, JPath> pathCache = new(StringComparer.Ordinal);
+
+    static JPath ParsePath(string path)
+    {
+        if (pathCache.TryGetValue(path, out var jPath))
+        {
+            return jPath;
+        }
+
+        jPath = new(path);
+
+        if (pathCache.Count >= pathCacheLimit)
+        {
+            pathCache.Clear();
+        }
+
+        pathCache[path] = jPath;
+        return jPath;
+    }
+
     /// <summary>
     /// Selects a <see cref="JToken" /> using a JSONPath expression. Selects the token that matches the object path.
     /// </summary>
@@ -37,7 +63,7 @@ public static class JTokenExtensions
     /// <returns>A <see cref="JToken" />.</returns>
     public static JToken? SelectToken(this JToken token, string path, JsonSelectSettings? settings)
     {
-        var jPath = new JPath(path);
+        var jPath = ParsePath(path);
 
         settings ??= DefaultSettings;
         JToken? result = null;
@@ -95,7 +121,7 @@ public static class JTokenExtensions
     {
         settings ??= DefaultSettings;
 
-        var p = new JPath(path);
+        var p = ParsePath(path);
         return p.Evaluate(token, token, settings);
     }
 }

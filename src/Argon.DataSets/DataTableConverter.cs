@@ -18,14 +18,25 @@ public class DataTableConverter :
         var table = (DataTable) value;
         var resolver = serializer.ContractResolver as DefaultContractResolver;
 
+        // resolve column names once per table, not once per cell
+        var columnCount = table.Columns.Count;
+        var columns = new DataColumn[columnCount];
+        var resolvedColumnNames = new string[columnCount];
+        for (var i = 0; i < columnCount; i++)
+        {
+            var column = table.Columns[i];
+            columns[i] = column;
+            resolvedColumnNames[i] = resolver?.GetResolvedPropertyName(column.ColumnName) ?? column.ColumnName;
+        }
+
         writer.WriteStartArray();
 
         foreach (DataRow row in table.Rows)
         {
             writer.WriteStartObject();
-            foreach (DataColumn column in row.Table.Columns)
+            for (var i = 0; i < columnCount; i++)
             {
-                var columnValue = row[column];
+                var columnValue = row[columns[i]];
 
                 if (serializer.NullValueHandling == NullValueHandling.Ignore &&
                     columnValue == DBNull.Value)
@@ -33,7 +44,7 @@ public class DataTableConverter :
                     continue;
                 }
 
-                writer.WritePropertyName(resolver?.GetResolvedPropertyName(column.ColumnName) ?? column.ColumnName);
+                writer.WritePropertyName(resolvedColumnNames[i]);
                 serializer.Serialize(writer, columnValue);
             }
 

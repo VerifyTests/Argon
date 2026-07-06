@@ -20,7 +20,13 @@ public class Program
             typeof(WriteBase64Benchmark),
             typeof(SplitFullyQualifiedTypeNameBench),
             typeof(PropertyOrderBenchmark),
-            typeof(DictionaryWrapperKeysBenchmark)
+            typeof(DictionaryWrapperKeysBenchmark),
+            typeof(SerializerEngineBenchmarks),
+            typeof(ReaderBenchmarks),
+            typeof(WriterBenchmarks),
+            typeof(LinqBenchmarks),
+            typeof(CreatorDeserializeBenchmark),
+            typeof(SatelliteBenchmarks)
         ]);
         if (args.Length == 0)
         {

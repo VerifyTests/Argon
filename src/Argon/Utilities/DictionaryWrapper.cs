@@ -446,11 +446,11 @@ class DictionaryWrapper<TKey, TValue> : IDictionary<TKey, TValue>, IWrappedDicti
     readonly struct DictionaryEnumerator<TEnumeratorKey, TEnumeratorValue>(IEnumerator<KeyValuePair<TEnumeratorKey, TEnumeratorValue>> e)
         : IDictionaryEnumerator
     {
-        public DictionaryEntry Entry => (DictionaryEntry) Current;
+        public DictionaryEntry Entry => new(e.Current.Key, e.Current.Value);
 
-        public object Key => Entry.Key;
+        public object Key => e.Current.Key;
 
-        public object Value => Entry.Value;
+        public object Value => e.Current.Value;
 
         public object Current => new DictionaryEntry(e.Current.Key, e.Current.Value);
 

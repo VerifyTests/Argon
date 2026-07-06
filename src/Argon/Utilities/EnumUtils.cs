@@ -7,12 +7,16 @@ static class EnumUtils
     const char EnumSeparatorChar = ',';
     const string EnumSeparatorString = ", ";
 
-    static readonly ThreadSafeStore<Tuple<Type, NamingStrategy?>, EnumInfo> ValuesAndNamesPerEnum = new(InitializeValuesAndNames);
+    // struct key: a Tuple class key would allocate on every cache probe,
+    // i.e. once per enum value read or written
+    readonly record struct EnumKey(Type EnumType, NamingStrategy? NamingStrategy);
+
+    static readonly ThreadSafeStore<EnumKey, EnumInfo> ValuesAndNamesPerEnum = new(InitializeValuesAndNames);
 
     [UnconditionalSuppressMessage("TrimAnalysis", "IL2075", Justification = "Enum fields are not trimmed")]
-    static EnumInfo InitializeValuesAndNames(Tuple<Type, NamingStrategy?> key)
+    static EnumInfo InitializeValuesAndNames(EnumKey key)
     {
-        var enumType = key.Item1;
+        var enumType = key.EnumType;
         var names = Enum.GetNames(enumType);
         var resolvedNames = new string[names.Length];
         var values = new ulong[names.Length];
@@ -35,9 +39,9 @@ static class EnumUtils
                 throw new InvalidOperationException($"Enum name '{resolvedName}' already exists on enum '{enumType.Name}'.");
             }
 
-            resolvedNames[i] = key.Item2 == null
+            resolvedNames[i] = key.NamingStrategy == null
                 ? resolvedName
-                : key.Item2.GetPropertyName(resolvedName, hasSpecifiedName);
+                : key.NamingStrategy.GetPropertyName(resolvedName, hasSpecifiedName);
         }
 
         var isFlags = enumType.IsDefined(typeof(FlagsAttribute), false);

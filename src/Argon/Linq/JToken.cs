@@ -419,7 +419,10 @@ public abstract class JToken :
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "WriteTo without converters is safe.")]
     [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "WriteTo without converters is safe.")]
     public void WriteTo(JsonWriter writer) =>
-        WriteTo(writer, []);
+        // a collection expression here would allocate a fresh list per call
+        WriteTo(writer, emptyConverters);
+
+    static readonly JsonConverter[] emptyConverters = [];
 
     /// <summary>
     /// Writes this token to a <see cref="JsonWriter" />.

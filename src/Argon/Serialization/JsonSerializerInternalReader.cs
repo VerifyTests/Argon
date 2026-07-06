@@ -1663,19 +1663,27 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         var propertyContexts = ResolvePropertyAndCreatorValues(contract, containerProperty, reader, contract.UnderlyingType);
         if (trackPresence)
         {
-            foreach (var property in contract.Properties)
+            // hash-set membership instead of scanning the context list per property
+            var seenProperties = new HashSet<JsonProperty>();
+            foreach (var context in propertyContexts)
             {
-                if (!property.Ignored)
+                if (context.Property != null)
                 {
-                    if (propertyContexts.All(_ => _.Property != property))
-                    {
-                        propertyContexts.Add(
-                            new()
-                            {
-                                Property = property,
-                                Presence = PropertyPresence.None
-                            });
-                    }
+                    seenProperties.Add(context.Property);
+                }
+            }
+
+            foreach (var property in contract.Properties.List)
+            {
+                if (!property.Ignored &&
+                    !seenProperties.Contains(property))
+                {
+                    propertyContexts.Add(
+                        new()
+                        {
+                            Property = property,
+                            Presence = PropertyPresence.None
+                        });
                 }
             }
         }
@@ -2009,11 +2017,19 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
     {
         OnDeserializing(reader, newObject);
 
-        // only need to keep a track of properties' presence if they are required or a value should be defaulted if missing
-        var propertiesPresence = contract.HasRequiredOrDefaultValueProperties ||
-                                 HasFlag(Serializer.DefaultValueHandling, DefaultValueHandling.Populate)
-            ? contract.Properties.ToDictionary(_ => _, _ => PropertyPresence.None)
-            : null;
+        // only need to keep a track of properties' presence if they are required or a value should be defaulted if missing,
+        // and only for the properties EndProcessProperty can act on
+        var globalPopulate = HasFlag(Serializer.DefaultValueHandling, DefaultValueHandling.Populate);
+        Dictionary<JsonProperty, PropertyPresence>? propertiesPresence = null;
+        if (contract.HasRequiredOrDefaultValueProperties || globalPopulate)
+        {
+            var relevantProperties = contract.GetPresenceRelevantProperties(globalPopulate);
+            propertiesPresence = new(relevantProperties.Count);
+            foreach (var property in relevantProperties)
+            {
+                propertiesPresence[property] = PropertyPresence.None;
+            }
+        }
 
         if (id != null)
         {
@@ -2211,7 +2227,9 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
 
     static void SetPropertyPresence(JsonReader reader, JsonProperty property, Dictionary<JsonProperty, PropertyPresence>? requiredProperties)
     {
-        if (requiredProperties == null)
+        // the dictionary only tracks presence-relevant properties; do not add others back
+        if (requiredProperties == null ||
+            !requiredProperties.ContainsKey(property))
         {
             return;
         }

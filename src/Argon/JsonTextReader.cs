@@ -109,6 +109,7 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
                 break;
             case ReadType.ReadAsInt32:
             case ReadType.ReadAsDecimal:
+            case ReadType.ReadAsDouble:
             case ReadType.ReadAsBoolean:
                 // caller will convert result
                 break;
@@ -647,7 +648,8 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
                             break;
                         case '"':
                         case '\'':
-                            ParseString(currentChar, ReadType.Read);
+                            // ReadAsBoolean skips the intermediate string token; the span is re-parsed below
+                            ParseString(currentChar, ReadType.ReadAsBoolean);
                             return ReadBooleanString(stringReference.AsSpan());
                         case 'n':
                             HandleNull();
@@ -1724,7 +1726,7 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
                 if (singleDigit)
                 {
                     // digit char values start at 48
-                    numberValue = (decimal) firstChar - 48;
+                    numberValue = BoxedPrimitives.Get((decimal) firstChar - 48);
                 }
                 else
                 {
@@ -1747,13 +1749,11 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
                 if (singleDigit)
                 {
                     // digit char values start at 48
-                    numberValue = (double) firstChar - 48;
+                    numberValue = BoxedPrimitives.Get((double) firstChar - 48);
                 }
                 else
                 {
-                    var number = stringReference.ToString();
-
-                    if (double.TryParse(number, NumberStyles.Float, InvariantCulture, out var value))
+                    if (double.TryParse(stringReference.AsSpan(), NumberStyles.Float, InvariantCulture, out var value))
                     {
                         numberValue = BoxedPrimitives.Get(value);
                     }
@@ -1772,7 +1772,7 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
                 if (singleDigit)
                 {
                     // digit char values start at 48
-                    numberValue = (long) firstChar - 48;
+                    numberValue = BoxedPrimitives.Get((long) firstChar - 48);
                     numberType = JsonToken.Integer;
                 }
                 else
@@ -1811,9 +1811,7 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
                         }
                         else
                         {
-                            var number = stringReference.ToString();
-
-                            if (double.TryParse(number, NumberStyles.Float, InvariantCulture, out var d))
+                            if (double.TryParse(stringReference.AsSpan(), NumberStyles.Float, InvariantCulture, out var d))
                             {
                                 numberValue = BoxedPrimitives.Get(d);
                             }

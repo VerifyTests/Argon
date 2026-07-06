@@ -118,12 +118,11 @@ static class DateTimeUtils
         {
             if (s.Length is >= 19 and <= 40 && char.IsDigit(s[0]) && s[10] == 'T')
             {
+                // TryParseExact fully validates and produces the same result the custom ISO
+                // parser would; re-parsing (and the ToCharArray copy) was pure overhead.
                 if (DateTimeOffset.TryParseExact(s, IsoDateFormat, InvariantCulture, DateTimeStyles.RoundtripKind, out dt))
                 {
-                    if (TryParseDateTimeOffsetIso(new(s.ToCharArray(), 0, s.Length), out dt))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
         }

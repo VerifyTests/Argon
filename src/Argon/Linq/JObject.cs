@@ -353,7 +353,7 @@ public class JObject :
     {
         writer.WriteStartObject();
 
-        foreach (var property in properties)
+        foreach (var property in properties.InnerList)
         {
             property.WriteTo(writer, converters);
         }
@@ -535,8 +535,9 @@ public class JObject :
     /// </returns>
     public IEnumerator<KeyValuePair<string, JToken?>> GetEnumerator()
     {
-        foreach (JProperty property in properties)
+        foreach (var token in properties.InnerList)
         {
+            var property = (JProperty) token;
             yield return new(property.Name, property.Value);
         }
     }
