@@ -1028,7 +1028,7 @@ public abstract class JsonReader : IDisposable
     /// </summary>
     protected void SetUndefinedToken()
     {
-        tokenType = JsonToken.Null;
+        tokenType = JsonToken.Undefined;
         value = null;
         SetPostValueState(false);
     }

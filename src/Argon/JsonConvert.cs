@@ -245,8 +245,8 @@ public static class JsonConvert
     public static string ToString(TimeSpan value)
     {
         Span<char> destination = stackalloc char[26];
-        value.TryFormat(destination, out _, ['c']);
-        return ToString(destination, '"');
+        value.TryFormat(destination, out var charsWritten, ['c']);
+        return ToString(destination[..charsWritten], '"');
     }
 
     /// <summary>

@@ -796,10 +796,7 @@ public abstract class JsonWriter : IDisposable
             return;
         }
 
-        foreach (var chunk in value.GetChunks())
-        {
-            WriteValue(chunk.Span);
-        }
+        WriteValue(value.ToString());
     }
 
     /// <summary>

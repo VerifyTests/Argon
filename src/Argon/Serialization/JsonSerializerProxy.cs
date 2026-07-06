@@ -67,6 +67,8 @@ class JsonSerializerProxy : JsonSerializer
         set => serializer.ContractResolver = value;
     }
 
+    public override List<JsonConverter> Converters => serializer.Converters;
+
     public override MissingMemberHandling? MissingMemberHandling
     {
         get => serializer.MissingMemberHandling;

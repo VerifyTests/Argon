@@ -912,7 +912,7 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
         {
             if (contract.DictionaryKeyType == typeof(string))
             {
-                foreach (var entry in Items(values).OrderBy(_ => ((string) _.Key, StringComparer.OrdinalIgnoreCase)))
+                foreach (var entry in Items(values).OrderBy(_ => (string) _.Key, StringComparer.OrdinalIgnoreCase))
                 {
                     SerializeDictionaryItem(writer, contract, member, entry.Key, entry.Value, keyContract, underlying);
                 }

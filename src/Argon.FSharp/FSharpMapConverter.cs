@@ -24,6 +24,11 @@ public class FSharpMapConverter :
 
     public override object? ReadJson(JsonReader reader, Type type, object? existingValue, JsonSerializer serializer)
     {
+        if (reader.TokenType == JsonToken.Null)
+        {
+            return null;
+        }
+
         var arguments = type.GetGenericArguments();
         return readMap.MakeGenericMethod(arguments[0], arguments[1])
             .Invoke(

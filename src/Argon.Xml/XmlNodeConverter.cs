@@ -295,6 +295,19 @@ public class XmlNodeConverter :
 
         if (writeArray)
         {
+            // Comments share the name "#comment" and cannot be array values. Write each as an
+            // inline JSON comment (which round-trips back to XML comments) instead of an empty
+            // array that silently drops the comment text.
+            if (groupedNodes[0].NodeType == XmlNodeType.Comment)
+            {
+                foreach (var node in groupedNodes)
+                {
+                    writer.WriteComment(node.Value);
+                }
+
+                return;
+            }
+
             if (writePropertyName)
             {
                 writer.WritePropertyName(elementNames);
@@ -614,16 +627,16 @@ public class XmlNodeConverter :
             switch (propertyName)
             {
                 case textName:
-                    currentNode.AppendChild(document.CreateTextNode(ConvertTokenToXmlValue(reader)!));
+                    currentNode.AppendChild(document.CreateTextNode(ConvertTokenToXmlValue(reader) ?? ""));
                     return;
                 case cDataName:
-                    currentNode.AppendChild(document.CreateCDataSection(ConvertTokenToXmlValue(reader)!));
+                    currentNode.AppendChild(document.CreateCDataSection(ConvertTokenToXmlValue(reader) ?? ""));
                     return;
                 case whitespaceName:
-                    currentNode.AppendChild(document.CreateWhitespace(ConvertTokenToXmlValue(reader)!));
+                    currentNode.AppendChild(document.CreateWhitespace(ConvertTokenToXmlValue(reader) ?? ""));
                     return;
                 case significantWhitespaceName:
-                    currentNode.AppendChild(document.CreateSignificantWhitespace(ConvertTokenToXmlValue(reader)!));
+                    currentNode.AppendChild(document.CreateSignificantWhitespace(ConvertTokenToXmlValue(reader) ?? ""));
                     return;
                 default:
                     // processing instructions and the xml declaration start with ?
@@ -874,9 +887,15 @@ public class XmlNodeConverter :
 
         if (count == 1 && WriteArrayAttribute)
         {
+            // Match on the decoded local name and namespace (not the raw JSON property name),
+            // otherwise prefixed or XML-encoded names never match and a single-element nested
+            // array loses its json:Array marker on round-trip.
+            XmlUtils.GetQualifiedNameParts(propertyName, out var qualifiedPrefix, out var localName);
+            var ns = qualifiedPrefix.IsNullOrEmpty() ? manager.DefaultNamespace : manager.LookupNamespace(qualifiedPrefix);
+
             foreach (var childNode in nestedArrayElement.ChildNodes)
             {
-                if (childNode is IXmlElement element && element.LocalName == propertyName)
+                if (childNode is IXmlElement element && element.LocalName == localName && element.NamespaceUri == ns)
                 {
                     AddJsonArrayAttribute(element, document);
                     break;

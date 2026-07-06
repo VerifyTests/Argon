@@ -21,6 +21,11 @@ public class FSharpListConverter :
 
     public override object? ReadJson(JsonReader reader, Type type, object? existingValue, JsonSerializer serializer)
     {
+        if (reader.TokenType == JsonToken.Null)
+        {
+            return null;
+        }
+
         var genericArgument = type.GetGenericArguments()[0];
         return readList.MakeGenericMethod(genericArgument)
             .Invoke(
