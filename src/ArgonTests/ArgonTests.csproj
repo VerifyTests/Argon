@@ -43,6 +43,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework)=='net48'">
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Web" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Web.Extensions" />
