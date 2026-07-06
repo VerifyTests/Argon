@@ -6,13 +6,13 @@ class BooleanQueryExpression(QueryOperator @operator, object left, object? right
     public readonly object Left = left;
     public readonly object? Right = right;
 
-    static IEnumerable<JToken> GetResult(JToken root, JToken t, object? o)
-    {
-        if (o is JToken resultToken)
-        {
-            return [resultToken];
-        }
+    // constant operands never change, so the single-element wrappers IsMatch needs
+    // are built once instead of per candidate token
+    readonly JToken[]? leftConstant = left is JToken leftToken ? [leftToken] : null;
+    readonly JToken[]? rightConstant = right is JToken rightToken ? [rightToken] : null;
 
+    static IEnumerable<JToken> GetFilterResult(JToken root, JToken t, object? o)
+    {
         if (o is List<PathFilter> pathFilters)
         {
             return JPath.Evaluate(pathFilters, root, t, JTokenExtensions.DefaultSettings);
@@ -25,13 +25,35 @@ class BooleanQueryExpression(QueryOperator @operator, object left, object? right
     {
         if (Operator == QueryOperator.Exists)
         {
-            return GetResult(root, t, Left).Any();
+            return leftConstant != null ||
+                   GetFilterResult(root, t, Left).Any();
         }
 
-        using var leftResults = GetResult(root, t, Left).GetEnumerator();
+        // single constant right operand is the dominant filter shape (e.g. @.a == 1):
+        // compare directly without materializing result collections
+        if (rightConstant != null)
+        {
+            var rightResult = rightConstant[0];
+            if (leftConstant != null)
+            {
+                return MatchTokens(leftConstant[0], rightResult, settings);
+            }
+
+            foreach (var leftResult in GetFilterResult(root, t, Left))
+            {
+                if (MatchTokens(leftResult, rightResult, settings))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        using var leftResults = (leftConstant ?? GetFilterResult(root, t, Left)).GetEnumerator();
         if (leftResults.MoveNext())
         {
-            var rightResultsEn = GetResult(root, t, Right);
+            var rightResultsEn = GetFilterResult(root, t, Right);
             var rightResults = rightResultsEn as ICollection<JToken> ?? rightResultsEn.ToList();
 
             do

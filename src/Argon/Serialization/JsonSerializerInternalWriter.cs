@@ -390,7 +390,7 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
 
         var initialDepth = writer.Top;
 
-        foreach (var property in contract.Properties)
+        foreach (var property in contract.Properties.List)
         {
             try
             {
@@ -755,7 +755,7 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
 
         var initialDepth = writer.Top;
 
-        foreach (var property in contract.Properties)
+        foreach (var property in contract.Properties.List)
         {
             // only write non-dynamic properties that have an explicit attribute
             if (property.HasMemberAttribute)
@@ -902,9 +902,18 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
 
         static IEnumerable<DictionaryEntry> Items(IDictionary values)
         {
-            foreach (DictionaryEntry entry in values)
+            // manual IDictionaryEnumerator use: foreach boxes a DictionaryEntry per item
+            var e = values.GetEnumerator();
+            try
             {
-                yield return entry;
+                while (e.MoveNext())
+                {
+                    yield return e.Entry;
+                }
+            }
+            finally
+            {
+                (e as IDisposable)?.Dispose();
             }
         }
 
@@ -927,9 +936,19 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
         }
         else
         {
-            foreach (DictionaryEntry entry in values)
+            // manual IDictionaryEnumerator use: foreach boxes a DictionaryEntry per item
+            var e = values.GetEnumerator();
+            try
             {
-                SerializeDictionaryItem(writer, contract, member, entry.Key, entry.Value, keyContract, underlying);
+                while (e.MoveNext())
+                {
+                    var entry = e.Entry;
+                    SerializeDictionaryItem(writer, contract, member, entry.Key, entry.Value, keyContract, underlying);
+                }
+            }
+            finally
+            {
+                (e as IDisposable)?.Dispose();
             }
         }
 

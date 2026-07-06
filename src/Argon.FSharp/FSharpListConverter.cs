@@ -9,6 +9,15 @@ public class FSharpListConverter :
 {
     static MethodInfo readList = typeof(FSharpListConverter).GetMethod("ReadList")!;
 
+    // cached closed delegates: MakeGenericMethod + Invoke per call allocates and wraps
+    // exceptions in TargetInvocationException
+    static ThreadSafeStore<Type, Func<JsonReader, JsonSerializer, object>> readListCache = new(CreateReadListDelegate);
+
+    static Func<JsonReader, JsonSerializer, object> CreateReadListDelegate(Type genericArgument) =>
+        (Func<JsonReader, JsonSerializer, object>) Delegate.CreateDelegate(
+            typeof(Func<JsonReader, JsonSerializer, object>),
+            readList.MakeGenericMethod(genericArgument));
+
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
     {
         writer.WriteStartArray();
@@ -27,13 +36,7 @@ public class FSharpListConverter :
         }
 
         var genericArgument = type.GetGenericArguments()[0];
-        return readList.MakeGenericMethod(genericArgument)
-            .Invoke(
-                null,
-                [
-                reader,
-                serializer
-                ]);
+        return readListCache.Get(genericArgument)(reader, serializer);
     }
 
     public static FSharpList<T> ReadList<T>(JsonReader reader, JsonSerializer serializer)

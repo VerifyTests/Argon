@@ -36,9 +36,60 @@ static class JavaScriptUtils
         {
             htmlEscapeFlags[escapeChar] = true;
         }
+
+#if NET8_0_OR_GREATER
+        // must run after the flag arrays are populated (field initializers would run first)
+        singleQuoteSearchValues = BuildSearchValues(SingleQuoteEscapeFlags);
+        doubleQuoteSearchValues = BuildSearchValues(DoubleQuoteEscapeFlags);
+        htmlSearchValues = BuildSearchValues(htmlEscapeFlags);
+#endif
     }
 
     const string escapedUnicodeText = "!";
+
+#if NET8_0_OR_GREATER
+    static readonly SearchValues<char> singleQuoteSearchValues;
+    static readonly SearchValues<char> doubleQuoteSearchValues;
+    static readonly SearchValues<char> htmlSearchValues;
+
+    static SearchValues<char> BuildSearchValues(bool[] flags)
+    {
+        var chars = new List<char>();
+        for (var i = 0; i < flags.Length; i++)
+        {
+            if (flags[i])
+            {
+                chars.Add((char) i);
+            }
+        }
+
+        // high chars FirstCharToEscape treats as escapes outside the flag range
+        chars.Add('\u0085');
+        chars.Add('\u2028');
+        chars.Add('\u2029');
+        return SearchValues.Create(chars.ToArray());
+    }
+
+    static SearchValues<char>? TryGetSearchValues(bool[] escapeFlags)
+    {
+        if (ReferenceEquals(escapeFlags, DoubleQuoteEscapeFlags))
+        {
+            return doubleQuoteSearchValues;
+        }
+
+        if (ReferenceEquals(escapeFlags, SingleQuoteEscapeFlags))
+        {
+            return singleQuoteSearchValues;
+        }
+
+        if (ReferenceEquals(escapeFlags, htmlEscapeFlags))
+        {
+            return htmlSearchValues;
+        }
+
+        return null;
+    }
+#endif
 
     public static bool[] GetCharEscapeFlags(EscapeHandling escapeHandling, char quoteChar)
     {
@@ -115,17 +166,10 @@ static class JavaScriptUtils
 
         if (lastWritePosition != 0)
         {
-            if (buffer == null || buffer.Length < lastWritePosition)
-            {
-                buffer = BufferUtils.EnsureBufferSize(lastWritePosition, buffer);
-            }
-
             // write unchanged chars at start of text.
-            value.Slice(0, lastWritePosition).CopyTo(buffer);
-            writer.Write(buffer, 0, lastWritePosition);
+            writer.Write(value.Slice(0, lastWritePosition));
         }
 
-        int length;
         for (var i = lastWritePosition; i < value.Length; i++)
         {
             var c = value[i];
@@ -213,32 +257,8 @@ static class JavaScriptUtils
 
             if (i > lastWritePosition)
             {
-                length = i - lastWritePosition + (isEscapedUnicodeText ? unicodeTextLength : 0);
-                var start = isEscapedUnicodeText ? unicodeTextLength : 0;
-
-                if (buffer == null || buffer.Length < length)
-                {
-                    var newBuffer = BufferUtils.RentBuffer(length);
-
-                    // the unicode text is already in the buffer
-                    // copy it over when creating new buffer
-                    if (isEscapedUnicodeText)
-                    {
-                        MiscellaneousUtils.Assert(buffer != null, "Write buffer should never be null because it is set when the escaped unicode text is encountered.");
-
-                        Array.Copy(buffer, newBuffer, unicodeTextLength);
-                    }
-
-                    BufferUtils.ReturnBuffer(buffer);
-
-                    buffer = newBuffer;
-                }
-
-                var count = length - start;
-                value.Slice(lastWritePosition, count).CopyTo(buffer.AsSpan(start: start, length: count));
-
                 // write unchanged chars before writing escaped text
-                writer.Write(buffer, start, count);
+                writer.Write(value.Slice(lastWritePosition, i - lastWritePosition));
             }
 
             lastWritePosition = i + 1;
@@ -253,18 +273,10 @@ static class JavaScriptUtils
         }
 
         MiscellaneousUtils.Assert(lastWritePosition != 0);
-        length = value.Length - lastWritePosition;
-        if (length > 0)
+        if (value.Length - lastWritePosition > 0)
         {
-            if (buffer == null || buffer.Length < length)
-            {
-                buffer = BufferUtils.EnsureBufferSize(length, buffer);
-            }
-
-            value.Slice(lastWritePosition, length).CopyTo(buffer);
-
             // write remaining text
-            writer.Write(buffer, 0, length);
+            writer.Write(value.Slice(lastWritePosition));
         }
     }
 
@@ -280,6 +292,20 @@ static class JavaScriptUtils
 
     static int FirstCharToEscape(CharSpan value, bool[] escapeFlags, EscapeHandling escapeHandling)
     {
+#if NET8_0_OR_GREATER
+        // vectorized scan for the fixed escape sets; the scalar loop stays for short
+        // strings (vector setup costs more than it saves there) and for EscapeNonAscii,
+        // where every non-ascii char is an escape target
+        if (value.Length >= 16 &&
+            escapeHandling != EscapeHandling.EscapeNonAscii)
+        {
+            var searchValues = TryGetSearchValues(escapeFlags);
+            if (searchValues != null)
+            {
+                return value.IndexOfAny(searchValues);
+            }
+        }
+#endif
         for (var i = 0; i != value.Length; i++)
         {
             var c = value[i];

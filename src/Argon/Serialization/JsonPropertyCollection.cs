@@ -25,6 +25,10 @@ public class JsonPropertyCollection : KeyedCollection<string, JsonProperty>
         list = (List<JsonProperty>) Items;
     }
 
+    // Same backing list, exposed so hot serializer loops can foreach without
+    // boxing the enumerator through Collection<T>'s interface dispatch.
+    internal List<JsonProperty> List => list;
+
     internal void AddRange(IList<JsonProperty> collection)
     {
         foreach (var value in collection)

@@ -7,16 +7,27 @@
 public class FSharpMapConverter :
     JsonConverter
 {
-    static MethodInfo writeMap = typeof(FSharpMapConverter).GetMethod("WriteMap")!;
+    // cached closed delegates: MakeGenericMethod + Invoke per call allocates and wraps
+    // exceptions in TargetInvocationException
+    static ThreadSafeStore<Type, Action<JsonWriter, object, JsonSerializer>> writeMapCache = new(CreateWriteMapDelegate);
 
-    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+    static Action<JsonWriter, object, JsonSerializer> CreateWriteMapDelegate(Type mapType)
     {
-        var genericArguments = value.GetType().GetGenericArguments();
-        writeMap.MakeGenericMethod(genericArguments[0], genericArguments[1])
-            .Invoke(
-                null,
-                [writer, value, serializer]);
+        var arguments = mapType.GetGenericArguments();
+        var method = typeof(FSharpMapConverter)
+            .GetMethod(nameof(WriteMapBoxed), BindingFlags.NonPublic | BindingFlags.Static)!
+            .MakeGenericMethod(arguments[0], arguments[1]);
+        return (Action<JsonWriter, object, JsonSerializer>) Delegate.CreateDelegate(
+            typeof(Action<JsonWriter, object, JsonSerializer>),
+            method);
     }
+
+    static void WriteMapBoxed<T, K>(JsonWriter writer, object value, JsonSerializer serializer)
+        where T : notnull =>
+        WriteMap(writer, (FSharpMap<T, K>) value, serializer);
+
+    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) =>
+        writeMapCache.Get(value.GetType())(writer, value, serializer);
 
     public static void WriteMap<T, K>(JsonWriter writer, FSharpMap<T, K> value, JsonSerializer serializer)
         where T : notnull =>
@@ -29,14 +40,20 @@ public class FSharpMapConverter :
             return null;
         }
 
-        var arguments = type.GetGenericArguments();
-        return readMap.MakeGenericMethod(arguments[0], arguments[1])
-            .Invoke(
-                null,
-                [reader, serializer]);
+        return readMapCache.Get(type)(reader, serializer);
     }
 
     static MethodInfo readMap = typeof(FSharpMapConverter).GetMethod("ReadMap")!;
+
+    static ThreadSafeStore<Type, Func<JsonReader, JsonSerializer, object>> readMapCache = new(CreateReadMapDelegate);
+
+    static Func<JsonReader, JsonSerializer, object> CreateReadMapDelegate(Type mapType)
+    {
+        var arguments = mapType.GetGenericArguments();
+        return (Func<JsonReader, JsonSerializer, object>) Delegate.CreateDelegate(
+            typeof(Func<JsonReader, JsonSerializer, object>),
+            readMap.MakeGenericMethod(arguments[0], arguments[1]));
+    }
 
     public static FSharpMap<T, K> ReadMap<T, K>(JsonReader reader, JsonSerializer serializer)
         where T : notnull

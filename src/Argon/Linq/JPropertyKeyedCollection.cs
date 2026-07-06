@@ -129,6 +129,10 @@ class JPropertyKeyedCollection() :
         }
     }
 
+    // Same backing list Collection<T> wraps, exposed so hot loops can foreach
+    // without boxing the enumerator through the IList<T> interface dispatch.
+    internal List<JToken> InnerList => (List<JToken>) Items;
+
     public int IndexOfReference(JToken t) =>
         ((List<JToken>) Items).IndexOfReference(t);
 

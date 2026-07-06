@@ -531,6 +531,23 @@ static class ConvertUtils
             _ => false
         };
 
+    // Overload for when the type code is already known - the object overload would box the
+    // enum and re-derive its own type code through reflection. Includes the nullable codes:
+    // contracts for nullable types carry them (a boxed value never does).
+    public static bool IsInteger(PrimitiveTypeCode typeCode) =>
+        typeCode switch
+        {
+            PrimitiveTypeCode.SByte or PrimitiveTypeCode.SByteNullable or
+            PrimitiveTypeCode.Byte or PrimitiveTypeCode.ByteNullable or
+            PrimitiveTypeCode.Int16 or PrimitiveTypeCode.Int16Nullable or
+            PrimitiveTypeCode.UInt16 or PrimitiveTypeCode.UInt16Nullable or
+            PrimitiveTypeCode.Int32 or PrimitiveTypeCode.Int32Nullable or
+            PrimitiveTypeCode.UInt32 or PrimitiveTypeCode.UInt32Nullable or
+            PrimitiveTypeCode.Int64 or PrimitiveTypeCode.Int64Nullable or
+            PrimitiveTypeCode.UInt64 or PrimitiveTypeCode.UInt64Nullable => true,
+            _ => false
+        };
+
     public static ParseResult Int32TryParse(char[] chars, int start, int length, out int value)
     {
         value = 0;

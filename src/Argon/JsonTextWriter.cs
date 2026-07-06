@@ -136,8 +136,16 @@ public class JsonTextWriter : JsonWriter
     /// <summary>
     /// Writes the property name of a name/value pair on a JSON object.
     /// </summary>
-    public override void WritePropertyName(string name) =>
-        WritePropertyName(name.AsSpan());
+    public override void WritePropertyName(string name)
+    {
+        // keep the original string: routing through the span overload would
+        // re-materialize it in InternalWritePropertyName for position tracking
+        InternalWritePropertyName(name);
+
+        WriteEscapedString(name.AsSpan(), QuoteName);
+
+        writer.Write(':');
+    }
 
     /// <summary>
     /// Writes the property name of a name/value pair on a JSON object.
@@ -155,8 +163,31 @@ public class JsonTextWriter : JsonWriter
     /// Writes the property name of a name/value pair on a JSON object.
     /// </summary>
     /// <param name="escape">A flag to indicate whether the text should be escaped when it is written as a JSON property name.</param>
-    public override void WritePropertyName(string name, bool escape) =>
-        WritePropertyName(name.AsSpan(), escape);
+    public override void WritePropertyName(string name, bool escape)
+    {
+        InternalWritePropertyName(name);
+
+        if (escape)
+        {
+            WriteEscapedString(name.AsSpan(), QuoteName);
+        }
+        else
+        {
+            if (QuoteName)
+            {
+                writer.Write(quoteChar);
+            }
+
+            writer.Write(name);
+
+            if (QuoteName)
+            {
+                writer.Write(quoteChar);
+            }
+        }
+
+        writer.Write(':');
+    }
 
     /// <summary>
     /// Writes the property name of a name/value pair on a JSON object.
@@ -382,7 +413,7 @@ public class JsonTextWriter : JsonWriter
     public override void WriteValue(float value)
     {
         InternalWriteValue(JsonToken.Float);
-        WriteValueInternal(JsonConvert.ToString(value, FloatFormatHandling, QuoteChar, false, FloatFormat));
+        WriteFloatValue(value, false);
     }
 
     /// <summary>
@@ -397,7 +428,7 @@ public class JsonTextWriter : JsonWriter
         else
         {
             InternalWriteValue(JsonToken.Float);
-            WriteValueInternal(JsonConvert.ToString(value.GetValueOrDefault(), FloatFormatHandling, QuoteChar, true, FloatFormat));
+            WriteFloatValue(value.GetValueOrDefault(), true);
         }
     }
 
@@ -407,7 +438,7 @@ public class JsonTextWriter : JsonWriter
     public override void WriteValue(double value)
     {
         InternalWriteValue(JsonToken.Float);
-        WriteValueInternal(JsonConvert.ToString(value, FloatFormatHandling, QuoteChar, false, FloatFormat));
+        WriteDoubleValue(value, false);
     }
 
     /// <summary>
@@ -422,7 +453,7 @@ public class JsonTextWriter : JsonWriter
         else
         {
             InternalWriteValue(JsonToken.Float);
-            WriteValueInternal(JsonConvert.ToString(value.GetValueOrDefault(), FloatFormatHandling, QuoteChar, true, FloatFormat));
+            WriteDoubleValue(value.GetValueOrDefault(), true);
         }
     }
 
@@ -486,7 +517,24 @@ public class JsonTextWriter : JsonWriter
     public override void WriteValue(decimal value)
     {
         InternalWriteValue(JsonToken.Float);
-        WriteValueInternal(JsonConvert.ToString(value));
+
+        EnsureBuffer();
+        var buffer = writeBuffer!;
+        // reserve two chars so the decimal place can always be appended in-buffer
+        if (value.TryFormat(buffer.AsSpan(0, buffer.Length - 2), out var written, default, InvariantCulture))
+        {
+            if (buffer.AsSpan(0, written).IndexOf('.') == -1)
+            {
+                buffer[written++] = '.';
+                buffer[written++] = '0';
+            }
+
+            writer.Write(buffer, 0, written);
+        }
+        else
+        {
+            WriteValueInternal(JsonConvert.ToString(value));
+        }
     }
 
     /// <summary>
@@ -585,19 +633,23 @@ public class JsonTextWriter : JsonWriter
     {
         InternalWriteValue(JsonToken.String);
 
-        var text = value.ToString("D", InvariantCulture);
+        // 36 chars for the "D" format plus the quotes
+        var buffer = EnsureBuffer(38, 0);
+        var pos = 0;
+        if (QuoteValue)
+        {
+            buffer[pos++] = quoteChar;
+        }
+
+        value.TryFormat(buffer.AsSpan(pos), out var written);
+        pos += written;
 
         if (QuoteValue)
         {
-            writer.Write(quoteChar);
+            buffer[pos++] = quoteChar;
         }
 
-        writer.Write(text);
-
-        if (QuoteValue)
-        {
-            writer.Write(quoteChar);
-        }
+        writer.Write(buffer, 0, pos);
     }
 
     /// <summary>
@@ -607,19 +659,24 @@ public class JsonTextWriter : JsonWriter
     {
         InternalWriteValue(JsonToken.String);
 
-        var text = value.ToString(null, InvariantCulture);
+        // constant "c" format is at most 26 chars plus the quotes
+        EnsureBuffer();
+        var buffer = writeBuffer!;
+        var pos = 0;
+        if (QuoteValue)
+        {
+            buffer[pos++] = quoteChar;
+        }
+
+        value.TryFormat(buffer.AsSpan(pos), out var written, "c");
+        pos += written;
 
         if (QuoteValue)
         {
-            writer.Write(quoteChar);
+            buffer[pos++] = quoteChar;
         }
 
-        writer.Write(text);
-
-        if (QuoteValue)
-        {
-            writer.Write(quoteChar);
-        }
+        writer.Write(buffer, 0, pos);
     }
 
     /// <summary>
@@ -665,6 +722,61 @@ public class JsonTextWriter : JsonWriter
     void EnsureBuffer() =>
         // maximum buffer sized used when writing iso date
         writeBuffer ??= BufferUtils.RentBuffer(35);
+
+    void WriteDoubleValue(double value, bool nullable)
+    {
+        if (double.IsNaN(value) || double.IsInfinity(value))
+        {
+            WriteValueInternal(JsonConvert.ToString(value, FloatFormatHandling, QuoteChar, nullable, FloatFormat));
+            return;
+        }
+
+        EnsureBuffer();
+        var buffer = writeBuffer!;
+        // reserve two chars so the decimal place can always be appended in-buffer;
+        // a custom FloatPrecision format that overflows falls back to the string path
+        if (value.TryFormat(buffer.AsSpan(0, buffer.Length - 2), out var written, FloatFormat, InvariantCulture))
+        {
+            written = EnsureDecimalPlace(buffer, written);
+            writer.Write(buffer, 0, written);
+        }
+        else
+        {
+            WriteValueInternal(JsonConvert.ToString(value, FloatFormatHandling, QuoteChar, nullable, FloatFormat));
+        }
+    }
+
+    void WriteFloatValue(float value, bool nullable)
+    {
+        if (float.IsNaN(value) || float.IsInfinity(value))
+        {
+            WriteValueInternal(JsonConvert.ToString(value, FloatFormatHandling, QuoteChar, nullable, FloatFormat));
+            return;
+        }
+
+        EnsureBuffer();
+        var buffer = writeBuffer!;
+        if (value.TryFormat(buffer.AsSpan(0, buffer.Length - 2), out var written, FloatFormat, InvariantCulture))
+        {
+            written = EnsureDecimalPlace(buffer, written);
+            writer.Write(buffer, 0, written);
+        }
+        else
+        {
+            WriteValueInternal(JsonConvert.ToString(value, FloatFormatHandling, QuoteChar, nullable, FloatFormat));
+        }
+    }
+
+    static int EnsureDecimalPlace(char[] buffer, int written)
+    {
+        if (buffer.AsSpan(0, written).IndexOfAny('.', 'E', 'e') == -1)
+        {
+            buffer[written++] = '.';
+            buffer[written++] = '0';
+        }
+
+        return written;
+    }
 
     internal char[] EnsureBuffer(int length, int copyTo)
     {

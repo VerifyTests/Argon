@@ -23,11 +23,12 @@ public abstract class JContainer :
     internal JContainer(JContainer other) :
         this()
     {
-        var i = 0;
-        foreach (var child in other)
+        // indexed loop: enumerating the container goes through IList<JToken> and
+        // boxes an enumerator per cloned container
+        var children = other.ChildrenTokens;
+        for (var i = 0; i < children.Count; i++)
         {
-            TryAddInternal(i, child, false);
-            i++;
+            TryAddInternal(i, children[i], false);
         }
 
         SetLineInfo(this, null);
@@ -130,16 +131,31 @@ public abstract class JContainer :
             yield return this;
         }
 
-        foreach (var o in ChildrenTokens)
+        // pre-order pointer walk over the sibling/parent links: a single iterator for
+        // the whole traversal instead of nested iterators per container depth
+        var current = First;
+        while (current != null)
         {
-            yield return o;
-            if (o is JContainer c)
+            yield return current;
+
+            if (current is JContainer {HasValues: true} container)
             {
-                foreach (var d in c.Descendants())
-                {
-                    yield return d;
-                }
+                current = container.First;
+                continue;
             }
+
+            // climb out of finished containers
+            while (current != null && current != this && current == current.Parent!.Last)
+            {
+                current = current.Parent;
+            }
+
+            if (current == null || current == this)
+            {
+                yield break;
+            }
+
+            current = current.Next;
         }
     }
 
@@ -527,7 +543,22 @@ public abstract class JContainer :
                 case JsonToken.Date:
                 case JsonToken.Boolean:
                 case JsonToken.Bytes:
-                    var v = new JValue(r.Value);
+                    var value = r.Value;
+                    // for the typical value shapes the token type already determines the
+                    // JTokenType, skipping the type-test ladder in the JValue(object) ctor;
+                    // unusual shapes (custom readers) keep the general path
+                    var knownType = r.TokenType switch
+                    {
+                        JsonToken.String when value is string => JTokenType.String,
+                        JsonToken.Integer when value is long or int or ulong or BigInteger => JTokenType.Integer,
+                        JsonToken.Float when value is double or decimal or float => JTokenType.Float,
+                        JsonToken.Date when value is DateTime or DateTimeOffset => JTokenType.Date,
+                        JsonToken.Boolean when value is bool => JTokenType.Boolean,
+                        _ => JTokenType.None
+                    };
+                    var v = knownType == JTokenType.None
+                        ? new JValue(value)
+                        : new JValue(value, knownType);
                     v.SetLineInfo(lineInfo, settings);
                     parent.Add(v);
                     break;
@@ -564,22 +595,17 @@ public abstract class JContainer :
     {
         var parentObject = (JObject) parent;
         var propertyName = (string) reader.GetValue();
-        var existingPropertyWithName = parentObject.PropertyOrNull(propertyName);
-        if (existingPropertyWithName != null)
-        {
-            throw JsonReaderException.Create(reader, $"Property with the name '{propertyName}' already exists in the current JSON object.");
-        }
-
         var property = new JProperty(propertyName);
         property.SetLineInfo(lineInfo, settings);
-        // handle multiple properties with the same name in JSON
-        if (existingPropertyWithName == null)
+        try
         {
-            parent.Add(property);
+            // JObject.ValidateToken rejects duplicate names, so a separate
+            // pre-check would hash the name a second time on every property
+            parentObject.Add(property);
         }
-        else
+        catch (ArgumentException)
         {
-            existingPropertyWithName.Replace(property);
+            throw JsonReaderException.Create(reader, $"Property with the name '{propertyName}' already exists in the current JSON object.");
         }
 
         return property;

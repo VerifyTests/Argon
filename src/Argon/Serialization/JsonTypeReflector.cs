@@ -19,32 +19,47 @@ static class JsonTypeReflector
         internal static readonly ThreadSafeStore<Type, JsonConverter> Instance = new(GetCreator);
     }
 
+    [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
+    static class StringConverterCache
+    {
+        // TypeDescriptor.GetConverter costs ~340 ns and runs per value written for
+        // string-contract types (Uri etc.); the answer for a type never changes within
+        // the contract cache's lifetime, so cache it (null = cannot convert to string).
+        internal static readonly ThreadSafeStore<Type, TypeConverter?> Instance = new(Create);
+
+        [RequiresUnreferencedCode("Generic TypeConverters may require the generic types to be annotated. For example, NullableConverter requires the underlying type to be DynamicallyAccessedMembers All.")]
+        static TypeConverter? Create(Type type)
+        {
+            var typeConverter = TypeDescriptor.GetConverter(type);
+
+            // use the type's TypeConverter can convert to a string
+            var converterType = typeConverter.GetType();
+
+            var converterName = converterType.FullName;
+            if (converterType == typeof(TypeConverter) ||
+                string.Equals(converterName, "System.ComponentModel.ComponentConverter", StringComparison.Ordinal) ||
+                string.Equals(converterName, "System.ComponentModel.ReferenceConverter", StringComparison.Ordinal) ||
+                string.Equals(converterName, "System.Windows.Forms.Design.DataSourceConverter", StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            if (typeConverter.CanConvertTo(typeof(string)))
+            {
+                return typeConverter;
+            }
+
+            return null;
+        }
+    }
+
     [RequiresUnreferencedCode("Generic TypeConverters may require the generic types to be annotated. For example, NullableConverter requires the underlying type to be DynamicallyAccessedMembers All.")]
     public static bool TryGetStringConverter(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type type,
         [NotNullWhen(true)] out TypeConverter? typeConverter)
     {
-        typeConverter = TypeDescriptor.GetConverter(type);
-
-        // use the type's TypeConverter can convert to a string
-        var converterType = typeConverter.GetType();
-
-        var converterName = converterType.FullName;
-        if (converterType == typeof(TypeConverter) ||
-            string.Equals(converterName, "System.ComponentModel.ComponentConverter", StringComparison.Ordinal) ||
-            string.Equals(converterName, "System.ComponentModel.ReferenceConverter", StringComparison.Ordinal) ||
-            string.Equals(converterName, "System.Windows.Forms.Design.DataSourceConverter", StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        if (typeConverter.CanConvertTo(typeof(string)))
-        {
-            return true;
-        }
-
-        typeConverter = null;
-        return false;
+        typeConverter = StringConverterCache.Instance.Get(type);
+        return typeConverter != null;
     }
 
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]

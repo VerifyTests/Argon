@@ -79,6 +79,47 @@ public class JsonObjectContract : JsonContainerContract
         }
     }
 
+    List<JsonProperty>? presenceRelevantProperties;
+    List<JsonProperty>? nonIgnoredProperties;
+
+    // Presence tracking only matters for properties EndProcessProperty can act on: required
+    // (directly, or for every property via the ItemRequired / serializer-global Populate
+    // fallbacks) or default-value populated. Ignored properties are excluded - the end
+    // sweep is a no-op for them.
+    internal List<JsonProperty> GetPresenceRelevantProperties(bool globalPopulate)
+    {
+        if (globalPopulate ||
+            ItemRequired.GetValueOrDefault(Required.Default) != Required.Default)
+        {
+            return nonIgnoredProperties ??= BuildPropertyList(requireRelevance: false);
+        }
+
+        return presenceRelevantProperties ??= BuildPropertyList(requireRelevance: true);
+    }
+
+    List<JsonProperty> BuildPropertyList(bool requireRelevance)
+    {
+        var list = new List<JsonProperty>();
+        foreach (var property in Properties.List)
+        {
+            if (property.Ignored)
+            {
+                continue;
+            }
+
+            if (requireRelevance &&
+                property.Required == Required.Default &&
+                (property.DefaultValueHandling & DefaultValueHandling.Populate) != DefaultValueHandling.Populate)
+            {
+                continue;
+            }
+
+            list.Add(property);
+        }
+
+        return list;
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="JsonObjectContract" /> class.
     /// </summary>

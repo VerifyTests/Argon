@@ -685,8 +685,11 @@ public class JsonSerializer
     {
         if (converters != null)
         {
-            foreach (var converter in converters)
+            // indexed loop: foreach over IList<T> boxes the List<T> enumerator, and this
+            // runs for every value serialized/deserialized
+            for (var i = 0; i < converters.Count; i++)
             {
+                var converter = converters[i];
                 if (converter.CanConvert(type))
                 {
                     return converter;
