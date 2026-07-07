@@ -15,7 +15,6 @@
     <PackageReference Include="ProjectDefaults" PrivateAssets="all" />
     <PackageReference Include="FSharp.Core" />
     <PackageReference Include="Verify.XunitV3" PrivateAssets="all" />
-    <PackageReference Include="Argon" />
     <PackageReference Include="DiffEngine" />
     <PackageReference Include="EmptyFiles" />
     <PackageReference Include="SimpleInfoName" />
