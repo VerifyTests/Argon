@@ -20,7 +20,7 @@
     <PackageVersion Include="System.Buffers" Version="4.6.1" />
     <PackageVersion Include="System.Memory" Version="4.6.3" />
     <PackageVersion Include="System.Collections.Immutable" Version="8.0.0" Pinned="true" />
-    <PackageVersion Include="DiffEngine" Version="19.3.1" />
+    <PackageVersion Include="DiffEngine" Version="19.3.2" />
     <PackageVersion Include="EmptyFiles" Version="8.18.2" />
     <PackageVersion Include="SimpleInfoName" Version="3.2.0" />
     <PackageVersion Include="Verify" Version="31.22.0" />
