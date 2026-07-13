@@ -141,7 +141,7 @@ public class JsonSerializerCollectionsTests : TestFixtureBase
             }
         };
         var output = JsonConvert.SerializeObject(dictionary);
-#if (NET6_0_OR_GREATER)
+#if NET6_0_OR_GREATER
         Assert.Equal("""{"3.4028235E+38":1}""", output);
 #else
         Assert.Equal("""{"3.40282347E+38":1}""", output);
@@ -2669,13 +2669,13 @@ public class JsonSerializerCollectionsTests : TestFixtureBase
     public class ReadOnlyCollectionWithArrayArgument<T>(T[] args) :
         IList<T>
     {
-        readonly IList<T> _values = args ?? (IList<T>) [];
+        readonly IList<T> values = args ?? (IList<T>) [];
 
         public IEnumerator<T> GetEnumerator() =>
-            _values.GetEnumerator();
+            values.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() =>
-            _values.GetEnumerator();
+            values.GetEnumerator();
 
         public void Add(T item) =>
             throw new NotImplementedException();

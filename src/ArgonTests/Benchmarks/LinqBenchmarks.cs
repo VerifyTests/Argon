@@ -59,7 +59,7 @@ public class LinqBenchmarks
 
     static JObject BuildDeepDocument()
     {
-        JObject Leafs(int start) => new(
+        static JObject Leafs(int start) => new(
             Enumerable.Range(start, 5).Select(i => new JProperty($"p{i}", i)));
 
         var items = new JArray(Enumerable.Range(0, 8).Select(i => new JObject(

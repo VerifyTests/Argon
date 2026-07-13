@@ -32,7 +32,7 @@ public class WriterBenchmarks
             writer.WriteStartObject();
             for (var i = 0; i < 20; i++)
             {
-                writer.WritePropertyName("someProperty" + (i % 4));
+                writer.WritePropertyName("someProperty" + i % 4);
                 writer.WriteValue(1);
             }
 

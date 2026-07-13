@@ -2,8 +2,6 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
-using System.Collections.Immutable;
-
 // Regression tests for the issues found during the deep-dive audit.
 public class AuditFindingsTests : TestFixtureBase
 {

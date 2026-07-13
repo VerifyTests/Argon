@@ -1715,7 +1715,7 @@ public class JsonSerializerTest : TestFixtureBase
     {
         var json = JsonConvert.SerializeObject(new ConverableMembers(), Formatting.Indented);
 
-#if (NET6_0_OR_GREATER)
+#if NET6_0_OR_GREATER
         var expected = """
                        {
                          "String": "string",

@@ -5,7 +5,7 @@
 using System.Runtime.Serialization.Json;
 using BenchmarkDotNet.Attributes;
 using TestObjects;
-#if (!NET6_0_OR_GREATER)
+#if !NET6_0_OR_GREATER
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Web.Script.Serialization;
 #endif
@@ -32,7 +32,7 @@ public class DeserializeComparisonBenchmarks
         return (T) dataContractSerializer.ReadObject(ms);
     }
 
-#if (!NET6_0_OR_GREATER)
+#if !NET6_0_OR_GREATER
 
     static readonly byte[] BinaryFormatterData = BenchmarkConstants.BinaryFormatterHex.HexToBytes();
 
