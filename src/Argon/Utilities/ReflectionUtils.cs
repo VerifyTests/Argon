@@ -539,7 +539,7 @@ static class ReflectionUtils
     }
 
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
-    static List<FieldInfo> GetFields(
+    internal static List<FieldInfo> GetFields(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.NonPublicFields | DynamicallyAccessedMemberTypes.None | DynamicallyAccessedMemberTypes.PublicFields)] Type targetType,
         BindingFlags bindingFlags)
     {

@@ -26,7 +26,11 @@ public class Program
             typeof(WriterBenchmarks),
             typeof(LinqBenchmarks),
             typeof(CreatorDeserializeBenchmark),
-            typeof(SatelliteBenchmarks)
+            typeof(SatelliteBenchmarks),
+            typeof(NameTableAddBenchmark),
+            typeof(EscapeToStringBenchmark),
+            typeof(EnumWriteBenchmark),
+            typeof(JsonPathRegexBenchmark)
         ]);
         if (args.Length == 0)
         {

@@ -284,10 +284,19 @@ static class JavaScriptUtils
     {
         var escapeFlags = GetCharEscapeFlags(escapeHandling, delimiter);
 
-        using var w = StringUtils.CreateStringWriter(value.Length);
+        // size for the delimiters too, otherwise the StringBuilder always grows on the first write
+        using var w = StringUtils.CreateStringWriter(value.Length + (appendDelimiters ? 2 : 0));
         char[]? buffer = null;
-        WriteEscapedJavaScriptString(w, value, delimiter, appendDelimiters, escapeFlags, escapeHandling, ref buffer);
-        return w.ToString();
+        try
+        {
+            WriteEscapedJavaScriptString(w, value, delimiter, appendDelimiters, escapeFlags, escapeHandling, ref buffer);
+            return w.ToString();
+        }
+        finally
+        {
+            // WriteEscapedJavaScriptString rents a pooled buffer for \uXXXX escapes; return it
+            BufferUtils.ReturnBuffer(buffer);
+        }
     }
 
     static int FirstCharToEscape(CharSpan value, bool[] escapeFlags, EscapeHandling escapeHandling)

@@ -14,5 +14,5 @@ public class VersionConverter :
         writer.WriteValue(value.ToString());
 
     public override Version ReadJson(JsonReader reader, Type type, Version? existingValue, bool hasExisting, JsonSerializer serializer) =>
-        new(reader.StringValue);
+        new(reader.GetConverterString(type));
 }

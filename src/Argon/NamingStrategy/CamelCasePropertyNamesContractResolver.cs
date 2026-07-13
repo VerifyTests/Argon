@@ -14,7 +14,11 @@ public class CamelCasePropertyNamesContractResolver :
 {
     static readonly object typeContractCacheLock = new();
     static readonly DefaultJsonNameTable NameTable = new();
-    static Dictionary<Tuple<Type, Type>, JsonContract>? contractCache;
+    static Dictionary<ContractCacheKey, JsonContract>? contractCache;
+
+    // struct key: a Tuple class key would allocate on every ResolveContract probe,
+    // i.e. once per value serialized or deserialized
+    readonly record struct ContractCacheKey(Type ResolverType, Type ContractType);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CamelCasePropertyNamesContractResolver" /> class.
@@ -34,7 +38,7 @@ public class CamelCasePropertyNamesContractResolver :
     public override JsonContract ResolveContract(Type type)
     {
         // for backwards compatibility the CamelCasePropertyNamesContractResolver shares contracts between instances
-        var key = new Tuple<Type, Type>(GetType(), type);
+        var key = new ContractCacheKey(GetType(), type);
         var cache = contractCache;
         if (cache == null ||
             !cache.TryGetValue(key, out var contract))
@@ -45,7 +49,7 @@ public class CamelCasePropertyNamesContractResolver :
             lock (typeContractCacheLock)
             {
                 cache = contractCache;
-                Dictionary<Tuple<Type, Type>, JsonContract> updatedCache;
+                Dictionary<ContractCacheKey, JsonContract> updatedCache;
                 if (cache == null)
                 {
                     updatedCache = [];

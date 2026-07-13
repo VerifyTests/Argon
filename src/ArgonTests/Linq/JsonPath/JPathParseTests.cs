@@ -459,23 +459,26 @@ public class JPathParseTests : TestFixtureBase
     [Fact]
     public void FilterExistWithAndOr()
     {
+        // '&&' binds tighter than '||', so "name && title || pie" parses as "(name && title) || pie":
+        // the root is an Or of [ (name && title), pie ].
         var path = new JPath("[?(@.name&&@.title||@.pie)]");
-        var andExpression = (CompositeExpression) ((QueryFilter) path.Filters[0]).Expression;
+        var orExpression = (CompositeExpression) ((QueryFilter) path.Filters[0]).Expression;
+        Assert.Equal(QueryOperator.Or, orExpression.Operator);
+        Assert.Equal(2, orExpression.Expressions.Count);
+
+        var andExpression = (CompositeExpression) orExpression.Expressions[0];
         Assert.Equal(QueryOperator.And, andExpression.Operator);
         Assert.Equal(2, andExpression.Expressions.Count);
 
-        var first = (BooleanQueryExpression) andExpression.Expressions[0];
-        var firstPaths = (List<PathFilter>) first.Left;
-        Assert.Equal("name", ((FieldFilter) firstPaths[0]).Name);
-        Assert.Equal(QueryOperator.Exists, first.Operator);
+        var andFirst = (BooleanQueryExpression) andExpression.Expressions[0];
+        var andFirstPaths = (List<PathFilter>) andFirst.Left;
+        Assert.Equal("name", ((FieldFilter) andFirstPaths[0]).Name);
+        Assert.Equal(QueryOperator.Exists, andFirst.Operator);
 
-        var orExpression = (CompositeExpression) andExpression.Expressions[1];
-        Assert.Equal(2, orExpression.Expressions.Count);
-
-        var orFirst = (BooleanQueryExpression) orExpression.Expressions[0];
-        var orFirstPaths = (List<PathFilter>) orFirst.Left;
-        Assert.Equal("title", ((FieldFilter) orFirstPaths[0]).Name);
-        Assert.Equal(QueryOperator.Exists, orFirst.Operator);
+        var andSecond = (BooleanQueryExpression) andExpression.Expressions[1];
+        var andSecondPaths = (List<PathFilter>) andSecond.Left;
+        Assert.Equal("title", ((FieldFilter) andSecondPaths[0]).Name);
+        Assert.Equal(QueryOperator.Exists, andSecond.Operator);
 
         var orSecond = (BooleanQueryExpression) orExpression.Expressions[1];
         var orSecondPaths = (List<PathFilter>) orSecond.Left;
@@ -747,4 +750,49 @@ public class JPathParseTests : TestFixtureBase
         Assert.Equal("System.Xml.ReaderWriter", ((FieldFilter) path.Filters[3]).Name);
         Assert.Equal("source", ((FieldFilter) path.Filters[4]).Name);
     }
+
+    // The following malformed paths previously threw IndexOutOfRangeException (indexing past the end
+    // of the expression) instead of the documented JsonException.
+
+    [Fact]
+    public void RootDollarAtEndAfterWhitespace()
+    {
+        var path = new JPath(" $");
+        Assert.Empty(path.Filters);
+    }
+
+    [Fact]
+    public void OpenIndexerEndingWithWhitespace()
+    {
+        var exception = Assert.Throws<JsonException>(() => new JPath("$[ "));
+        Assert.Equal("Path ended with open indexer.", exception.Message);
+    }
+
+    [Fact]
+    public void QueryEndingWithUnterminatedNumber()
+    {
+        var exception = Assert.Throws<JsonException>(() => new JPath("$[?(1"));
+        Assert.Equal("Path ended with open query.", exception.Message);
+    }
+
+    [Fact]
+    public void QueryEndingWithUnterminatedComparisonValue()
+    {
+        var exception = Assert.Throws<JsonException>(() => new JPath("$[?(@.a == 12"));
+        Assert.Equal("Path ended with open query.", exception.Message);
+    }
+
+    // '&&' immediately followed by '||' was silently accepted (and evaluated the left operand twice).
+    [Fact]
+    public void AndImmediatelyFollowedByOr()
+    {
+        var exception = Assert.Throws<JsonException>(() => new JPath("$[?(@.a &&|| @.b)]"));
+        Assert.Equal("Unexpected character while parsing path query: |", exception.Message);
+    }
+
+    // '=~' with a non-slash pattern threw ArgumentOutOfRangeException during evaluation; it is now
+    // reported as a JsonException at parse time.
+    [Fact]
+    public void RegexOperatorWithoutSlashesThrowsAtParseTime() =>
+        Assert.Throws<JsonException>(() => new JPath("$[?(@.name =~ 'abc')]"));
 }

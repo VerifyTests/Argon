@@ -779,6 +779,18 @@ public class JValue :
             return d.GetHashCode();
         }
 
+        // A String JValue can be backed by either a string or a boxed char (new JValue('a')).
+        // Compare treats them as equal via Convert.ToString, so hash the same canonical form.
+        if (valueType == JTokenType.String)
+        {
+            if (value is string stringValue)
+            {
+                return stringValue.GetHashCode();
+            }
+
+            return Convert.ToString(value, InvariantCulture)!.GetHashCode();
+        }
+
         return value.GetHashCode();
     }
 

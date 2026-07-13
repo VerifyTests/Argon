@@ -83,14 +83,22 @@ struct JsonPosition(JsonContainerType type)
         var builder = new StringBuilder(capacity);
         StringWriter? writer = null;
         char[]? buffer = null;
-        foreach (var state in positions)
+        try
         {
-            state.WriteTo(builder, ref writer, ref buffer);
+            foreach (var state in positions)
+            {
+                state.WriteTo(builder, ref writer, ref buffer);
+            }
+
+            currentPosition?.WriteTo(builder, ref writer, ref buffer);
+
+            return builder.ToString();
         }
-
-        currentPosition?.WriteTo(builder, ref writer, ref buffer);
-
-        return builder.ToString();
+        finally
+        {
+            // WriteTo rents a pooled buffer when escaping property names with special characters; return it
+            BufferUtils.ReturnBuffer(buffer);
+        }
     }
 
     internal static string FormatMessage(IJsonLineInfo? lineInfo, string path, string message)

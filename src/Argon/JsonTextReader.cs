@@ -32,6 +32,11 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
     /// </summary>
     public JsonTextReader(TextReader reader, int bufferSize = 1024)
     {
+        if (bufferSize <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(bufferSize), bufferSize, "Buffer size must be a positive value.");
+        }
+
         this.reader = reader;
         lineNumber = 1;
 

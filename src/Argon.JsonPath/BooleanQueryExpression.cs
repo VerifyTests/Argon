@@ -11,6 +11,32 @@ class BooleanQueryExpression(QueryOperator @operator, object left, object? right
     readonly JToken[]? leftConstant = left is JToken leftToken ? [leftToken] : null;
     readonly JToken[]? rightConstant = right is JToken rightToken ? [rightToken] : null;
 
+    // the regex operand is parsed once here instead of re-sliced and re-parsed per candidate token;
+    // a malformed pattern is surfaced as a JsonException at parse time rather than an
+    // ArgumentOutOfRangeException during evaluation
+    readonly (string Pattern, RegexOptions Options)? regex =
+        @operator == QueryOperator.RegexEquals ? ParseRegex(right) : null;
+
+    static (string Pattern, RegexOptions Options) ParseRegex(object? right)
+    {
+        if (right is not JValue {Value: string regexText})
+        {
+            throw new JsonException("A regex query operator '=~' requires a regex operand.");
+        }
+
+        var patternOptionDelimiterIndex = regexText.LastIndexOf('/');
+
+        // a valid pattern is enclosed in slashes: /pattern/ or /pattern/options
+        if (regexText.Length < 2 || regexText[0] != '/' || patternOptionDelimiterIndex < 1)
+        {
+            throw new JsonException($"Path regex must be enclosed in slashes, for example /pattern/: {regexText}");
+        }
+
+        var pattern = regexText.Substring(1, patternOptionDelimiterIndex - 1);
+        var options = MiscellaneousUtils.GetRegexOptions(regexText.AsSpan(patternOptionDelimiterIndex + 1));
+        return (pattern, options);
+    }
+
     static IEnumerable<JToken> GetFilterResult(JToken root, JToken t, object? o)
     {
         if (o is List<PathFilter> pathFilters)
@@ -80,7 +106,7 @@ class BooleanQueryExpression(QueryOperator @operator, object left, object? right
             switch (Operator)
             {
                 case QueryOperator.RegexEquals:
-                    if (RegexEquals(leftValue, rightValue, settings))
+                    if (RegexEquals(leftValue, settings))
                     {
                         return true;
                     }
@@ -161,22 +187,16 @@ class BooleanQueryExpression(QueryOperator @operator, object left, object? right
         return false;
     }
 
-    static bool RegexEquals(JValue input, JValue pattern, JsonSelectSettings settings)
+    bool RegexEquals(JValue input, JsonSelectSettings settings)
     {
-        if (input.Type != JTokenType.String ||
-            pattern.Type != JTokenType.String)
+        if (input.Type != JTokenType.String)
         {
             return false;
         }
 
-        var regexText = ((string) pattern.GetValue()).AsSpan();
-        var patternOptionDelimiterIndex = regexText.LastIndexOf('/');
-
-        var patternText = regexText.Slice(1, patternOptionDelimiterIndex - 1);
-        var optionsText = regexText[(patternOptionDelimiterIndex + 1)..];
-
+        var (pattern, options) = regex!.Value;
         var timeout = settings.RegexMatchTimeout ?? Regex.InfiniteMatchTimeout;
-        return Regex.IsMatch((string) input.GetValue(), patternText.ToString(), MiscellaneousUtils.GetRegexOptions(optionsText), timeout);
+        return Regex.IsMatch((string) input.GetValue(), pattern, options, timeout);
     }
 
     static bool EqualsWithStringCoercion(JValue value, JValue queryValue)

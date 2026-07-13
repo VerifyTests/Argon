@@ -8,9 +8,16 @@ class PathInfoConverter :
 
     public override object? ReadJson(JsonReader reader, Type type, object? existingValue, JsonSerializer serializer)
     {
-        if (reader.Value is not string value)
+        if (reader.TokenType is JsonToken.Null or JsonToken.Undefined)
         {
             return null;
+        }
+
+        // only a genuine null maps to null; a non-string token (number, bool, ...) would otherwise
+        // be silently dropped to null, losing data instead of reporting the mismatch
+        if (reader.Value is not string value)
+        {
+            throw JsonSerializationException.Create(reader, $"Unexpected token {reader.TokenType} when parsing a {type.Name}. Expected a string or null.");
         }
 
         var path = value.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);

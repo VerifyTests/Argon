@@ -31,7 +31,10 @@ public class FSharpMapConverter :
 
     public static void WriteMap<T, K>(JsonWriter writer, FSharpMap<T, K> value, JsonSerializer serializer)
         where T : notnull =>
-        serializer.Serialize(writer, value.ToDictionary(_ => _.Key, _ => _.Value));
+        // wrap rather than copy: ReadOnlyDictionary is an O(1) view over the map. Its runtime type is not
+        // FSharpMap<,> so it routes through the dictionary contract instead of re-entering this converter,
+        // whereas ToDictionary allocated a whole Dictionary and rehashed every entry up front.
+        serializer.Serialize(writer, new System.Collections.ObjectModel.ReadOnlyDictionary<T, K>(value));
 
     public override object? ReadJson(JsonReader reader, Type type, object? existingValue, JsonSerializer serializer)
     {

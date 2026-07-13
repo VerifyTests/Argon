@@ -710,9 +710,31 @@ public class JsonTextWriter : JsonWriter
     }
 
     /// <summary>
+    /// Writes a comment <c>/*...*/</c> containing the specified text.
+    /// </summary>
+    public override void WriteComment(CharSpan text)
+    {
+        InternalWriteComment();
+
+        writer.Write("/*");
+        writer.Write(text);
+        writer.Write("*/");
+    }
+
+    /// <summary>
     /// Writes the given white space.
     /// </summary>
     public override void WriteWhitespace(string ws)
+    {
+        InternalWriteWhitespace(ws);
+
+        writer.Write(ws);
+    }
+
+    /// <summary>
+    /// Writes the given white space.
+    /// </summary>
+    public override void WriteWhitespace(CharSpan ws)
     {
         InternalWriteWhitespace(ws);
 
