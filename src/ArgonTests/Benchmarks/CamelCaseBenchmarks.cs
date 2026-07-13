@@ -26,6 +26,8 @@ public class CamelCaseBenchmarks
         "ABC"
     ];
 
+    static readonly CamelCasePropertyNamesContractResolver resolver = new();
+
     [Benchmark]
     public void Run()
     {
@@ -33,5 +35,25 @@ public class CamelCaseBenchmarks
         {
             CamelCaseNamingStrategy.ToCamelCase(names[i]);
         }
+    }
+
+    // ResolveContract runs once per value serialized/deserialized. It allocated a Tuple key on
+    // every probe (including cache hits) before the struct-key fix.
+    [Benchmark]
+    public JsonContract ResolveContract()
+    {
+        JsonContract contract = null;
+        for (var i = 0; i < 100; i++)
+        {
+            contract = resolver.ResolveContract(typeof(ResolveTarget));
+        }
+
+        return contract;
+    }
+
+    public class ResolveTarget
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
     }
 }

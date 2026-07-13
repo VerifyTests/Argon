@@ -5,5 +5,5 @@ class TimeZoneInfoConverter :
         writer.WriteValue(value.Id);
 
     public override TimeZoneInfo ReadJson(JsonReader reader, Type type, TimeZoneInfo? existingValue, bool hasExisting, JsonSerializer serializer) =>
-        TimeZoneInfo.FindSystemTimeZoneById(reader.StringValue);
+        TimeZoneInfo.FindSystemTimeZoneById(reader.GetConverterString(type));
 }

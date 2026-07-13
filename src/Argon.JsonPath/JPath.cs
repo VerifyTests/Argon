@@ -32,7 +32,8 @@ class JPath
 
         if (expression[currentIndex] == '$')
         {
-            if (expression.Length == 1)
+            // '$' is the last character (guard against leading whitespace, where currentIndex > 0)
+            if (currentIndex == expression.Length - 1)
             {
                 return;
             }
@@ -185,6 +186,9 @@ class JPath
         EnsureLength("Path ended with open indexer.");
 
         EatWhitespace();
+
+        // EatWhitespace can consume the remaining characters (e.g. "$[ ")
+        EnsureLength("Path ended with open indexer.");
 
         if (expression[currentIndex] == '\'')
         {
@@ -387,6 +391,9 @@ class JPath
         EnsureLength("Path ended with open indexer.");
         EatWhitespace();
 
+        // EatWhitespace can consume the remaining characters
+        EnsureLength("Path ended with open indexer.");
+
         if (this.expression[currentIndex] != indexerCloseChar)
         {
             throw new JsonException($"Unexpected character while parsing path indexer: {this.expression[currentIndex]}");
@@ -449,90 +456,97 @@ class JPath
             return new JValue(value);
         }
 
+        // a value that ran to the end of the expression (e.g. "$[?(1") leaves currentIndex at the end;
+        // report it as an open query rather than indexing past the end
+        EnsureLength("Path ended with open query.");
+
         throw CreateUnexpectedCharacterException();
     }
 
     QueryExpression ParseExpression()
     {
-        QueryExpression? rootExpression = null;
-        CompositeExpression? parentExpression = null;
+        // '&&' binds tighter than '||': collect '&&'-joined terms into an And group, then
+        // join the And groups with '||' into an Or. So "a && b || c" parses as "(a && b) || c".
+        var orGroups = new List<QueryExpression>();
+        var andGroup = new List<QueryExpression>();
 
-        while (currentIndex < expression.Length)
+        while (true)
         {
-            var left = ParseSide();
-            object? right = null;
+            // guards re-entry after consuming a '&&'/'||' that was the last thing in the expression
+            EnsureLength("Path ended with open query.");
 
-            QueryOperator op;
-            if (expression[currentIndex] == ')'
-                || expression[currentIndex] == '|'
-                || expression[currentIndex] == '&')
-            {
-                op = QueryOperator.Exists;
-            }
-            else
-            {
-                op = ParseOperator();
+            andGroup.Add(ParseBooleanExpression());
 
-                right = ParseSide();
-            }
+            // ParseBooleanExpression always leaves currentIndex on an in-bounds terminator
+            var currentChar = expression[currentIndex];
 
-            var booleanExpression = new BooleanQueryExpression(op, left, right);
-
-            if (expression[currentIndex] == ')')
-            {
-                if (parentExpression != null)
-                {
-                    parentExpression.Expressions.Add(booleanExpression);
-                    return rootExpression!;
-                }
-
-                return booleanExpression;
-            }
-
-            if (expression[currentIndex] == '&')
+            if (currentChar == '&')
             {
                 if (!Match("&&"))
                 {
                     throw CreateUnexpectedCharacterException();
                 }
 
-                if (parentExpression is not {Operator: QueryOperator.And})
-                {
-                    var andExpression = new CompositeExpression(QueryOperator.And);
-
-                    parentExpression?.Expressions.Add(andExpression);
-
-                    parentExpression = andExpression;
-
-                    rootExpression ??= parentExpression;
-                }
-
-                parentExpression.Expressions.Add(booleanExpression);
+                continue;
             }
 
-            if (expression[currentIndex] == '|')
+            // the '&&' group is complete: fold it into a single expression
+            orGroups.Add(Combine(andGroup, QueryOperator.And));
+            andGroup = [];
+
+            if (currentChar == '|')
             {
                 if (!Match("||"))
                 {
                     throw CreateUnexpectedCharacterException();
                 }
 
-                if (parentExpression is not {Operator: QueryOperator.Or})
-                {
-                    var orExpression = new CompositeExpression(QueryOperator.Or);
-
-                    parentExpression?.Expressions.Add(orExpression);
-
-                    parentExpression = orExpression;
-
-                    rootExpression ??= parentExpression;
-                }
-
-                parentExpression.Expressions.Add(booleanExpression);
+                continue;
             }
+
+            if (currentChar == ')')
+            {
+                return Combine(orGroups, QueryOperator.Or);
+            }
+
+            throw CreateUnexpectedCharacterException();
+        }
+    }
+
+    // wraps the expressions in a composite of the given operator, or returns the single expression as-is
+    static QueryExpression Combine(List<QueryExpression> expressions, QueryOperator @operator)
+    {
+        if (expressions.Count == 1)
+        {
+            return expressions[0];
         }
 
-        throw new JsonException("Path ended with open query.");
+        return new CompositeExpression(@operator)
+        {
+            Expressions = expressions
+        };
+    }
+
+    BooleanQueryExpression ParseBooleanExpression()
+    {
+        var left = ParseSide();
+        object? right = null;
+
+        QueryOperator op;
+        if (expression[currentIndex] == ')'
+            || expression[currentIndex] == '|'
+            || expression[currentIndex] == '&')
+        {
+            op = QueryOperator.Exists;
+        }
+        else
+        {
+            op = ParseOperator();
+
+            right = ParseSide();
+        }
+
+        return new(op, left, right);
     }
 
     bool TryParseValue(out object? value)

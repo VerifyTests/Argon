@@ -130,6 +130,24 @@ public class JTokenWriter :
         base.WritePropertyName(name);
     }
 
+    /// <summary>
+    /// Writes the property name of a name/value pair on a JSON object.
+    /// </summary>
+    public override void WritePropertyName(CharSpan name)
+    {
+        var nameString = name.ToString();
+
+        // avoid duplicate property name exception
+        // last property name wins
+        (parent as JObject)?.Remove(nameString);
+
+        AddParent(new JProperty(nameString));
+
+        // don't set state until after in case of an error
+        // incorrect state will cause issues if writer is disposed when closing open properties
+        base.WritePropertyName(name);
+    }
+
     void AddRawValue(object? value, JTokenType type) =>
         AddJValue(new(value, type));
 
@@ -248,6 +266,15 @@ public class JTokenWriter :
 
         base.WriteValue(value);
         AddJValue(new(value));
+    }
+
+    /// <summary>
+    /// Writes a <see cref="String" /> value.
+    /// </summary>
+    public override void WriteValue(CharSpan value)
+    {
+        base.WriteValue(value);
+        AddJValue(new(value.ToString()));
     }
 
     /// <summary>
@@ -391,6 +418,12 @@ public class JTokenWriter :
     /// </summary>
     public override void WriteValue(byte[]? value)
     {
+        if (value == null)
+        {
+            WriteNull();
+            return;
+        }
+
         base.WriteValue(value);
         AddJValue(new(value, JTokenType.Bytes));
     }
@@ -418,6 +451,12 @@ public class JTokenWriter :
     /// </summary>
     public override void WriteValue(Uri? value)
     {
+        if (value == null)
+        {
+            WriteNull();
+            return;
+        }
+
         base.WriteValue(value);
         AddJValue(new(value));
     }

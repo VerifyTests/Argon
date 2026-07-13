@@ -28,7 +28,10 @@ public class DefaultContractResolver : IContractResolver
     /// </summary>
     public NamingStrategy? NamingStrategy { get; set; }
 
-    public static List<JsonConverter> Converters { get; } =
+    // read-only: these built-in converters are read (unsynchronized) during contract creation on
+    // arbitrary threads, so the collection must not be publicly mutable. Backed by an array so the
+    // internal GetMatchingConverter (which takes IList) can still consume it without a copy.
+    static readonly JsonConverter[] builtInConverters =
         [
         new StringBuilderConverter(),
         new ExpandoObjectConverter(),
@@ -41,6 +44,8 @@ public class DefaultContractResolver : IContractResolver
         new VersionConverter(),
         new StringWriterConverter()
         ];
+
+    public static IReadOnlyList<JsonConverter> Converters => builtInConverters;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultContractResolver" /> class.
@@ -87,8 +92,10 @@ public class DefaultContractResolver : IContractResolver
 
         if (memberSerialization == MemberSerialization.Fields)
         {
-            // Do not filter ByRef types here because accessing FieldType/PropertyType can trigger additional assembly loads
-            return type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            // Do not filter ByRef types here because accessing FieldType/PropertyType can trigger additional assembly loads.
+            // Use ReflectionUtils.GetFields (not Type.GetFields) so private fields declared on base classes are included -
+            // Type.GetFields never returns inherited private fields, which would silently drop them from round-trips.
+            return ReflectionUtils.GetFields(type, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         var serializableMembers = new List<MemberInfo>();
@@ -248,18 +255,24 @@ public class DefaultContractResolver : IContractResolver
                 continue;
             }
 
+            var allParametersMatch = true;
             foreach (var parameter in parameters)
             {
                 var memberProperty = MatchProperty(memberProperties, parameter.Name, parameter.ParameterType);
                 if (memberProperty == null || memberProperty.Writable)
                 {
-                    constructor = null;
-                    return false;
+                    // this constructor does not match; keep looking at the remaining constructors
+                    // rather than abandoning the whole search
+                    allParametersMatch = false;
+                    break;
                 }
             }
 
-            constructor = constructorItem;
-            return true;
+            if (allParametersMatch)
+            {
+                constructor = constructorItem;
+                return true;
+            }
         }
 
         constructor = null;
@@ -390,7 +403,7 @@ public class DefaultContractResolver : IContractResolver
         contract.Converter = ResolveContractConverter(nonNullableUnderlyingType);
 
         // then see whether object is compatible with any of the built in converters
-        contract.InternalConverter = JsonSerializer.GetMatchingConverter(Converters, nonNullableUnderlyingType);
+        contract.InternalConverter = JsonSerializer.GetMatchingConverter(builtInConverters, nonNullableUnderlyingType);
 
         if (!contract.IsInstantiable)
         {

@@ -7,5 +7,5 @@ public class EncodingConverter :
         writer.WriteValue(value.WebName);
 
     public override Encoding ReadJson(JsonReader reader, Type type, Encoding? existingValue, bool hasExisting, JsonSerializer serializer) =>
-        Encoding.GetEncoding(reader.StringValue);
+        Encoding.GetEncoding(reader.GetConverterString(type));
 }

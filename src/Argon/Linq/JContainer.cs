@@ -31,7 +31,7 @@ public abstract class JContainer :
             TryAddInternal(i, children[i], false);
         }
 
-        SetLineInfo(this, null);
+        SetLineInfo(other, null);
     }
 
     /// <summary>

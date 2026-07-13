@@ -12,6 +12,9 @@ public class DefaultJsonNameTable : JsonNameTable
     // used to defeat hashtable DoS attack where someone passes in lots of strings that hash to the same hash code
     static readonly int hashCodeRandomizer;
 
+    // dedicated lock: Add mutates the entries field (Grow replaces it), so the field
+    // itself cannot be the monitor - locking it would break mutual exclusion across a resize
+    readonly object addLock = new();
     int count;
     Entry[] entries;
     int mask = 31;
@@ -76,7 +79,7 @@ public class DefaultJsonNameTable : JsonNameTable
     /// <returns>The resolved string.</returns>
     public override string Add(string key)
     {
-        lock (entries)
+        lock (addLock)
         {
             return InnerAdd(key);
         }

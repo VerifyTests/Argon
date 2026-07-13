@@ -34,13 +34,17 @@ static class ImmutableCollectionsUtils
         var immutableListInfo = new TypeInfo(typeof(ImmutableList<>), GetArrayCreateRange(typeof(ImmutableList)));
         var immutableStackInfo = new TypeInfo(typeof(ImmutableStack<>), GetArrayCreateRange(typeof(ImmutableStack)));
         var immutableHashSetInfo = new TypeInfo(typeof(ImmutableHashSet<>), GetArrayCreateRange(typeof(ImmutableHashSet)));
-        var immutableQueueCreateRange = GetArrayCreateRange(typeof(ImmutableQueue));
+        // CreatedType must be the concrete ImmutableQueue<> (as with every sibling entry), not the
+        // IImmutableQueue<> interface. An interface CreatedType is not instantiable, so the contract's
+        // IsInstantiable is false and InitializeContract skips default-creator setup - inconsistent
+        // with IImmutableList/IImmutableStack/IImmutableSet, which all map to their concrete type.
+        var immutableQueueInfo = new TypeInfo(typeof(ImmutableQueue<>), GetArrayCreateRange(typeof(ImmutableQueue)));
         arrayDefinitions = new KeyValuePair<Type, TypeInfo>[]
             {
                 new(typeof(IImmutableList<>), immutableListInfo),
                 new(typeof(ImmutableList<>), immutableListInfo),
-                new(typeof(IImmutableQueue<>), new(typeof(IImmutableQueue<>), immutableQueueCreateRange)),
-                new(typeof(ImmutableQueue<>), new(typeof(ImmutableQueue<>), immutableQueueCreateRange)),
+                new(typeof(IImmutableQueue<>), immutableQueueInfo),
+                new(typeof(ImmutableQueue<>), immutableQueueInfo),
                 new(typeof(IImmutableStack<>), immutableStackInfo),
                 new(typeof(ImmutableStack<>), immutableStackInfo),
                 new(typeof(IImmutableSet<>), immutableHashSetInfo),

@@ -20,12 +20,13 @@ static class EnumUtils
         var names = Enum.GetNames(enumType);
         var resolvedNames = new string[names.Length];
         var values = new ulong[names.Length];
+        var typeCode = ConvertUtils.GetTypeCode(enumType, out _);
 
         for (var i = 0; i < names.Length; i++)
         {
             var name = names[i];
             var f = enumType.GetField(name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static)!;
-            values[i] = ToUInt64(f.GetValue(null)!);
+            values[i] = ToUInt64(f.GetValue(null)!, typeCode);
 
             var specifiedName = f.GetCustomAttributes(typeof(EnumMemberAttribute), true)
                 .Cast<EnumMemberAttribute>()
@@ -46,13 +47,13 @@ static class EnumUtils
 
         var isFlags = enumType.IsDefined(typeof(FlagsAttribute), false);
 
-        return new(isFlags, values, names, resolvedNames);
+        return new(isFlags, typeCode, values, names, resolvedNames);
     }
 
     public static bool TryToString(Type enumType, object value, NamingStrategy? namingStrategy, [NotNullWhen(true)] out string? name)
     {
         var enumInfo = ValuesAndNamesPerEnum.Get(new(enumType, namingStrategy));
-        var v = ToUInt64(value);
+        var v = ToUInt64(value, enumInfo.TypeCode);
 
         if (enumInfo.IsFlags)
         {
@@ -136,10 +137,8 @@ static class EnumUtils
         return stringBuilder.ToString(); // Return the string representation
     }
 
-    static ulong ToUInt64(object value)
+    static ulong ToUInt64(object value, PrimitiveTypeCode typeCode)
     {
-        var typeCode = ConvertUtils.GetTypeCode(value.GetType(), out _);
-
         switch (typeCode)
         {
             case PrimitiveTypeCode.SByte:

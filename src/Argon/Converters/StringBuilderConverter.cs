@@ -7,5 +7,5 @@ public class StringBuilderConverter :
         writer.WriteValue(value);
 
     public override StringBuilder ReadJson(JsonReader reader, Type type, StringBuilder? existingValue, bool hasExisting, JsonSerializer serializer) =>
-        new(reader.StringValue);
+        new(reader.GetConverterString(type));
 }
