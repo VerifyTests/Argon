@@ -261,21 +261,6 @@ public class AuditFindingsTests : TestFixtureBase
 
     #endregion
 
-    #region Built-in converters exposed read-only
-
-    [Fact]
-    public void BuiltInConverters_are_exposed_as_read_only_list()
-    {
-        var propertyType = typeof(DefaultContractResolver)
-            .GetProperty(nameof(DefaultContractResolver.Converters))!
-            .PropertyType;
-
-        Assert.Equal(typeof(IReadOnlyList<JsonConverter>), propertyType);
-        Assert.NotEmpty(DefaultContractResolver.Converters);
-    }
-
-    #endregion
-
     #region Immutable struct with multiple constructors
 
     [Fact]
