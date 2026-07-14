@@ -4,6 +4,39 @@
 
 public class FloatTests : TestFixtureBase
 {
+    // BoxedPrimitives.Get(decimal) returned a cached positive-zero box for -0.0m, so the
+    // negative-zero sign was dropped at scale 0/1 but kept at higher scales.
+    [Fact]
+    public void NegativeZeroDecimalPreservesSignAcrossScales()
+    {
+        Assert.True(HasNegativeSignBit(ReadDecimal("-0.0")));
+        Assert.True(HasNegativeSignBit(ReadDecimal("-0.00")));
+        Assert.False(HasNegativeSignBit(ReadDecimal("0.0")));
+
+        // ToString is unaffected (decimal never renders a negative-zero sign).
+        Assert.Equal("0.0", ReadDecimal("-0.0").ToString(InvariantCulture));
+    }
+
+    static bool HasNegativeSignBit(decimal value) =>
+        (decimal.GetBits(value)[3] & int.MinValue) != 0;
+
+    static decimal ReadDecimal(string json)
+    {
+        var reader = new JsonTextReader(new StringReader(json))
+        {
+            FloatParseHandling = Argon.FloatParseHandling.Decimal
+        };
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonToken.Float)
+            {
+                return (decimal) reader.Value;
+            }
+        }
+
+        throw new InvalidOperationException("no float token");
+    }
+
     [Fact]
     public void Float_ReadAsString_Exact()
     {

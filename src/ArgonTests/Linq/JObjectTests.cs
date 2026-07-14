@@ -7,6 +7,50 @@ using TestObjects;
 
 public class JObjectTests : TestFixtureBase
 {
+    // TryAddInternal incremented the insert index even when the child insert was skipped
+    // (e.g. a comment token in a JObject), so the next insert ran past the end and threw.
+    [Fact]
+    public void AddMulticontentWithCommentDoesNotThrow()
+    {
+        var o = new JObject();
+        object[] content =
+        [
+            new JProperty("p1", 1),
+            JValue.CreateComment("c"),
+            new JProperty("p2", 2)
+        ];
+        o.Add(content);
+
+        Assert.Equal(1, (int) o["p1"]);
+        Assert.Equal(2, (int) o["p2"]);
+    }
+
+    [Fact]
+    public void CtorWithLeadingCommentDoesNotThrow()
+    {
+        var o = new JObject(JValue.CreateComment("c"), new JProperty("a", 1));
+
+        Assert.Equal(1, (int) o["a"]);
+    }
+
+    // JObject's explicit IDictionary<string, JToken>.Values threw NotImplementedException.
+    [Fact]
+    public void IDictionaryValuesReturnsPropertyValues()
+    {
+        IDictionary<string, JToken> dictionary = new JObject
+        {
+            ["a"] = 1,
+            ["b"] = 2
+        };
+
+        var values = dictionary.Values
+            .Select(_ => (int) _)
+            .OrderBy(_ => _)
+            .ToList();
+
+        Assert.Equal(new[] {1, 2}, values);
+    }
+
     [Fact]
     public void EmbedJValueStringInNewJObject()
     {

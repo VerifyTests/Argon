@@ -4,6 +4,65 @@
 
 public class GenericJsonConverterTests : TestFixtureBase
 {
+    // JsonConverter<T>.ReadJson returned null for any token whose Value is null,
+    // including StartObject/StartArray, without consuming the token -> reader desync.
+    [Fact]
+    public void ReadsObjectTokenAndKeepsReaderAligned()
+    {
+        var holder = JsonConvert.DeserializeObject<Holder>("""{"Point":{"X":1,"Y":2},"After":42}""");
+
+        Assert.NotNull(holder.Point);
+        Assert.Equal(1, holder.Point.X);
+        Assert.Equal(2, holder.Point.Y);
+        Assert.Equal(42, holder.After);
+    }
+
+    [Fact]
+    public void StillReturnsNullForJsonNull()
+    {
+        var holder = JsonConvert.DeserializeObject<Holder>("""{"Point":null,"After":7}""");
+
+        Assert.Null(holder.Point);
+        Assert.Equal(7, holder.After);
+    }
+
+    public class Holder
+    {
+        [JsonConverter(typeof(PointConverter))]
+        public Point Point { get; set; }
+
+        public int After { get; set; }
+    }
+
+    public class Point
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+    }
+
+    class PointConverter : JsonConverter<Point>
+    {
+        public override void WriteJson(JsonWriter writer, Point value, JsonSerializer serializer)
+        {
+            writer.WriteStartObject();
+            writer.WritePropertyName("X");
+            writer.WriteValue(value.X);
+            writer.WritePropertyName("Y");
+            writer.WriteValue(value.Y);
+            writer.WriteEndObject();
+        }
+
+        public override Point ReadJson(JsonReader reader, Type type, Point existingValue, bool hasExisting, JsonSerializer serializer)
+        {
+            var o = JObject.Load(reader);
+            return new()
+            {
+                X = (int) o["X"],
+                Y = (int) o["Y"]
+            };
+        }
+    }
+
     public class TestGenericConverter : JsonConverter<string>
     {
         public override void WriteJson(JsonWriter writer, string value, JsonSerializer serializer) =>

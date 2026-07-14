@@ -7,6 +7,90 @@ using TestObjects;
 public class JsonTextWriterTest : TestFixtureBase
 {
     [Fact]
+    public void WriteValueStringBuilderMultichunkWritesSingleStringInArray()
+    {
+        var builder = new StringBuilder();
+        builder.Append('a', 10);
+        builder.Append('b', 9000);
+
+        var stringWriter = new StringWriter();
+        using (var writer = new JsonTextWriter(stringWriter))
+        {
+            writer.WriteStartArray();
+            writer.WriteValue(builder);
+            writer.WriteEndArray();
+        }
+
+        Assert.Equal($"[\"{builder}\"]", stringWriter.ToString());
+    }
+
+    [Fact]
+    public void WriteValueStringBuilderMultichunkWritesSingleStringAsProperty()
+    {
+        var builder = new StringBuilder();
+        builder.Append('x', 10000);
+
+        var stringWriter = new StringWriter();
+        using (var writer = new JsonTextWriter(stringWriter))
+        {
+            writer.WriteStartObject();
+            writer.WritePropertyName("p");
+            writer.WriteValue(builder);
+            writer.WriteEndObject();
+        }
+
+        Assert.Equal($"{{\"p\":\"{builder}\"}}", stringWriter.ToString());
+    }
+
+    [Fact]
+    public void WriteValueStringBuilderNullWritesNull()
+    {
+        var stringWriter = new StringWriter();
+        using (var writer = new JsonTextWriter(stringWriter))
+        {
+            writer.WriteValue((StringBuilder) null);
+        }
+
+        Assert.Equal("null", stringWriter.ToString());
+    }
+
+    [Fact]
+    public void WriteValueCharHonorsQuoteChar()
+    {
+        var stringWriter = new StringWriter();
+        using (var writer = new JsonTextWriter(stringWriter) {QuoteChar = '\''})
+        {
+            writer.WriteValue('c');
+        }
+
+        Assert.Equal("'c'", stringWriter.ToString());
+    }
+
+    [Fact]
+    public void WriteValueCharHonorsQuoteValue()
+    {
+        var stringWriter = new StringWriter();
+        using (var writer = new JsonTextWriter(stringWriter) {QuoteValue = false})
+        {
+            writer.WriteValue('c');
+        }
+
+        Assert.Equal("c", stringWriter.ToString());
+    }
+
+    [Fact]
+    public void WriteValueCharDefaultIsDoubleQuoted()
+    {
+        var stringWriter = new StringWriter();
+        using (var writer = new JsonTextWriter(stringWriter))
+        {
+            writer.WriteValue('c');
+        }
+
+        Assert.Equal("\"c\"", stringWriter.ToString());
+    }
+
+    [Fact]
     public void WritesSpanComment()
     {
         var stringWriter = new StringWriter();

@@ -58,4 +58,17 @@ public class DateTimeUtilsTests : TestFixtureBase
         Assert.False(DateTimeUtils.TryParseDateTimeOffsetIso(CreateStringReference("2000-12-15T24:00:01Z"), out dt));
         Assert.False(DateTimeUtils.TryParseDateTimeOffsetIso(CreateStringReference("2000-12-15T24:00:00.0000001Z"), out dt));
     }
+
+    // the ISO date parser accepts zone offsets up to +/-99:99, then the DateTimeOffset
+    // constructor threw instead of the parse returning false.
+    [Fact]
+    public void TryParseDateTimeOffsetIsoRejectsOutOfRangeOffset()
+    {
+        Assert.False(DateTimeUtils.TryParseDateTimeOffsetIso(CreateStringReference("2000-01-01T00:00:00+15:00"), out _));
+        Assert.False(DateTimeUtils.TryParseDateTimeOffsetIso(CreateStringReference("2000-01-01T00:00:00-15:00"), out _));
+        Assert.False(DateTimeUtils.TryParseDateTimeOffsetIso(CreateStringReference("2000-01-01T00:00:00+13:99"), out _));
+
+        // +/-14:00 is the maximum offset DateTimeOffset allows.
+        Assert.True(DateTimeUtils.TryParseDateTimeOffsetIso(CreateStringReference("2000-01-01T00:00:00+14:00"), out _));
+    }
 }

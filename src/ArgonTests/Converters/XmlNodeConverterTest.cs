@@ -11,6 +11,77 @@ using Formatting = Argon.Formatting;
 
 public class XmlNodeConverterTest : TestFixtureBase
 {
+    // a single-element nested array lost its json:Array marker when the property name was
+    // prefixed or XML-encoded, because the raw JSON name was compared against the decoded
+    // element LocalName. Result: the inner array nesting was dropped on round-trip.
+    [Fact]
+    public void NestedSingleElementArrayWithPrefixRoundTrips()
+    {
+        var json = """{"root":{"@xmlns:ns":"http://x","ns:items":[["a"]]}}""";
+
+        var doc = JsonXmlConvert.DeserializeXmlNode(json, null, true);
+        var roundTripped = JObject.Parse(JsonXmlConvert.SerializeXmlNode(doc));
+
+        var items = roundTripped["root"]["ns:items"];
+        Assert.Equal(JTokenType.Array, items.Type);
+        Assert.Equal(JTokenType.Array, items[0].Type);
+        Assert.Equal("a", (string) items[0][0]);
+    }
+
+    // two or more sibling comments serialized to "#comment": [] - all comment text dropped
+    // plus a bogus property that cannot round-trip.
+    [Fact]
+    public void MultipleSiblingCommentsRoundTrip()
+    {
+        var doc = new XmlDocument();
+        doc.LoadXml("<root><!--a--><!--b--></root>");
+
+        var json = JsonXmlConvert.SerializeXmlNode(doc);
+        Assert.DoesNotContain("#comment", json);
+
+        var roundTripped = JsonXmlConvert.DeserializeXmlNode(json);
+        var comments = roundTripped.DocumentElement
+            .ChildNodes
+            .Cast<XmlNode>()
+            .Where(_ => _.NodeType == XmlNodeType.Comment)
+            .Select(_ => _.Value)
+            .ToList();
+
+        Assert.Equal(new[] {"a", "b"}, comments);
+    }
+
+    // XmlDocumentWrapper.CreateXmlDocumentType discarded the internalSubset argument, so
+    // JSON -> XmlDocument silently lost DTD internal subsets.
+    [Fact]
+    public void DocTypeInternalSubsetIsPreserved()
+    {
+        var json = """{"!DOCTYPE":{"@name":"root","@internalSubset":"<!ENTITY foo \"bar\">"},"root":"x"}""";
+
+        var doc = JsonXmlConvert.DeserializeXmlNode(json);
+
+        Assert.NotNull(doc.DocumentType);
+        Assert.Contains("ENTITY foo", doc.DocumentType.InternalSubset);
+    }
+
+    // #cdata-section / #text with a JSON null crashed with ArgumentNullException for
+    // XDocument targets (while XmlDocument produced an empty node).
+    [Fact]
+    public void CDataNullDoesNotCrashXDocument()
+    {
+        var xdoc = JsonXmlConvert.DeserializeXNode("""{"root":{"#cdata-section":null}}""");
+
+        Assert.NotNull(xdoc);
+        Assert.Contains("CDATA", xdoc.ToString());
+    }
+
+    [Fact]
+    public void TextNullDoesNotCrashXDocument()
+    {
+        var xdoc = JsonXmlConvert.DeserializeXNode("""{"root":{"#text":null}}""");
+
+        Assert.NotNull(xdoc);
+    }
+
     static string SerializeXmlNode(XmlNode node)
     {
         var json = JsonXmlConvert.SerializeXmlNode(node, Formatting.Indented);

@@ -9,6 +9,41 @@ using TestObjects;
 
 public class JsonSerializerCollectionsTests : TestFixtureBase
 {
+    // OrderByKey packed StringComparer into the sort-key tuple, so ordering fell back to the
+    // culture-sensitive default comparer. The fix uses OrdinalIgnoreCase, making ordering
+    // deterministic and culture-independent.
+    [Fact]
+    public void OrderByKeySortsOrdinalIgnoreCase()
+    {
+        var target = new Dictionary<string, int>
+        {
+            {"_x", 5},
+            {"ab", 4},
+            {"@", 2},
+            {"a-c", 3},
+            {"#", 1}
+        };
+
+        var settings = new JsonSerializerSettings
+        {
+            ContractResolver = new OrderByKeyContractResolver()
+        };
+
+        var json = JsonConvert.SerializeObject(target, settings);
+
+        Assert.Equal("""{"#":1,"@":2,"a-c":3,"ab":4,"_x":5}""", json);
+    }
+
+    class OrderByKeyContractResolver : DefaultContractResolver
+    {
+        protected override JsonDictionaryContract CreateDictionaryContract(Type type)
+        {
+            var contract = base.CreateDictionaryContract(type);
+            contract.OrderByKey = true;
+            return contract;
+        }
+    }
+
     [Fact]
     public void DeserializeNonGenericListTypeAndReadOnlyListViaConstructor()
     {

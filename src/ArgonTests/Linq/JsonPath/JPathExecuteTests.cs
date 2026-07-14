@@ -10,6 +10,70 @@ using TestCaseSource = Xunit.MemberDataAttribute;
 
 public class JPathExecuteTests : TestFixtureBase
 {
+    // FieldMultipleFilter threw for ErrorWhenNoMatch unconditionally (missing else), so
+    // $['a','b'] errored even when the properties existed.
+    [Fact]
+    public void SelectTokensMultipleExistingFieldsDoesNotError()
+    {
+        var o = JObject.Parse("""{"a":1,"b":2}""");
+
+        var values = o.SelectTokens("$['a','b']", errorWhenNoMatch: true)
+            .Select(_ => (int) _)
+            .ToList();
+
+        Assert.Equal(new[] {1, 2}, values);
+    }
+
+    [Fact]
+    public void SelectTokensMultipleWithMissingFieldStillErrors()
+    {
+        var o = JObject.Parse("""{"a":1}""");
+
+        Assert.Throws<JsonException>(() =>
+            o.SelectTokens("$['a','missing']", errorWhenNoMatch: true).ToList());
+    }
+
+    // filter numeric literals were only terminated by space or ')', so && / || directly
+    // after a number failed to parse.
+    [Fact]
+    public void FilterWithNoSpacesAroundLogicalAnd()
+    {
+        var a = JArray.Parse("""[{"a":1,"b":2},{"a":1,"b":9}]""");
+
+        var matches = a.SelectTokens("$[?(@.a==1&&@.b==2)]").ToList();
+
+        Assert.Single(matches);
+        Assert.Equal(2, (int) matches[0]["b"]);
+    }
+
+    [Fact]
+    public void FilterWithNoSpacesAroundLogicalOr()
+    {
+        var a = JArray.Parse("""[{"a":1},{"a":5},{"a":9}]""");
+
+        var matches = a.SelectTokens("$[?(@.a==1||@.a==5)]").ToList();
+
+        Assert.Equal(2, matches.Count);
+    }
+
+    // GetTokenIndex had no negative-index guard, so $[-1] crashed with
+    // ArgumentOutOfRangeException instead of returning null / throwing JsonException.
+    [Fact]
+    public void NegativeArrayIndexReturnsNull()
+    {
+        var a = new JArray(1, 2, 3);
+
+        Assert.Null(a.SelectToken("$[-1]"));
+    }
+
+    [Fact]
+    public void NegativeArrayIndexWithErrorThrowsJsonException()
+    {
+        var a = new JArray(1, 2, 3);
+
+        Assert.Throws<JsonException>(() => a.SelectToken("$[-1]", errorWhenNoMatch: true));
+    }
+
     [Fact]
     public void AndBindsTighterThanOr()
     {

@@ -5,6 +5,29 @@
 public class ExceptionHandlingTests : TestFixtureBase
 {
     [Fact]
+    public void ReadAsInt32NumberErrorSetsUndefinedToken()
+    {
+        var reader = new JsonTextReader(new StringReader("[123456789012345]"));
+        reader.Read(); // StartArray
+
+        Assert.Throws<JsonReaderException>(() => reader.ReadAsInt32());
+
+        // The error-recovery token must be Undefined, distinguishable from a real JSON null.
+        Assert.Equal(JsonToken.Undefined, reader.TokenType);
+    }
+
+    [Fact]
+    public void ReadAsInt32InvalidIntegerSetsUndefinedToken()
+    {
+        var reader = new JsonTextReader(new StringReader("[1.5]"));
+        reader.Read(); // StartArray
+
+        Assert.Throws<JsonReaderException>(() => reader.ReadAsInt32());
+
+        Assert.Equal(JsonToken.Undefined, reader.TokenType);
+    }
+
+    [Fact]
     public void RejectsNonPositiveBufferSize()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => new JsonTextReader(new StringReader("1"), 0));

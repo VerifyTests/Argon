@@ -22,6 +22,58 @@ using JsonConstructor = Argon.JsonConstructorAttribute;
 
 public class JsonSerializerTest : TestFixtureBase
 {
+    // JsonSerializerProxy (handed to converters) did not proxy ResolveContract or Converters,
+    // so converters saw the default resolver and an empty converter list.
+    [Fact]
+    public void ConverterSeesRegisteredConvertersAndConfiguredResolver()
+    {
+        CaptureConverter.Reset();
+
+        var settings = new JsonSerializerSettings
+        {
+            ContractResolver = new DefaultContractResolver
+            {
+                NamingStrategy = new CamelCaseNamingStrategy()
+            }
+        };
+        settings.Converters.Add(new CaptureConverter());
+
+        JsonConvert.SerializeObject(new CaptureHolder(), settings);
+
+        Assert.True(CaptureConverter.ConverterCount >= 1);
+        Assert.Equal("someValue", CaptureConverter.ResolvedPropertyName);
+    }
+
+    public class CaptureHolder;
+
+    public class CaptureInner
+    {
+        public int SomeValue { get; set; }
+    }
+
+    class CaptureConverter : JsonConverter<CaptureHolder>
+    {
+        public static int ConverterCount;
+        public static string ResolvedPropertyName;
+
+        public static void Reset()
+        {
+            ConverterCount = 0;
+            ResolvedPropertyName = null;
+        }
+
+        public override void WriteJson(JsonWriter writer, CaptureHolder value, JsonSerializer serializer)
+        {
+            ConverterCount = serializer.Converters.Count;
+            var contract = (JsonObjectContract) serializer.ResolveContract(typeof(CaptureInner));
+            ResolvedPropertyName = contract.Properties[0].PropertyName;
+            writer.WriteNull();
+        }
+
+        public override CaptureHolder ReadJson(JsonReader reader, Type type, CaptureHolder existingValue, bool hasExisting, JsonSerializer serializer) =>
+            null;
+    }
+
     [Fact]
     public void ListSourceSerialize()
     {

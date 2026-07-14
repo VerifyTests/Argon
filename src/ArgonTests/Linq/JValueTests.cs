@@ -8,6 +8,40 @@ using TestObjects;
 
 public class JValueTests : TestFixtureBase
 {
+    // CompareBigInteger used Math.Abs on the fractional part, discarding its sign and
+    // inverting comparisons when the other operand had a negative fraction.
+    [Fact]
+    public void BigIntegerComparesCorrectlyAgainstNegativeFraction()
+    {
+        // -5 > -5.5
+        Assert.True(new JValue(BigInteger.Parse("-5")).CompareTo(new(-5.5)) > 0);
+        Assert.True(new JValue(-5.5).CompareTo(new(BigInteger.Parse("-5"))) < 0);
+
+        // 5 < 5.5 (positive fraction still correct)
+        Assert.True(new JValue(BigInteger.Parse("5")).CompareTo(new(5.5)) < 0);
+        Assert.True(new JValue(5.5).CompareTo(new(BigInteger.Parse("5"))) > 0);
+
+        // equal integers
+        Assert.Equal(0, new JValue(BigInteger.Parse("5")).CompareTo(new(5.0)));
+    }
+
+    // GetHashCode/GetDeepHashCode hashed the boxed CLR value, so numerically-equal
+    // JValues with different backing types produced different hashes, breaking hash-based
+    // lookups through JToken.EqualityComparer.
+    [Fact]
+    public void EqualNumericValuesHaveEqualHashcodes()
+    {
+        var intBacked = (JValue) JToken.FromObject(-1);
+        var longBacked = new JValue(-1L);
+        Assert.True(intBacked.Equals(longBacked));
+        Assert.Equal(intBacked.GetHashCode(), longBacked.GetHashCode());
+
+        var decimalBacked = new JValue(1.5m);
+        var doubleBacked = new JValue(1.5d);
+        Assert.True(decimalBacked.Equals(doubleBacked));
+        Assert.Equal(decimalBacked.GetHashCode(), doubleBacked.GetHashCode());
+    }
+
     [Fact]
     public void UndefinedTests()
     {

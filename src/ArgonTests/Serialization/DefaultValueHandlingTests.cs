@@ -10,6 +10,33 @@ using System.Runtime.Serialization.Json;
 
 public class DefaultValueHandlingTests : TestFixtureBase
 {
+    // ReflectionUtils.GetDefaultValue(typeof(char)) returned a boxed int 0 instead of '\0',
+    // so DefaultValueHandling.Ignore never omitted a default char member.
+    [Fact]
+    public void IgnoreOmitsDefaultChar()
+    {
+        var json = JsonConvert.SerializeObject(
+            new HasChar(),
+            new JsonSerializerSettings {DefaultValueHandling = DefaultValueHandling.Ignore});
+
+        Assert.Equal("{}", json);
+    }
+
+    [Fact]
+    public void IgnoreKeepsNonDefaultChar()
+    {
+        var json = JsonConvert.SerializeObject(
+            new HasChar {C = 'a'},
+            new JsonSerializerSettings {DefaultValueHandling = DefaultValueHandling.Ignore});
+
+        Assert.Equal("""{"C":"a"}""", json);
+    }
+
+    public class HasChar
+    {
+        public char C { get; set; }
+    }
+
     class DefaultValueWithConstructorAndRename(string text = DefaultValueWithConstructorAndRename.DefaultText)
     {
         public const string DefaultText = "...";

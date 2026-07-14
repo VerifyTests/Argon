@@ -13,6 +13,17 @@ using Formatting = Argon.Formatting;
 public class JsonConvertTest : TestFixtureBase
 {
     [Fact]
+    public void ToStringTimeSpanDoesNotPadWithNulls()
+    {
+        Assert.Equal("\"01:00:00\"", JsonConvert.ToString(TimeSpan.FromHours(1)));
+        Assert.Equal("\"1.02:03:04\"", JsonConvert.ToString(new TimeSpan(1, 2, 3, 4)));
+    }
+
+    [Fact]
+    public void ToStringObjectTimeSpanDoesNotPadWithNulls() =>
+        Assert.Equal("\"01:00:00\"", JsonConvert.ToString((object) TimeSpan.FromHours(1)));
+
+    [Fact]
     public void ToStringEnsureEscapedArrayLength()
     {
         const char nonAsciiChar = (char) 257;

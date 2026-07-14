@@ -5,6 +5,38 @@
 public class MiscTests : TestFixtureBase
 {
     [Fact]
+    public void CloseReleasesBufferAndIsIdempotent()
+    {
+        var reader = new JsonTextReader(new StringReader("123"));
+        reader.Read();
+        reader.Close();
+
+        // After close the pooled buffer must be released so a second close cannot
+        // return the same array to ArrayPool.Shared a second time.
+        var field = typeof(JsonTextReader).GetField("charBuffer", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.NotNull(field);
+        Assert.Empty((char[]) field.GetValue(reader));
+
+        // second close must be a no-op (no double-return, no throw)
+        reader.Close();
+        Assert.Empty((char[]) field.GetValue(reader));
+    }
+
+    [Fact]
+    public void DisposeAfterExplicitCloseDoesNotDoubleReturn()
+    {
+        var reader = new JsonTextReader(new StringReader("123"));
+        reader.Read();
+        reader.Close();
+
+        // Disposing after an explicit Close must not return the buffer again.
+        ((IDisposable) reader).Dispose();
+
+        var field = typeof(JsonTextReader).GetField("charBuffer", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.Empty((char[]) field.GetValue(reader));
+    }
+
+    [Fact]
     public void ReadWithSupportMultipleContentCommaDelimited()
     {
         var json = "{ 'name': 'Admin' },{ 'name': 'Publisher' },1,null,[],,'string'";

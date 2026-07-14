@@ -5,6 +5,17 @@
 public class JTokenEqualityComparerTests : TestFixtureBase
 {
     [Fact]
+    public void MatchesAcrossNumericRepresentations()
+    {
+        var comparer = JToken.EqualityComparer;
+        var intBacked = JToken.FromObject(-1);
+        var longBacked = new JValue(-1L);
+
+        Assert.True(comparer.Equals(intBacked, longBacked));
+        Assert.Equal(comparer.GetHashCode(intBacked), comparer.GetHashCode(longBacked));
+    }
+
+    [Fact]
     public void CharAndStringHashConsistently()
     {
         var charValue = new JValue('a');
