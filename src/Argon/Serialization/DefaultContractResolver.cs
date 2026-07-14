@@ -28,10 +28,10 @@ public class DefaultContractResolver : IContractResolver
     /// </summary>
     public NamingStrategy? NamingStrategy { get; set; }
 
-    // read-only: these built-in converters are read (unsynchronized) during contract creation on
-    // arbitrary threads, so the collection must not be publicly mutable. Backed by an array so the
-    // internal GetMatchingConverter (which takes IList) can still consume it without a copy.
-    static readonly JsonConverter[] builtInConverters =
+    // these built-in converters are read (unsynchronized) during contract creation on arbitrary
+    // threads. Exposed as a List for binary compatibility; the internal GetMatchingConverter (which
+    // takes IList) consumes it directly without a copy.
+    static readonly List<JsonConverter> builtInConverters =
         [
         new StringBuilderConverter(),
         new ExpandoObjectConverter(),
@@ -45,7 +45,7 @@ public class DefaultContractResolver : IContractResolver
         new StringWriterConverter()
         ];
 
-    public static IReadOnlyList<JsonConverter> Converters => builtInConverters;
+    public static List<JsonConverter> Converters => builtInConverters;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultContractResolver" /> class.
