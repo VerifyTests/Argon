@@ -60,6 +60,60 @@ public class AddressWithDataMember
 public class ContractResolverTests : TestFixtureBase
 {
     [Fact]
+    public void BuiltInConvertersAreExposedAsList()
+    {
+        // Converters is typed as List<JsonConverter> for binary compatibility with
+        // assemblies compiled against the original signature (e.g. Verify.EntityFramework).
+        var propertyType = typeof(DefaultContractResolver)
+            .GetProperty(nameof(DefaultContractResolver.Converters))!
+            .PropertyType;
+
+        Assert.Equal(typeof(List<JsonConverter>), propertyType);
+        Assert.NotEmpty(DefaultContractResolver.Converters);
+    }
+
+    [Fact]
+    public void FieldsSerializationIncludesBaseClassPrivateFields()
+    {
+        var model = new FieldsModel(baseValue: 7, derivedValue: 9);
+
+        var json = JsonConvert.SerializeObject(model);
+        // Type.GetFields does not return inherited private fields, so before the fix baseField was dropped
+        Assert.Contains("baseField", json);
+
+        var roundTripped = JsonConvert.DeserializeObject<FieldsModel>(json)!;
+        Assert.Equal(7, roundTripped.GetBaseValue());
+        Assert.Equal(9, roundTripped.DerivedValue);
+    }
+
+    [JsonObject(MemberSerialization.Fields)]
+    public class FieldsModel : FieldsModelBase
+    {
+        public int DerivedValue;
+
+        public FieldsModel()
+        {
+        }
+
+        public FieldsModel(int baseValue, int derivedValue)
+        {
+            SetBaseValue(baseValue);
+            DerivedValue = derivedValue;
+        }
+    }
+
+    public class FieldsModelBase
+    {
+        int baseField;
+
+        protected void SetBaseValue(int value) =>
+            baseField = value;
+
+        public int GetBaseValue() =>
+            baseField;
+    }
+
+    [Fact]
     public void JsonPropertyDefaultValue()
     {
         var p1 = new JsonProperty(typeof(object), typeof(Object));

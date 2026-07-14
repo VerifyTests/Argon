@@ -65,10 +65,27 @@ public class IoInfos : TestFixtureBase
         JsonConvert.DeserializeObject<Target>(result);
     }
 
+    [Fact]
+    public void FileInfoThrowsForNonStringTokenInsteadOfDroppingToNull() =>
+        // before the fix a non-string, non-null token silently deserialized to null
+        Assert.Throws<JsonSerializationException>(() => JsonConvert.DeserializeObject<FileInfo>("123"));
+
+    [Fact]
+    public void FileInfoStillMapsNullTokenToNull()
+    {
+        var result = JsonConvert.DeserializeObject<FileInfoHolder>("""{"File":null}""");
+        Assert.Null(result.File);
+    }
+
     public class Target
     {
         public DirectoryInfo? DirectoryInfo { get; set; }
         public FileInfo? FileInfo { get; set; }
         public DriveInfo? DriveInfo { get; set; }
+    }
+
+    public class FileInfoHolder
+    {
+        public FileInfo? File { get; set; }
     }
 }

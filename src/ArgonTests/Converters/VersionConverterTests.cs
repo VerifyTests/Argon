@@ -24,6 +24,11 @@ public class VersionClass
 
 public class VersionConverterTests : TestFixtureBase
 {
+    [Fact]
+    public void ReportsNonStringTokenAsJsonException() =>
+        // was a raw InvalidCastException with no path/line info
+        Assert.Throws<JsonSerializationException>(() => JsonConvert.DeserializeObject<Version>("123"));
+
     internal static class VersionHelperClass
     {
         internal static void SerializeVersionClass(string version1, string version2)

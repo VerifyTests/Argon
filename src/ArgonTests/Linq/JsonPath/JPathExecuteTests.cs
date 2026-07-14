@@ -11,6 +11,20 @@ using TestCaseSource = Xunit.MemberDataAttribute;
 public class JPathExecuteTests : TestFixtureBase
 {
     [Fact]
+    public void AndBindsTighterThanOr()
+    {
+        var array = JArray.Parse("""[{"b":1,"c":1},{"a":1,"b":1},{"c":1}]""");
+
+        // '&&' binds tighter than '||': "(a && b) || c" matches all three items
+        var result = array.SelectTokens("$[?(@.a && @.b || @.c)]").ToList();
+        Assert.Equal(3, result.Count);
+
+        // the logically identical "c || (a && b)" must select the same set regardless of order
+        var reordered = array.SelectTokens("$[?(@.c || @.a && @.b)]").ToList();
+        Assert.Equal(3, reordered.Count);
+    }
+
+    [Fact]
     public void GreaterThanIssue1518()
     {
         var statusJson = """{"usingmem": "214376"}"""; //214,376

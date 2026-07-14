@@ -4,6 +4,27 @@
 
 public class ImmutableCollectionsTests : TestFixtureBase
 {
+    [Fact]
+    public void IImmutableQueueContractUsesTheConcreteCreatedType()
+    {
+        var resolver = new DefaultContractResolver();
+        var contract = (JsonArrayContract) resolver.ResolveContract(typeof(IImmutableQueue<int>));
+
+        // was the (non-instantiable) IImmutableQueue<> interface, unlike every sibling immutable
+        // interface which maps to its concrete type
+        Assert.Equal(typeof(ImmutableQueue<int>), contract.CreatedType);
+
+        var model = new ImmutableQueueHolder {Queue = ImmutableQueue.Create(1, 2, 3)};
+        var json = JsonConvert.SerializeObject(model);
+        var roundTripped = JsonConvert.DeserializeObject<ImmutableQueueHolder>(json)!;
+        Assert.Equal(new[] {1, 2, 3}, roundTripped.Queue.ToArray());
+    }
+
+    public class ImmutableQueueHolder
+    {
+        public IImmutableQueue<int> Queue { get; set; } = ImmutableQueue<int>.Empty;
+    }
+
     #region List
 
     [Fact]

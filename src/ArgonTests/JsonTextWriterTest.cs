@@ -6,6 +6,33 @@ using TestObjects;
 
 public class JsonTextWriterTest : TestFixtureBase
 {
+    [Fact]
+    public void WritesSpanComment()
+    {
+        var stringWriter = new StringWriter();
+        using (var writer = new JsonTextWriter(stringWriter))
+        {
+            writer.WriteStartArray();
+            writer.WriteComment("hello".AsSpan());
+            writer.WriteEndArray();
+        }
+
+        Assert.Contains("/*hello*/", stringWriter.ToString());
+    }
+
+    [Fact]
+    public void WritesSpanWhitespace()
+    {
+        var stringWriter = new StringWriter();
+        using (var writer = new JsonTextWriter(stringWriter))
+        {
+            writer.WriteWhitespace("   ".AsSpan());
+            writer.WriteValue(1);
+        }
+
+        Assert.Equal("   1", stringWriter.ToString());
+    }
+
 #if !RELEASE
     [Fact]
     public void BufferErroringWithInvalidSize()

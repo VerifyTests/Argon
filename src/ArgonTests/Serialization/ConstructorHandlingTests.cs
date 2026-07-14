@@ -8,6 +8,27 @@ using TestObjects;
 public class ConstructorHandlingTests : TestFixtureBase
 {
     [Fact]
+    public void ImmutableStructWithMultipleConstructorsRoundTrips()
+    {
+        var json = JsonConvert.SerializeObject(new MultiConstructorImmutable(42));
+        var result = JsonConvert.DeserializeObject<MultiConstructorImmutable>(json);
+        Assert.Equal(42, result.Value);
+    }
+
+    public readonly struct MultiConstructorImmutable
+    {
+        // declared before the matching constructor: before the fix a non-matching first
+        // constructor aborted the whole search
+        public MultiConstructorImmutable(string ignored) =>
+            Value = -1;
+
+        public MultiConstructorImmutable(int value) =>
+            Value = value;
+
+        public int Value { get; }
+    }
+
+    [Fact]
     public void UsePrivateConstructorIfThereAreMultipleConstructorsWithParametersAndNothingToFallbackTo()
     {
         var json = """{Name:"Name!"}""";

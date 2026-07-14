@@ -7,6 +7,61 @@
 public class JTokenWriterTest : TestFixtureBase
 {
     [Fact]
+    public void WritesSpanPropertyNameAndValue()
+    {
+        using var writer = new JTokenWriter();
+        writer.WriteStartObject();
+        writer.WritePropertyName("name".AsSpan());
+        writer.WriteValue("value".AsSpan());
+        writer.WriteEndObject();
+
+        var token = (JObject) writer.Token!;
+        Assert.Single(token.Properties());
+        Assert.Equal("value", (string) token["name"]!);
+    }
+
+    [Fact]
+    public void WritesSpanValueIntoArray()
+    {
+        using var writer = new JTokenWriter();
+        writer.WriteStartArray();
+        writer.WriteValue("a".AsSpan());
+        writer.WriteValue("b".AsSpan());
+        writer.WriteEndArray();
+
+        var array = (JArray) writer.Token!;
+        Assert.Equal(2, array.Count);
+        Assert.Equal("a", (string) array[0]!);
+        Assert.Equal("b", (string) array[1]!);
+    }
+
+    [Fact]
+    public void WritesNullByteArrayAsSingleNull()
+    {
+        using var writer = new JTokenWriter();
+        writer.WriteStartArray();
+        writer.WriteValue((byte[]) null);
+        writer.WriteEndArray();
+
+        var array = (JArray) writer.Token!;
+        Assert.Single(array);
+        Assert.Equal(JTokenType.Null, array[0].Type);
+    }
+
+    [Fact]
+    public void WritesNullUriInObjectWithoutThrowing()
+    {
+        using var writer = new JTokenWriter();
+        writer.WriteStartObject();
+        writer.WritePropertyName("uri");
+        writer.WriteValue((Uri) null);
+        writer.WriteEndObject();
+
+        var token = (JObject) writer.Token!;
+        Assert.Equal(JTokenType.Null, token["uri"]!.Type);
+    }
+
+    [Fact]
     public void ValueFormatting()
     {
         var data = "Hello world."u8.ToArray();

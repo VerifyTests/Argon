@@ -5,6 +5,21 @@
 public class JTokenEqualityComparerTests : TestFixtureBase
 {
     [Fact]
+    public void CharAndStringHashConsistently()
+    {
+        var charValue = new JValue('a');
+        var stringValue = new JValue("a");
+
+        Assert.True(charValue.Equals(stringValue));
+
+        var comparer = JToken.EqualityComparer;
+        Assert.Equal(comparer.GetHashCode(charValue), comparer.GetHashCode(stringValue));
+
+        var set = new HashSet<JToken>(comparer) {charValue};
+        Assert.Contains(stringValue, set);
+    }
+
+    [Fact]
     public void CompareEmptyProperties()
     {
         var o1 = JObject.Parse("{}");

@@ -5,6 +5,13 @@
 public class ExceptionHandlingTests : TestFixtureBase
 {
     [Fact]
+    public void RejectsNonPositiveBufferSize()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new JsonTextReader(new StringReader("1"), 0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new JsonTextReader(new StringReader("1"), -5));
+    }
+
+    [Fact]
     public void ReadAsBytes_MissingComma()
     {
         var data = "Hello world"u8.ToArray();
