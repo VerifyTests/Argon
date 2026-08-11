@@ -81,6 +81,13 @@ the serializer encounters a JSON property with an array of values and the type o
   </row>
   <row>
     <entry>
+    <para>DateOnly</para>
+    <para>TimeOnly</para>
+    </entry>
+    <entry><para>String, net6.0 and above only (<link xlink:href="DatesInJSON" />)</para></entry>
+  </row>
+  <row>
+    <entry>
     <para>Byte[]</para>
     </entry>
     <entry><para>String (base 64 encoded)</para></entry>
@@ -181,6 +188,12 @@ LINQ to JSON types (e.g. JObject and JArray) are automatically serialized and de
 Serialization of values that are convertible by a `Argon.JsonConverter` (i.e. CanConvert returns true for its type) is completely overridden by the JsonConverter. The test to see whether a value can be converted by the JsonSerializer takes precedence over all other tests.
 
 JsonConverters can be defined and specified in a number of places: in an attribute on a member, in an attribute on a class, and added to the JsonSerializer's converters collection. The priority of which JsonConverter is used is the JsonConverter defined by attribute on a member, then the JsonConverter defined by an attribute on a class, and finally any converters passed to the JsonSerializer.
+
+Within the converters collection, the first converter whose `CanConvert` returns true for a given type wins. Later converters for that same type are never consulted. This matters when adding a converter to a collection that has already been populated by something else, for example a testing or logging framework that seeds its own converters: appending with `Converters.Add` leaves the new converter behind the existing one, and it will silently never run. To take precedence over an already registered converter, insert at the front instead:
+
+```c#
+settings.Converters.Insert(0, new MyConverter());
+```
 
 Because a JsonConverter creates a new value, a converter will not work with readonly properties because there is no way to assign the new value to the property. Either change the property to have a public setter or place a JsonPropertyAttribute or DataMemberAttribute on the property.
 

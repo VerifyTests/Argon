@@ -10,6 +10,10 @@ WIP
 
 ### JsonArrayContract.ShouldSerializeItem
 
+### DateOnly and TimeOnly support
+
+Serialized and deserialized as ISO strings with no converter required, on net6.0 and above. See [Dates in JSON](DatesInJSON.md).
+
 
 ## Migrating from Json.net
 
