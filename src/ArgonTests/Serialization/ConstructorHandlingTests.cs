@@ -19,6 +19,7 @@ public class ConstructorHandlingTests : TestFixtureBase
     {
         // declared before the matching constructor: before the fix a non-matching first
         // constructor aborted the whole search
+        // ReSharper disable once UnusedParameter.Local
         public MultiConstructorImmutable(string ignored) =>
             Value = -1;
 
