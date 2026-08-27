@@ -575,6 +575,6 @@ public class LinqToJsonTests : TestFixtureBase
 
         Assert.Equal(2, storeNames.Count);
         Assert.Equal(2, firstProductNames.Count);
-        Assert.Equal(149.95m, totalPrice);
+        Assert.Equal(149.95m, totalPrice, 2);
     }
 }

@@ -61,6 +61,6 @@ public class QueryJsonSelectTokenWithLinq : TestFixtureBase
 
         #endregion
 
-        Assert.Equal(149.95m, totalPrice);
+        Assert.Equal(149.95m, totalPrice, 2);
     }
 }

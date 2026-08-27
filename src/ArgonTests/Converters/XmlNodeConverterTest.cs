@@ -739,7 +739,7 @@ public class XmlNodeConverterTest : TestFixtureBase
         });
 
         var xml = doc1.ToString();
-        Assert.Equal("<Number>1000000003.14159265358979</Number>", xml);
+        Assert.Equal("<Number>1000000003.1415926535897931160</Number>", xml);
 
         var settings = new JsonSerializerSettings
         {

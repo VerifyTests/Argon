@@ -184,7 +184,7 @@ public class SerializationEventTests : TestFixtureBase
             1.1m,
             2.222222222m,
             int.MaxValue,
-            Convert.ToDecimal(Math.PI)
+            (decimal) Math.PI
         };
 
         Assert.Equal(11, obj.Member1);
@@ -203,7 +203,7 @@ public class SerializationEventTests : TestFixtureBase
               1.1,
               2.222222222,
               2147483647.0,
-              3.14159265358979
+              3.1415926535897931159979634685
             ]
             """,
             json);
@@ -229,7 +229,7 @@ public class SerializationEventTests : TestFixtureBase
             {1.1m, "first"},
             {2.222222222m, "second"},
             {int.MaxValue, "third"},
-            {Convert.ToDecimal(Math.PI), "fourth"}
+            {(decimal) Math.PI, "fourth"}
         };
 
         Assert.Equal(11, obj.Member1);
@@ -246,7 +246,7 @@ public class SerializationEventTests : TestFixtureBase
               "1.1": "first",
               "2.222222222": "second",
               "2147483647": "third",
-              "3.14159265358979": "fourth",
+              "3.1415926535897931159979634685": "fourth",
               "79228162514264337593543950335": "Inserted on serializing"
             }
             """,

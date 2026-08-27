@@ -206,7 +206,7 @@ public class FloatTests : TestFixtureBase
         Assert.Equal(JsonToken.Float, reader.TokenType);
 
         Assert.True(reader.Read());
-        Assert.Equal(Convert.ToDecimal(1E-06), reader.Value);
+        Assert.Equal(0.000001m, reader.Value);
         Assert.Equal(typeof(decimal), reader.ValueType);
         Assert.Equal(JsonToken.Float, reader.TokenType);
 

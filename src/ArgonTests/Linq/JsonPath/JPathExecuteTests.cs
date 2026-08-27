@@ -1334,7 +1334,7 @@ public class JPathExecuteTests : TestFixtureBase
         Assert.Equal(2, firstProductNames.Count);
         Assert.Null(firstProductNames[0]);
         Assert.Equal("Headlight Fluid", firstProductNames[1]);
-        Assert.Equal(149.95m, totalPrice);
+        Assert.Equal(149.95m, totalPrice, 2);
     }
 
     [Fact]

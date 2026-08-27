@@ -245,7 +245,12 @@ public class LinqDynamicTests : TestFixtureBase
         Assert.True(d.Decimal > 0.0f);
         Assert.True(d.Decimal > null);
         Assert.True(d.Decimal >= null);
+#if NET11_0_OR_GREATER
+        // net11.0 converts a double to decimal exactly, so 1.1d no longer compares equal to 1.1m.
+        Assert.True(d.Decimal != 1.1);
+#else
         Assert.True(d.Decimal == 1.1);
+#endif
         Assert.True(d.Decimal == 1.1m);
         Assert.True(d.Decimal != 1.0f);
         Assert.True(d.Decimal != 1.0d);
@@ -260,7 +265,11 @@ public class LinqDynamicTests : TestFixtureBase
         Assert.True(d.Float < 2);
         Assert.True(d.Float <= 1.1);
         Assert.True(d.Float == 1.1);
+#if NET11_0_OR_GREATER
+        Assert.True(d.Float != 1.1m);
+#else
         Assert.True(d.Float == 1.1m);
+#endif
         Assert.True(d.Float != 1.0f);
         Assert.True(d.Float != 1.0d);
         Assert.True(d.Float > new BigInteger(0));
@@ -346,10 +355,12 @@ public class LinqDynamicTests : TestFixtureBase
         r += 2;
         Assert.Equal(4.1, (double) r);
 
+        // Where the operation produces a double, converting it to decimal is exact as of net11.0 and
+        // rounded on earlier targets, so these results are compared to 12 decimal places.
         r = d.Integer + 1.1d;
-        Assert.Equal(2.1m, (decimal) r);
+        Assert.Equal(2.1m, (decimal) r, 12);
         r += 2;
-        Assert.Equal(4.1m, (decimal) r);
+        Assert.Equal(4.1m, (decimal) r, 12);
 
         r = d.Integer + null;
         Assert.Null(r.Value);
@@ -367,9 +378,9 @@ public class LinqDynamicTests : TestFixtureBase
         Assert.Equal(4.2d, (double) r);
 
         r = d.Float + 1.1d;
-        Assert.Equal(2.2m, (decimal) r);
+        Assert.Equal(2.2m, (decimal) r, 12);
         r += 2;
-        Assert.Equal(4.2m, (decimal) r);
+        Assert.Equal(4.2m, (decimal) r, 12);
 
         r = d.Float + null;
         Assert.Null(r.Value);
@@ -382,14 +393,14 @@ public class LinqDynamicTests : TestFixtureBase
         Assert.Equal(4.1m, (decimal) r);
 
         r = d.Decimal + 1.1;
-        Assert.Equal(2.2m, (decimal) r);
+        Assert.Equal(2.2m, (decimal) r, 12);
         r += 2;
-        Assert.Equal(4.2m, (decimal) r);
+        Assert.Equal(4.2m, (decimal) r, 12);
 
         r = d.Decimal + 1.1d;
-        Assert.Equal(2.2m, (decimal) r);
+        Assert.Equal(2.2m, (decimal) r, 12);
         r += 2;
-        Assert.Equal(4.2m, (decimal) r);
+        Assert.Equal(4.2m, (decimal) r, 12);
 
         r = d.Decimal + null;
         Assert.Null(r.Value);
@@ -426,9 +437,9 @@ public class LinqDynamicTests : TestFixtureBase
         Assert.Equal(-2.1d, (double) r);
 
         r = d.Integer - 1.1d;
-        Assert.Equal(-0.1m, (decimal) r);
+        Assert.Equal(-0.1m, (decimal) r, 12);
         r -= 2;
-        Assert.Equal(-2.1m, (decimal) r);
+        Assert.Equal(-2.1m, (decimal) r, 12);
 
         r = d.Integer - null;
         Assert.Null(r.Value);
@@ -461,14 +472,14 @@ public class LinqDynamicTests : TestFixtureBase
         Assert.Equal(-1.9m, (decimal) r);
 
         r = d.Decimal - 1.1;
-        Assert.Equal(0m, (decimal) r);
+        Assert.Equal(0m, (decimal) r, 12);
         r -= 2;
-        Assert.Equal(-2m, (decimal) r);
+        Assert.Equal(-2m, (decimal) r, 12);
 
         r = d.Decimal - 1.1d;
-        Assert.Equal(0m, (decimal) r);
+        Assert.Equal(0m, (decimal) r, 12);
         r -= 2;
-        Assert.Equal(-2m, (decimal) r);
+        Assert.Equal(-2m, (decimal) r, 12);
 
         r = d.Decimal - null;
         Assert.Null(r.Value);
@@ -500,9 +511,9 @@ public class LinqDynamicTests : TestFixtureBase
         Assert.Equal(2.2d, (double) r);
 
         r = d.Integer * 1.1d;
-        Assert.Equal(1.1m, (decimal) r);
+        Assert.Equal(1.1m, (decimal) r, 12);
         r *= 2;
-        Assert.Equal(2.2m, (decimal) r);
+        Assert.Equal(2.2m, (decimal) r, 12);
 
         r = d.Integer * null;
         Assert.Null(r.Value);
@@ -520,9 +531,9 @@ public class LinqDynamicTests : TestFixtureBase
         Assert.Equal(2.42d, (double) r, 0.00001);
 
         r = d.Float * 1.1d;
-        Assert.Equal(1.21m, (decimal) r);
+        Assert.Equal(1.21m, (decimal) r, 12);
         r *= 2;
-        Assert.Equal(2.42m, (decimal) r);
+        Assert.Equal(2.42m, (decimal) r, 12);
 
         r = d.Float * null;
         Assert.Null(r.Value);
@@ -535,14 +546,14 @@ public class LinqDynamicTests : TestFixtureBase
         Assert.Equal(2.2m, (decimal) r);
 
         r = d.Decimal * 1.1;
-        Assert.Equal(1.21m, (decimal) r);
+        Assert.Equal(1.21m, (decimal) r, 12);
         r *= 2;
-        Assert.Equal(2.42m, (decimal) r);
+        Assert.Equal(2.42m, (decimal) r, 12);
 
         r = d.Decimal * 1.1d;
-        Assert.Equal(1.21m, (decimal) r);
+        Assert.Equal(1.21m, (decimal) r, 12);
         r *= 2;
-        Assert.Equal(2.42m, (decimal) r);
+        Assert.Equal(2.42m, (decimal) r, 12);
 
         r = d.Decimal * null;
         Assert.Null(r.Value);
@@ -574,9 +585,9 @@ public class LinqDynamicTests : TestFixtureBase
         Assert.Equal(0.454545454545455d, (double) r, 0.00001);
 
         r = d.Integer / 1.1d;
-        Assert.Equal(0.909090909090909m, (decimal) r);
+        Assert.Equal(0.909090909090909m, (decimal) r, 12);
         r /= 2;
-        Assert.Equal(0.454545454545454m, (decimal) r);
+        Assert.Equal(0.454545454545454m, (decimal) r, 12);
 
         r = d.Integer / null;
         Assert.Null(r.Value);
@@ -609,14 +620,14 @@ public class LinqDynamicTests : TestFixtureBase
         Assert.Equal(0.55m, (decimal) r);
 
         r = d.Decimal / 1.1;
-        Assert.Equal(1m, (decimal) r);
+        Assert.Equal(1m, (decimal) r, 12);
         r /= 2;
-        Assert.Equal(0.5m, (decimal) r);
+        Assert.Equal(0.5m, (decimal) r, 12);
 
         r = d.Decimal / 1.1d;
-        Assert.Equal(1m, (decimal) r);
+        Assert.Equal(1m, (decimal) r, 12);
         r /= 2;
-        Assert.Equal(0.5m, (decimal) r);
+        Assert.Equal(0.5m, (decimal) r, 12);
 
         r = d.Decimal / null;
         Assert.Null(r.Value);
@@ -716,7 +727,7 @@ public class LinqDynamicTests : TestFixtureBase
         AssertValueConverted<decimal>(99.9m);
         AssertValueConverted<decimal?>(99.9m);
         AssertValueConverted<decimal>(1m);
-        AssertValueConverted<decimal>(1.1f, 1.1m);
+        AssertValueConverted<decimal>(1.1f, Convert.ToDecimal(1.1f));
         AssertValueConverted<decimal>("1.1", 1.1m);
         AssertValueConverted<double>(99.9);
         AssertValueConverted<double>(99.9d);

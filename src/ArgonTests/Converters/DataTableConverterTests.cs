@@ -317,7 +317,7 @@ public class DataTableConverterTests : TestFixtureBase
         myNewRow["BooleanCol"] = true;
         myNewRow["TimeSpanCol"] = new TimeSpan(10, 22, 10, 15, 100);
         myNewRow["DateTimeCol"] = new DateTime(2000, 12, 29, 0, 0, 0, DateTimeKind.Utc);
-        myNewRow["DecimalCol"] = 64.0021;
+        myNewRow["DecimalCol"] = 64.0021m;
         myNewRow["ArrayCol"] = new[] {1};
         myNewRow["BytesCol"] = "Hello world"u8.ToArray();
 
