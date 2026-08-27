@@ -204,11 +204,40 @@ doubt, not because a number was produced. Worth re-running on a quiet machine.
 - **New benchmarks** — [PerValueBenchmarks.cs](src/ArgonTests/Benchmarks/PerValueBenchmarks.cs), registered in [Program.cs](src/Benchmark.Tests/Program.cs).
   One per medium/low priority item, in the same shape as `HotPathBenchmarks`.
 
-  Full suite: **2361/2361 net10.0, 2360/2360 net9.0 and net8.0, 2340/2340 net48, 9/9 F#**. net11.0 has
-  13 failures, all `double` → `decimal` conversions returning full precision where the expectation was
-  written for 15 significant digits — the same class of problem as the `FloatParseHandlingDecimal` fix
-  above, and confirmed to fail identically on a clean worktree at the parent commit, so they are
-  pre-existing on that preview runtime rather than caused by any of this work.
+- **Fixed the 13 net11.0 failures** — see below. They were pre-existing (they fail identically on a
+  clean worktree at the parent commit) and are unrelated to the perf work, but they were the only thing
+  keeping the suite from being green everywhere.
+
+  Full suite: **2361/2361 net10.0, 2360/2360 net11.0, net9.0 and net8.0, 2340/2340 net48, 9/9 F#** —
+  11790 tests, 0 failures.
+
+## The net11.0 decimal failures
+
+.NET 11 makes `double`/`float` → `decimal` conversion correctly rounded instead of truncating to 15
+(double) or 7 (float) significant digits — [dotnet/runtime#130566](https://github.com/dotnet/runtime/pull/130566),
+merged for 11.0-preview7, breaking change documented in dotnet/docs#55743. `Convert.ToDecimal(Math.PI)`
+returns `3.1415926535897931159979634685` there and `3.14159265358979` before. The `(decimal)` cast was
+already exact on every runtime; only the `Convert` path changed.
+
+Argon was not changed. It uses `Convert.ToDecimal` for `JToken`'s decimal conversion operator, for
+`JValue.Compare`, and for dynamic arithmetic where either operand is a decimal, and following the
+platform is the right behaviour — reintroducing the old truncation inside Argon would mean deliberately
+re-adding an inaccuracy the BCL just removed, and would diverge from what a `(decimal)` cast in the
+caller's own code does. The 13 failures were all in the tests:
+
+- **Test data that encoded the old truncation** — `SerializationEventTests` built its input with
+  `Convert.ToDecimal(Math.PI)`, the DataTable/DataSet tests assigned the double `64.0021` to a decimal
+  typed column, and `FloatTests.FloatParseHandling` asserted against `Convert.ToDecimal(1E-06)`. All now
+  use decimal literals, so the test says what it means and does not change with the runtime. This is the
+  same fix the runtime team applied to their own two affected tests in that PR.
+- **Documentation samples** — the three copies of the `SelectToken` sample sum prices read from JSON as
+  doubles, so the total now carries the binary expansion of `99.95`. They assert on the rounded total.
+- **Dynamic arithmetic and comparison** — `JValueAddition`'s decimal assertions compare to 10 decimal
+  places (xUnit's precision overload), which is far more precision than those expressions are testing.
+  `JValueEquals` has the two genuinely runtime-dependent assertions under `#if NET11_0_OR_GREATER`: a
+  `JValue` holding the decimal `1.1` no longer compares equal to the double `1.1`, because the double
+  now converts to `1.100000000000000088817841970`. That is a real, if narrow, behaviour change for
+  anyone comparing a decimal token against a double on .NET 11.
 
 ## Already optimal (checked, no action)
 

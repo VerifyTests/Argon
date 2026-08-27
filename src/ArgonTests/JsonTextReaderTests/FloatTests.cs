@@ -206,7 +206,10 @@ public class FloatTests : TestFixtureBase
         Assert.Equal(JsonToken.Float, reader.TokenType);
 
         Assert.True(reader.Read());
-        Assert.Equal(Convert.ToDecimal(1E-06), reader.Value);
+        // the reader parses the text straight to decimal, so this is exactly 0.000001. It used
+        // to be written as Convert.ToDecimal(1E-06), which only matched because that conversion
+        // truncated to 15 significant digits before .NET 11
+        Assert.Equal(0.000001m, reader.Value);
         Assert.Equal(typeof(decimal), reader.ValueType);
         Assert.Equal(JsonToken.Float, reader.TokenType);
 

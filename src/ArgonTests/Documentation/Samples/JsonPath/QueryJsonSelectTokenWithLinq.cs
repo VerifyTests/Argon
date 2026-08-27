@@ -61,6 +61,8 @@ public class QueryJsonSelectTokenWithLinq : TestFixtureBase
 
         #endregion
 
-        Assert.Equal(149.95m, totalPrice);
+        // the prices are read from JSON as doubles, and converting a double to decimal is
+        // correctly rounded from .NET 11 on, so the sum carries the binary expansion of 99.95
+        Assert.Equal(149.95m, Math.Round(totalPrice, 2));
     }
 }

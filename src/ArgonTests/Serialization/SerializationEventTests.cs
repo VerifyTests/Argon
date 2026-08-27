@@ -184,7 +184,9 @@ public class SerializationEventTests : TestFixtureBase
             1.1m,
             2.222222222m,
             int.MaxValue,
-            Convert.ToDecimal(Math.PI)
+            // the value Convert.ToDecimal(Math.PI) produced before .NET 11 made that conversion
+            // correctly rounded; written out so the serialized output is the same on every runtime
+            3.14159265358979m
         };
 
         Assert.Equal(11, obj.Member1);
@@ -229,7 +231,8 @@ public class SerializationEventTests : TestFixtureBase
             {1.1m, "first"},
             {2.222222222m, "second"},
             {int.MaxValue, "third"},
-            {Convert.ToDecimal(Math.PI), "fourth"}
+            // see ListEvents: a literal keeps the serialized key stable across runtimes
+            {3.14159265358979m, "fourth"}
         };
 
         Assert.Equal(11, obj.Member1);

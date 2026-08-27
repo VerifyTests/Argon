@@ -317,7 +317,9 @@ public class DataTableConverterTests : TestFixtureBase
         myNewRow["BooleanCol"] = true;
         myNewRow["TimeSpanCol"] = new TimeSpan(10, 22, 10, 15, 100);
         myNewRow["DateTimeCol"] = new DateTime(2000, 12, 29, 0, 0, 0, DateTimeKind.Utc);
-        myNewRow["DecimalCol"] = 64.0021;
+        // a decimal literal, not a double: the column is typed decimal, and converting a double
+        // to decimal is correctly rounded from .NET 11 on rather than truncated to 15 digits
+        myNewRow["DecimalCol"] = 64.0021m;
         myNewRow["ArrayCol"] = new[] {1};
         myNewRow["BytesCol"] = "Hello world"u8.ToArray();
 
