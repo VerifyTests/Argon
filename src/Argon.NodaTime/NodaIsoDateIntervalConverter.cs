@@ -38,7 +38,7 @@ sealed class NodaIsoDateIntervalConverter :
         var start = pattern.Parse(startText).Value;
         var end = pattern.Parse(endText).Value;
 
-        return new(start, end);
+        return [with(start, end)];
     }
 
     /// <summary>

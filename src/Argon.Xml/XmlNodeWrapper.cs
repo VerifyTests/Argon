@@ -21,7 +21,7 @@
             {
                 if (node.HasChildNodes)
                 {
-                    childNodes = new(node.ChildNodes.Count);
+                    childNodes = [with(node.ChildNodes.Count)];
                     foreach (XmlNode childNode in node.ChildNodes)
                     {
                         childNodes.Add(WrapNode(childNode));
@@ -62,7 +62,7 @@
             {
                 if (HasAttributes)
                 {
-                    attributes = new(node.Attributes!.Count);
+                    attributes = [with(node.Attributes!.Count)];
                     foreach (XmlAttribute attribute in node.Attributes)
                     {
                         attributes.Add(WrapNode(attribute));
