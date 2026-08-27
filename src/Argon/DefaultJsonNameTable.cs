@@ -150,23 +150,9 @@ public class DefaultJsonNameTable : JsonNameTable
         Volatile.Write(ref mask, newMask);
     }
 
-    static bool TextEquals(string str1, char[] str2, int str2Start, int str2Length)
-    {
-        if (str1.Length != str2Length)
-        {
-            return false;
-        }
-
-        for (var i = 0; i < str1.Length; i++)
-        {
-            if (str1[i] != str2[str2Start + i])
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
+    // SequenceEqual vectorizes the comparison and short circuits on a length mismatch
+    static bool TextEquals(string str1, char[] str2, int str2Start, int str2Length) =>
+        str1.AsSpan().SequenceEqual(str2.AsSpan(str2Start, str2Length));
 
     class Entry
     {

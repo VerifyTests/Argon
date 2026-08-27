@@ -17,6 +17,20 @@ class BooleanQueryExpression(QueryOperator @operator, object left, object? right
     readonly (string Pattern, RegexOptions Options)? regex =
         @operator == QueryOperator.RegexEquals ? ParseRegex(right) : null;
 
+    // the constructed Regex is cached with the timeout it was built for. evaluating via the
+    // static Regex.IsMatch costs a process-wide cache probe per candidate token, and silently
+    // degrades to a full pattern re-parse once more than Regex.CacheSize patterns are in play.
+    // built lazily so an invalid pattern still surfaces during evaluation rather than at parse
+    // time, and held as a single reference so a concurrently evaluated cached JPath can never
+    // observe a Regex paired with the wrong timeout
+    volatile CachedRegex? cachedRegex;
+
+    sealed class CachedRegex(Regex regex, TimeSpan timeout)
+    {
+        public readonly Regex Regex = regex;
+        public readonly TimeSpan Timeout = timeout;
+    }
+
     static (string Pattern, RegexOptions Options) ParseRegex(object? right)
     {
         if (right is not JValue {Value: string regexText})
@@ -194,9 +208,18 @@ class BooleanQueryExpression(QueryOperator @operator, object left, object? right
             return false;
         }
 
-        var (pattern, options) = regex!.Value;
         var timeout = settings.RegexMatchTimeout ?? Regex.InfiniteMatchTimeout;
-        return Regex.IsMatch((string) input.GetValue(), pattern, options, timeout);
+
+        var cached = cachedRegex;
+        if (cached == null ||
+            cached.Timeout != timeout)
+        {
+            var (pattern, options) = regex!.Value;
+            cached = new(new(pattern, options, timeout), timeout);
+            cachedRegex = cached;
+        }
+
+        return cached.Regex.IsMatch((string) input.GetValue());
     }
 
     static bool EqualsWithStringCoercion(JValue value, JValue queryValue)

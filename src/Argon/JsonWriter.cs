@@ -1517,8 +1517,25 @@ public abstract class JsonWriter : IDisposable
         AutoComplete(PropertyName);
     }
 
-    internal void InternalWritePropertyName(CharSpan name) =>
-        InternalWritePropertyName(name.ToString());
+    internal void InternalWritePropertyName(CharSpan name)
+    {
+        // copy the chars into a buffer owned by the current position instead of allocating a
+        // string. the buffer is reused by every property written at this depth, and the name is
+        // only read back when a path is built for an error message
+        var nameChars = currentPosition.NameChars;
+        if (nameChars == null ||
+            nameChars.Length < name.Length)
+        {
+            nameChars = new char[Math.Max(name.Length, 16)];
+            currentPosition.NameChars = nameChars;
+        }
+
+        name.CopyTo(nameChars);
+        currentPosition.NameLength = name.Length;
+        currentPosition.PropertyName = null;
+
+        AutoComplete(PropertyName);
+    }
 
     internal void InternalWriteStart(JsonToken token, JsonContainerType container)
     {

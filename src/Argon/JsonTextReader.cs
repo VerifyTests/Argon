@@ -963,6 +963,35 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
         return false;
     }
 
+#if NET8_0_OR_GREATER
+    // every char a JSON string can contain that ReadStringIntoBuffer has to act on. '\0' is
+    // included because the buffer is always '\0' terminated at charsUsed, so the terminator
+    // doubles as the "need more data" sentinel and stops the scan at the end of valid content
+    static readonly SearchValues<char> stringDelimiters = SearchValues.Create("\0\\\r\n\"'");
+
+    // vectorized skip past the run of chars needing no handling, so the per char switch in
+    // ReadStringIntoBuffer only runs on chars that actually do something. most strings contain
+    // none of these, so this collapses the whole scan into a single IndexOfAny
+    int SkipToNextStringDelimiter(int charPos)
+    {
+        var remaining = charsUsed - charPos;
+        if (remaining <= 0)
+        {
+            return charPos;
+        }
+
+        var index = charBuffer.AsSpan(charPos, remaining).IndexOfAny(stringDelimiters);
+        if (index == -1)
+        {
+            // no delimiter in the buffered content, so jump to the '\0' terminator at
+            // charsUsed and let the switch trigger a read for more data
+            return charsUsed;
+        }
+
+        return charPos + index;
+    }
+#endif
+
     void ReadStringIntoBuffer(char quote)
     {
         var charPos = this.charPos;
@@ -972,6 +1001,9 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
 
         while (true)
         {
+#if NET8_0_OR_GREATER
+            charPos = SkipToNextStringDelimiter(charPos);
+#endif
             switch (charBuffer[charPos++])
             {
                 case '\0':

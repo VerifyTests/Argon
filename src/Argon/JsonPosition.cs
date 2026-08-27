@@ -16,10 +16,29 @@ struct JsonPosition(JsonContainerType type)
     internal string? PropertyName = null;
     internal bool HasIndex = TypeHasIndex(type);
 
+    // set instead of PropertyName when the name arrived as a span. the chars are copied into a
+    // buffer owned by this position rather than materialized into a string, because the name is
+    // only ever read back to build a path for an error message
+    internal char[]? NameChars = null;
+    internal int NameLength = 0;
+
+    readonly CharSpan Name
+    {
+        get
+        {
+            if (PropertyName != null)
+            {
+                return PropertyName.AsSpan();
+            }
+
+            return NameChars.AsSpan(0, NameLength);
+        }
+    }
+
     int CalculateLength() =>
         Type switch
         {
-            JsonContainerType.Object => PropertyName!.Length + 5,
+            JsonContainerType.Object => Name.Length + 5,
             JsonContainerType.Array => MathUtils.IntLength((ulong) Position) + 2,
             _ => throw new ArgumentOutOfRangeException(nameof(Type))
         };
@@ -34,7 +53,7 @@ struct JsonPosition(JsonContainerType type)
         switch (Type)
         {
             case JsonContainerType.Object:
-                var propertyName = PropertyName!.AsSpan();
+                var propertyName = Name;
                 if (propertyName.IndexOfAny(specialCharacters) != -1)
                 {
                     builder.Append("['");

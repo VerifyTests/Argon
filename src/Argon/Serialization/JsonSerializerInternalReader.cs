@@ -3,6 +3,11 @@
 // as found in the license.md file.
 
 
+#if NET6_0_OR_GREATER
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+#endif
+
 // ReSharper disable NullableWarningSuppressionIsUsed
 // ReSharper disable RedundantSuppressNullableWarningExpression
 
@@ -273,7 +278,7 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
                 return contract.Converter;
             }
 
-            if (Serializer.GetMatchingConverter(contract.UnderlyingType) is { } matchingConverter)
+            if (GetMatchingConverter(contract.UnderlyingType) is { } matchingConverter)
             {
                 // passed in converters
                 return matchingConverter;
@@ -978,8 +983,9 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         }
         else
         {
-            propertyContract = GetContract(currentValue.GetType());
-
+            // currentValue is only ever non null when the block above ran, and that already
+            // resolved propertyContract from the same currentValue.GetType(). resolving it
+            // again would repeat a GetType and a contract dictionary lookup per property
             if (propertyContract != property.PropertyContract)
             {
                 propertyConverter = GetConverter(propertyContract, property.Converter, containerContract, containerProperty);
@@ -1746,7 +1752,7 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
                     }
                 }
 
-                var i = contract.CreatorParameters.IndexOf(constructorProperty);
+                var i = contract.IndexOfCreatorParameter(constructorProperty);
                 creatorParameterValues[i] = context.Value;
 
                 context.Used = true;
@@ -2228,11 +2234,25 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
     static void SetPropertyPresence(JsonReader reader, JsonProperty property, Dictionary<JsonProperty, PropertyPresence>? requiredProperties)
     {
         // the dictionary only tracks presence-relevant properties; do not add others back
-        if (requiredProperties == null ||
-            !requiredProperties.ContainsKey(property))
+        if (requiredProperties == null)
         {
             return;
         }
+
+#if NET6_0_OR_GREATER
+        // one hash lookup rather than a ContainsKey probe followed by an indexer set,
+        // which runs for every property of every object with tracked presence
+        ref var presenceSlot = ref CollectionsMarshal.GetValueRefOrNullRef(requiredProperties, property);
+        if (Unsafe.IsNullRef(ref presenceSlot))
+        {
+            return;
+        }
+#else
+        if (!requiredProperties.ContainsKey(property))
+        {
+            return;
+        }
+#endif
 
         PropertyPresence propertyPresence;
         switch (reader.TokenType)
@@ -2257,7 +2277,11 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
                 break;
         }
 
+#if NET6_0_OR_GREATER
+        presenceSlot = propertyPresence;
+#else
         requiredProperties[property] = propertyPresence;
+#endif
     }
 
     void HandleError(JsonReader reader, bool readPastError, int initialDepth)

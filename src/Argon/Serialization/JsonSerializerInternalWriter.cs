@@ -14,6 +14,13 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
     int rootLevel;
     readonly List<object> serializeStack = [];
 
+    // formatted $type names, cached for the duration of this serialization. building one
+    // concatenates the type and assembly names and then re-parses the result through
+    // RemoveAssemblyDetails, allocating a StringBuilder and a string, and polymorphic payloads
+    // repeat the same handful of types over and over. the binder and format handling are fixed
+    // for a run, so the type alone is a sufficient key
+    Dictionary<Type, string>? typeNames;
+
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public void Serialize(JsonWriter jsonWriter, object? value, Type? type)
@@ -116,7 +123,7 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
             containerProperty?.ItemConverter ??
             containerContract?.ItemConverter ??
             valueContract.Converter ??
-            Serializer.GetMatchingConverter(valueContract.UnderlyingType) ??
+            GetMatchingConverter(valueContract.UnderlyingType) ??
             valueContract.InternalConverter;
 
         if (converter is {CanWrite: true})
@@ -507,8 +514,15 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
 
     void WriteTypeProperty(JsonWriter writer, Type type)
     {
-        var binder = Serializer.SerializationBinder ?? DefaultSerializationBinder.Instance;
-        var typeName = type.GetTypeName(Serializer.TypeNameAssemblyFormatHandling, binder);
+        typeNames ??= [];
+
+        if (!typeNames.TryGetValue(type, out var typeName))
+        {
+            var binder = Serializer.SerializationBinder ?? DefaultSerializationBinder.Instance;
+            typeName = type.GetTypeName(Serializer.TypeNameAssemblyFormatHandling, binder);
+            typeNames[type] = typeName;
+        }
+
         writer.WritePropertyName(JsonTypeReflector.TypePropertyName, false);
         writer.WriteValue(typeName);
     }
