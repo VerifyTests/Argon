@@ -1,4 +1,4 @@
-// Copyright (c) 2007 James Newton-King. All rights reserved.
+﻿// Copyright (c) 2007 James Newton-King. All rights reserved.
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
@@ -560,8 +560,9 @@ class JPath
 
         if (char.IsDigit(currentChar) || currentChar == '-')
         {
-            var stringBuilder = new StringBuilder();
-            stringBuilder.Append(currentChar);
+            // parse the slice of the expression the number occupies: accumulating it into a
+            // StringBuilder first allocated the builder and a string for every number in a path
+            var start = currentIndex;
 
             currentIndex++;
             while (currentIndex < expression.Length)
@@ -569,7 +570,7 @@ class JPath
                 currentChar = expression[currentIndex];
                 if (currentChar is ' ' or ')' or '&' or '|')
                 {
-                    var numberText = stringBuilder.ToString();
+                    var numberText = expression.AsSpan(start, currentIndex - start);
 
                     if (numberText.IndexOfAny(floatCharacters) == -1)
                     {
@@ -585,7 +586,6 @@ class JPath
                     }
                 }
 
-                stringBuilder.Append(currentChar);
                 currentIndex++;
             }
         }
@@ -625,7 +625,11 @@ class JPath
 
     string ReadQuotedString()
     {
-        var stringBuilder = new StringBuilder();
+        // the builder is only created once an escape is found: a string with no escapes in it
+        // is a slice of the expression
+        StringBuilder? stringBuilder = null;
+        var start = currentIndex + 1;
+        var copiedTo = start;
 
         currentIndex++;
         while (currentIndex < expression.Length)
@@ -633,6 +637,9 @@ class JPath
             var currentChar = expression[currentIndex];
             if (currentChar == '\\' && currentIndex + 1 < expression.Length)
             {
+                stringBuilder ??= new();
+                stringBuilder.Append(expression, copiedTo, currentIndex - copiedTo);
+
                 currentIndex++;
                 currentChar = expression[currentIndex];
 
@@ -667,16 +674,24 @@ class JPath
                 stringBuilder.Append(resolvedChar);
 
                 currentIndex++;
+                copiedTo = currentIndex;
             }
             else if (currentChar == '\'')
             {
+                if (stringBuilder == null)
+                {
+                    var text = expression.Substring(start, currentIndex - start);
+                    currentIndex++;
+                    return text;
+                }
+
+                stringBuilder.Append(expression, copiedTo, currentIndex - copiedTo);
                 currentIndex++;
                 return stringBuilder.ToString();
             }
             else
             {
                 currentIndex++;
-                stringBuilder.Append(currentChar);
             }
         }
 

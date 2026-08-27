@@ -1,4 +1,4 @@
-// Copyright (c) 2007 James Newton-King. All rights reserved.
+﻿// Copyright (c) 2007 James Newton-King. All rights reserved.
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
@@ -89,8 +89,12 @@ public static class JsonConvert
     /// <summary>
     /// Converts the <see cref="Char" /> to its JSON string representation.
     /// </summary>
-    public static string ToString(char value) =>
-        ToString(new[]{value}.AsSpan());
+    public static string ToString(char value)
+    {
+        Span<char> chars = stackalloc char[1];
+        chars[0] = value;
+        return ToString(chars);
+    }
 
     /// <summary>
     /// Converts the <see cref="Enum" /> to its JSON string representation.

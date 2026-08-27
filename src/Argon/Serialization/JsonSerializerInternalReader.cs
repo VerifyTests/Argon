@@ -1,4 +1,4 @@
-// Copyright (c) 2007 James Newton-King. All rights reserved.
+﻿// Copyright (c) 2007 James Newton-King. All rights reserved.
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
@@ -33,6 +33,31 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
 
     JsonContract GetContract(Type type) =>
         Serializer.ResolveContract(type);
+
+    // type names are untrusted input, so the cache is capped; once it is full later names are
+    // split without being added
+    const int typeNameCacheMax = 128;
+
+    Dictionary<string, TypeNameKey>? typeNameKeys;
+
+    // the same $type repeats for every item of a polymorphic collection, and splitting it
+    // allocates a substring for the type and one for the assembly every time
+    TypeNameKey SplitTypeName(string qualifiedTypeName)
+    {
+        var keys = typeNameKeys ??= new();
+        if (keys.TryGetValue(qualifiedTypeName, out var key))
+        {
+            return key;
+        }
+
+        key = ReflectionUtils.SplitFullyQualifiedTypeName(qualifiedTypeName);
+        if (keys.Count < typeNameCacheMax)
+        {
+            keys.Add(qualifiedTypeName, key);
+        }
+
+        return key;
+    }
 
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
@@ -650,7 +675,7 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
 
         if (resolvedTypeNameHandling != TypeNameHandling.None)
         {
-            var typeNameKey = ReflectionUtils.SplitFullyQualifiedTypeName(qualifiedTypeName);
+            var typeNameKey = SplitTypeName(qualifiedTypeName);
 
             var binder = Serializer.SerializationBinder ?? DefaultSerializationBinder.Instance;
             Type specifiedType;

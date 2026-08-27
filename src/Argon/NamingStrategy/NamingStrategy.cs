@@ -9,6 +9,12 @@ namespace Argon;
 /// </summary>
 public abstract class NamingStrategy
 {
+    // dictionary keys are user data, so the cache is capped; once it is full later keys are
+    // resolved without being added
+    const int dictionaryKeyCacheMax = 512;
+
+    ConcurrentDictionary<string, string>? dictionaryKeyCache;
+
     /// <summary>
     /// A flag indicating whether dictionary keys should be processed.
     /// Defaults to <c>false</c>.
@@ -45,13 +51,39 @@ public abstract class NamingStrategy
     /// <returns>The serialized dictionary key.</returns>
     public virtual string GetDictionaryKey(string name, object original)
     {
-        if (ProcessDictionaryKeys)
+        if (!ProcessDictionaryKeys)
+        {
+            return name;
+        }
+
+        if (!CacheDictionaryKeys)
         {
             return ResolvePropertyName(name);
         }
 
-        return name;
+        // the same keys usually repeat across the entries of a dictionary, and across calls
+        var cache = dictionaryKeyCache ??= new();
+        if (cache.TryGetValue(name, out var resolved))
+        {
+            return resolved;
+        }
+
+        resolved = ResolvePropertyName(name);
+        if (cache.Count < dictionaryKeyCacheMax)
+        {
+            cache.TryAdd(name, resolved);
+        }
+
+        return resolved;
     }
+
+    /// <summary>
+    /// A flag indicating whether resolved dictionary keys can be cached, which requires
+    /// <see cref="ResolvePropertyName" /> to return the same result every time it is passed the same
+    /// name. True for all the naming strategies included in Argon. Override to <c>false</c> in a
+    /// strategy that resolves a name differently depending on state outside that name.
+    /// </summary>
+    protected virtual bool CacheDictionaryKeys => true;
 
     /// <summary>
     /// Resolves the specified property name.

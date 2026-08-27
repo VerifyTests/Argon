@@ -1,4 +1,4 @@
-// Copyright (c) 2007 James Newton-King. All rights reserved.
+﻿// Copyright (c) 2007 James Newton-King. All rights reserved.
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
@@ -13,6 +13,26 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
     Type? rootType;
     int rootLevel;
     readonly List<object> serializeStack = [];
+
+    bool SerializeStackContains(object value)
+    {
+        var comparer = Serializer.EqualityComparer;
+        if (comparer == null)
+        {
+            return serializeStack.Contains(value);
+        }
+
+        // indexed loop: Enumerable.Contains boxes an enumerator for every value serialized
+        for (var i = 0; i < serializeStack.Count; i++)
+        {
+            if (comparer.Equals(serializeStack[i], value))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     // formatted $type names, cached for the duration of this serialization. building one
     // concatenates the type and assembly names and then re-parses the result through
@@ -273,9 +293,7 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
             referenceLoopHandling = containerContract.ItemReferenceLoopHandling;
         }
 
-        var exists = Serializer.EqualityComparer == null
-            ? serializeStack.Contains(value)
-            : serializeStack.Contains(value, Serializer.EqualityComparer);
+        var exists = SerializeStackContains(value);
 
         if (!exists)
         {
@@ -1061,16 +1079,12 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
                     var dt = (DateTime) key;
 
                     escape = false;
-                    var writer = new StringWriter(InvariantCulture);
-                    DateTimeUtils.WriteDateTimeString(writer, dt);
-                    return writer.ToString();
+                    return DateTimeUtils.ToDateTimeString(dt);
                 }
                 case PrimitiveTypeCode.DateTimeOffset:
                 {
                     escape = false;
-                    var writer = new StringWriter(InvariantCulture);
-                    DateTimeUtils.WriteDateTimeOffsetString(writer, (DateTimeOffset) key);
-                    return writer.ToString();
+                    return DateTimeUtils.ToDateTimeOffsetString((DateTimeOffset) key);
                 }
                 case PrimitiveTypeCode.Double:
                 {

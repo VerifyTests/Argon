@@ -1,4 +1,4 @@
-// Copyright (c) 2007 James Newton-King. All rights reserved.
+﻿// Copyright (c) 2007 James Newton-King. All rights reserved.
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
@@ -293,6 +293,29 @@ static class JavaScriptUtils
     public static string ToEscapedJavaScriptString(CharSpan value, char delimiter, bool appendDelimiters, EscapeHandling escapeHandling)
     {
         var escapeFlags = GetCharEscapeFlags(escapeHandling, delimiter);
+
+        if (FirstCharToEscape(value, escapeFlags, escapeHandling) == -1)
+        {
+            // nothing to escape: build the result directly rather than through a StringBuilder
+            if (!appendDelimiters)
+            {
+                return value.ToString();
+            }
+
+            var length = value.Length + 2;
+            var quoted = BufferUtils.RentBuffer(length);
+            try
+            {
+                quoted[0] = delimiter;
+                value.CopyTo(quoted.AsSpan(1));
+                quoted[length - 1] = delimiter;
+                return new(quoted, 0, length);
+            }
+            finally
+            {
+                BufferUtils.ReturnBuffer(quoted);
+            }
+        }
 
         // size for the delimiters too, otherwise the StringBuilder always grows on the first write
         using var w = StringUtils.CreateStringWriter(value.Length + (appendDelimiters ? 2 : 0));

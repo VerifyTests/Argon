@@ -1,4 +1,4 @@
-// Copyright (c) 2007 James Newton-King. All rights reserved.
+﻿// Copyright (c) 2007 James Newton-King. All rights reserved.
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
@@ -95,7 +95,7 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
                     data = [];
                 }
                 else if (stringReference.Length == 36 &&
-                         ConvertUtils.TryConvertGuid(stringReference.ToString(), out var g))
+                         ConvertUtils.TryConvertGuid(stringReference.AsSpan(), out var g))
                 {
                     data = g.ToByteArray();
                 }
@@ -137,8 +137,10 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
         // once in the last 10% of the buffer, or buffer is already very large then
         // shift the remaining content to the start to avoid unnecessarily increasing
         // the buffer size when reading numbers/strings
+        // integer math: this runs once per string/number token, and the double conversion and
+        // multiply it replaces showed up next to the actual copy
         var length = charBuffer.Length;
-        if (length - charPos <= length * 0.1 || length >= LargeBufferLength)
+        if ((length - charPos) * 10L <= length || length >= LargeBufferLength)
         {
             var count = charsUsed - charPos;
             if (count > 0)

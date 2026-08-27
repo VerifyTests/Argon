@@ -1,4 +1,4 @@
-// Copyright (c) 2007 James Newton-King. All rights reserved.
+﻿// Copyright (c) 2007 James Newton-King. All rights reserved.
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
@@ -548,7 +548,7 @@ static class ConvertUtils
             _ => false
         };
 
-    public static ParseResult Int32TryParse(char[] chars, int start, int length, out int value)
+    public static ParseResult Int32TryParse(CharSpan chars, int start, int length, out int value)
     {
         value = 0;
 
@@ -642,7 +642,7 @@ static class ConvertUtils
         return ParseResult.Success;
     }
 
-    public static ParseResult Int64TryParse(char[] chars, int start, int length, out long value)
+    public static ParseResult Int64TryParse(CharSpan chars, int start, int length, out long value)
     {
         value = 0;
 
@@ -734,7 +734,7 @@ static class ConvertUtils
         return ParseResult.Success;
     }
 
-    public static ParseResult DecimalTryParse(char[] chars, int start, int length, out decimal value)
+    public static ParseResult DecimalTryParse(CharSpan chars, int start, int length, out decimal value)
     {
         value = 0M;
         const decimal decimalMaxValueHi28 = 7922816251426433759354395033M;
@@ -984,6 +984,10 @@ static class ConvertUtils
     }
 
     public static bool TryConvertGuid(string s, out Guid g) =>
+        // GUID has to have format 00000000-0000-0000-0000-000000000000
+        Guid.TryParseExact(s, "D", out g);
+
+    public static bool TryConvertGuid(CharSpan s, out Guid g) =>
         // GUID has to have format 00000000-0000-0000-0000-000000000000
         Guid.TryParseExact(s, "D", out g);
 

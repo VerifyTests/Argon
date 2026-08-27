@@ -1,4 +1,4 @@
-class ArrayIndexFilter :
+﻿class ArrayIndexFilter :
     PathFilter
 {
     public int? Index { get; set; }
@@ -9,11 +9,13 @@ class ArrayIndexFilter :
         {
             if (Index == null)
             {
-                if (t is JArray)
+                if (t is JArray array)
                 {
-                    foreach (var v in t)
+                    // index the backing list: foreach over a JToken goes through Children(),
+                    // which boxes an enumerator per input token
+                    for (var i = 0; i < array.Count; i++)
                     {
-                        yield return v;
+                        yield return array[i];
                     }
                 }
                 else

@@ -1,4 +1,4 @@
-// Copyright (c) 2007 James Newton-King. All rights reserved.
+﻿// Copyright (c) 2007 James Newton-King. All rights reserved.
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
@@ -207,7 +207,9 @@ public abstract class JContainer :
         // haven't inserted new token yet so next token is still at the inserting index
         var next = index == children.Count ? null : children[index];
 
-        ValidateToken(item, null);
+        // skipParentCheck is only set by the writer, which has already removed any property
+        // with the same name, so JObject can skip hashing the name a second time
+        ValidateToken(item, null, skipParentCheck);
 
         item.Parent = this;
 
@@ -292,7 +294,7 @@ public abstract class JContainer :
 
         item = EnsureParentToken(item, false);
 
-        ValidateToken(item, existing);
+        ValidateToken(item, existing, false);
 
         var previous = index == 0 ? null : children[index - 1];
         var next = index == children.Count - 1 ? null : children[index + 1];
@@ -314,10 +316,12 @@ public abstract class JContainer :
 
     internal virtual void ClearItems()
     {
+        // indexed loop: children is interface typed, so foreach boxes an enumerator
         var children = ChildrenTokens;
 
-        foreach (var item in children)
+        for (var i = 0; i < children.Count; i++)
         {
+            var item = children[i];
             item.Parent = null;
             item.Previous = null;
             item.Next = null;
@@ -357,11 +361,10 @@ public abstract class JContainer :
             throw new ArgumentException("The number of elements in the source JObject is greater than the available space from arrayIndex to the end of the destination array.");
         }
 
-        var index = 0;
-        foreach (var token in ChildrenTokens)
+        var children = ChildrenTokens;
+        for (var i = 0; i < children.Count; i++)
         {
-            array.SetValue(token, arrayIndex + index);
-            index++;
+            array.SetValue(children[i], arrayIndex + i);
         }
     }
 
@@ -381,7 +384,11 @@ public abstract class JContainer :
         return false;
     }
 
-    internal virtual void ValidateToken(JToken o, JToken? existing)
+    /// <param name="skipDuplicateNameCheck">
+    /// Set when the caller guarantees the token can not collide with an existing one. Only
+    /// <see cref="JObject" /> acts on it, to skip its duplicate property name check.
+    /// </param>
+    internal virtual void ValidateToken(JToken o, JToken? existing, bool skipDuplicateNameCheck)
     {
         if (o.Type == JTokenType.Property)
         {
@@ -614,9 +621,10 @@ public abstract class JContainer :
     internal int ContentsHashCode()
     {
         var hashCode = 0;
-        foreach (var item in ChildrenTokens)
+        var children = ChildrenTokens;
+        for (var i = 0; i < children.Count; i++)
         {
-            hashCode ^= item.GetDeepHashCode();
+            hashCode ^= children[i].GetDeepHashCode();
         }
 
         return hashCode;

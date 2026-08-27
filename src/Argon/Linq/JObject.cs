@@ -82,11 +82,16 @@ public class JObject :
         return base.InsertItem(index, item, skipParentCheck);
     }
 
-    internal override void ValidateToken(JToken o, JToken? existing)
+    internal override void ValidateToken(JToken o, JToken? existing, bool skipDuplicateNameCheck)
     {
         if (o.Type != JTokenType.Property)
         {
             throw new ArgumentException($"Can not add {o.GetType()} to {GetType()}.");
+        }
+
+        if (skipDuplicateNameCheck)
+        {
+            return;
         }
 
         var newProperty = (JProperty) o;

@@ -135,12 +135,19 @@ static class DateTimeUtils
 
     internal static void WriteDateTimeString(TextWriter writer, DateTime value)
     {
-        var chars = new char[64];
+        Span<char> chars = stackalloc char[64];
         var pos = WriteDateTimeString(chars, 0, value, null, value.Kind);
-        writer.Write(chars, 0, pos);
+        writer.Write(chars[..pos]);
     }
 
-    internal static int WriteDateTimeString(char[] chars, int start, DateTime value, TimeSpan? offset, DateTimeKind kind)
+    internal static string ToDateTimeString(DateTime value)
+    {
+        Span<char> chars = stackalloc char[64];
+        var pos = WriteDateTimeString(chars, 0, value, null, value.Kind);
+        return chars[..pos].ToString();
+    }
+
+    internal static int WriteDateTimeString(Span<char> chars, int start, DateTime value, TimeSpan? offset, DateTimeKind kind)
     {
         var pos = WriteDefaultIsoDate(chars, start, value);
 
@@ -157,7 +164,7 @@ static class DateTimeUtils
         return pos;
     }
 
-    static int WriteDefaultIsoDate(char[] chars, int start, DateTime dt)
+    static int WriteDefaultIsoDate(Span<char> chars, int start, DateTime dt)
     {
         var length = 19;
 
@@ -195,7 +202,7 @@ static class DateTimeUtils
         return start + length;
     }
 
-    static void CopyIntToCharArray(char[] chars, int start, int value, int digits)
+    static void CopyIntToCharArray(Span<char> chars, int start, int value, int digits)
     {
         while (digits-- != 0)
         {
@@ -204,7 +211,7 @@ static class DateTimeUtils
         }
     }
 
-    internal static int WriteDateTimeOffset(char[] chars, int start, TimeSpan offset)
+    internal static int WriteDateTimeOffset(Span<char> chars, int start, TimeSpan offset)
     {
         chars[start++] = offset.Ticks >= 0L ? '+' : '-';
 
@@ -223,10 +230,17 @@ static class DateTimeUtils
 
     internal static void WriteDateTimeOffsetString(TextWriter writer, DateTimeOffset value)
     {
-        var chars = new char[64];
+        Span<char> chars = stackalloc char[64];
         var pos = WriteDateTimeString(chars, 0, value.DateTime, value.Offset, DateTimeKind.Local);
 
-        writer.Write(chars, 0, pos);
+        writer.Write(chars[..pos]);
+    }
+
+    internal static string ToDateTimeOffsetString(DateTimeOffset value)
+    {
+        Span<char> chars = stackalloc char[64];
+        var pos = WriteDateTimeString(chars, 0, value.DateTime, value.Offset, DateTimeKind.Local);
+        return chars[..pos].ToString();
     }
 
     #endregion
