@@ -277,6 +277,37 @@ public class JPathParseTests : TestFixtureBase
     }
 
     [Fact]
+    public void SinglePropertyAndFilterWithEscapesAroundText()
+    {
+        // the quoted string is sliced out of the expression until the first escape, and the
+        // text between escapes is copied in as each one is resolved
+        var path = new JPath(@"Blah[ ?( @.name=='one\ttwo\\three\nfour' ) ]");
+        Assert.Equal(2, path.Filters.Count);
+        Assert.Equal("Blah", ((FieldFilter) path.Filters[0]).Name);
+        var expressions = (BooleanQueryExpression) ((QueryFilter) path.Filters[1]).Expression;
+        Assert.Equal(QueryOperator.Equals, expressions.Operator);
+        Assert.Equal("one\ttwo\\three\nfour", (string) (JToken) expressions.Right);
+    }
+
+    [Fact]
+    public void SinglePropertyAndFilterWithEscapeAtEnd()
+    {
+        var path = new JPath(@"Blah[ ?( @.name=='hi\n' ) ]");
+        Assert.Equal(2, path.Filters.Count);
+        var expressions = (BooleanQueryExpression) ((QueryFilter) path.Filters[1]).Expression;
+        Assert.Equal("hi\n", (string) (JToken) expressions.Right);
+    }
+
+    [Fact]
+    public void SinglePropertyAndFilterWithEmptyString()
+    {
+        var path = new JPath(@"Blah[ ?( @.name=='' ) ]");
+        Assert.Equal(2, path.Filters.Count);
+        var expressions = (BooleanQueryExpression) ((QueryFilter) path.Filters[1]).Expression;
+        Assert.Equal("", (string) (JToken) expressions.Right);
+    }
+
+    [Fact]
     public void SinglePropertyAndFilterWithRegexAndOptions()
     {
         var path = new JPath("Blah[ ?( @.name=~/hi/i ) ]");

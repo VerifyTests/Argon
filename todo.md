@@ -3,9 +3,10 @@
 Findings from a perf review of the core read/write path, serialization, and LINQ-to-JSON / JSONPath (2026-08-27).
 Prioritized within each section; high-priority items sit on per-character / per-token / per-property hot paths.
 
-**All high-priority items are implemented.** Medium and low priority items remain open.
+**All high, medium and low priority items are implemented**, except one that was explicitly
+"benchmark first" and could not be measured reliably — see [Still open](#still-open).
 
-## Measured impact
+## Measured impact — high priority
 
 BenchmarkDotNet `--job short`, .NET 10.0.11, AMD Ryzen 9 5900X. Baseline is a clean worktree at the
 commit these changes sit on, running the identical benchmark code. Benchmarks live in
@@ -35,6 +36,38 @@ Notes on the two rows that are not a clean win:
   overlap); the 17% allocation drop from routing `WriteValue(int)` through `BoxedPrimitives` is the real
   and repeatable part.
 
+## Measured impact — medium and low priority
+
+Benchmarks in [PerValueBenchmarks.cs](src/ArgonTests/Benchmarks/PerValueBenchmarks.cs), same baseline
+worktree and machine, `--job medium`.
+
+**Read the timings with the caveat below.** During this measurement session the machine alternated
+between two performance modes roughly 2× apart: the *same* baseline binary measured 54.5 µs and
+90.6 µs for `DeserializeWithTypeNames` in back-to-back runs, and a current-tree run measured 2.15 µs
+then 1.00 µs for `FromObjectWide`. Runs were therefore ordered ABBA (current, baseline, baseline,
+current) to expose the drift, and only differences that hold *within* a mode are reported as wins.
+Allocation numbers are deterministic and are unaffected by any of this.
+
+| Benchmark | Allocated before → after | Time |
+|---|---|---|
+| `SerializeDateKeys` | 60.30 KB → 25.15 KB (**−58%**) | 14.75 µs → 6.66 µs (**~1.6–2.2× faster**) |
+| `SerializeDateTimeOffsetKeys` | 62.85 KB → 27.70 KB (**−56%**) | 15.94 µs → 7.79 µs (**~1.4–2.0× faster**) |
+| `ToStringNoEscapes` | 35.08 KB → 11.72 KB (**−67%**) | 4.31 µs → 1.79 µs (**~1.4–2.4× faster**) |
+| `ReadBase64Strings` | 29.92 KB → 11.17 KB (**−63%**) | 10.68 µs → 7.94 µs (best of each; modes did not line up) |
+| `ReadExponentDecimals` | 22.11 KB → 12.73 KB (**−42%**) | within noise |
+| `DeserializeWithTypeNames` | 83.02 KB → 55.28 KB (**−33%**) | ~4% faster in both modes (90.6→87.0, 54.5→52.0) |
+| `SerializeCamelCaseKeys` | 22.59 KB → 16.34 KB (**−28%**) | within noise in the one mode measured on both |
+| `WildcardIndexFilter` | 448 B → 416 B | ~1% in mode; one boxed enumerator per input token gone |
+| `QueryFilter` | 29176 B → 29136 B | not separable from noise |
+| `ParseAndQuery` | 43712 B → 43672 B | not separable from noise |
+| `FromObjectWide` | unchanged (4.84 KB) | not separable from noise (one of three name hashes per property gone) |
+
+The three ranges quoted as "× faster" are the cases where the *slowest* current-tree run still beat
+the *fastest* baseline run, so they hold regardless of which mode each run landed in. The rows marked
+"not separable" are changes that remove work but not allocation (a boxed enumerator, a dictionary
+hash), and this machine could not resolve them today; they are kept because the mechanism is not in
+doubt, not because a number was produced. Worth re-running on a quiet machine.
+
 ## Core reader / writer
 
 ### High priority — done
@@ -51,30 +84,27 @@ Notes on the two rows that are not a clean win:
 - [x] **Keep the escape writer vectorized after the first escape** — [JavaScriptUtils.cs](src/Argon/Utilities/JavaScriptUtils.cs).
   `WriteEscapedJavaScriptNonNullString` used the vectorized `FirstCharToEscape` only to find the first escapable char and then walked the rest of the string one char at a time. It now re-runs that scan on the remaining slice after each escape, so the clean runs between escapes are skipped rather than stepped over.
 
-### Medium priority (per-value allocations)
+### Medium priority — done
 
-- [ ] **Span-based Guid probe in `ReadAsBytes`** — `src/Argon/JsonTextReader.cs:97-98`.
-  `TryConvertGuid(stringReference.ToString(), ...)` allocates a 36-char string for every 36-char byte-string, even when it's base64. Add a `TryConvertGuid(CharSpan)` overload in `ConvertUtils` (`Guid.TryParseExact` has span overloads via Polyfill) and pass `stringReference.AsSpan()`.
+- [x] **Span-based Guid probe in `ReadAsBytes`** — [JsonTextReader.cs](src/Argon/JsonTextReader.cs), [ConvertUtils.cs](src/Argon/Utilities/ConvertUtils.cs).
+  Added a `TryConvertGuid(CharSpan)` overload and pass `stringReference.AsSpan()`, so a 36-char base64 string no longer allocates a string just to be rejected as a Guid. **63% less allocation** on `ReadBase64Strings`.
 
-- [ ] **Stackalloc DateTime write buffers** — `src/Argon/Utilities/DateTimeUtils.cs:136-141, 224-230`.
-  `WriteDateTimeString` / `WriteDateTimeOffsetString` allocate `new char[64]` per call (hot for date-keyed dictionaries via `JsonSerializerInternalWriter.cs:1051`). Use `stackalloc char[64]` and span-based helpers.
+- [x] **Stackalloc DateTime write buffers** — [DateTimeUtils.cs](src/Argon/Utilities/DateTimeUtils.cs).
+  `WriteDateTimeString` / `WriteDateTimeOffsetString` format into a `stackalloc char[64]`, and the helpers they call (`WriteDefaultIsoDate`, `WriteDateTimeOffset`, `CopyIntToCharArray`) take `Span<char>`. `char[]` callers such as `JsonTextWriter`'s pooled write buffer convert implicitly, so nothing else changed. Paired with the dictionary key item below: **58% less allocation, ~1.6–2.2× faster** on `SerializeDateKeys`.
 
-- [ ] **Fast-path `ToEscapedJavaScriptString` when nothing needs escaping** — `src/Argon/Utilities/JavaScriptUtils.cs:283-300`.
-  Always builds via `StringWriter` → `StringBuilder` → `ToString()`. When `FirstCharToEscape` returns -1, build the result directly (`string.Create` on modern TFMs, or `string.Concat` with the delimiters).
+- [x] **Fast-path `ToEscapedJavaScriptString` when nothing needs escaping** — [JavaScriptUtils.cs](src/Argon/Utilities/JavaScriptUtils.cs).
+  When the vectorized `FirstCharToEscape` scan comes back -1 the result is copied straight out: the span itself when there are no delimiters, otherwise through a pooled buffer. The `StringWriter` + `StringBuilder` are only built when there is something to escape. **67% less allocation, ~1.4–2.4× faster** on `ToStringNoEscapes`.
 
-- [ ] **Span parameters for `DecimalTryParse` / `Int32TryParse` / `Int64TryParse`** — `src/Argon/JsonReader.cs:760, 786`, `src/Argon/Utilities/ConvertUtils.cs:551, 645, 737`.
-  `ReadDecimalString` pays `s.ToCharArray()` on every exponent-form decimal (`"96.014e-05"`), a legitimate parse path. The parsers only index their input — change `char[] chars, int start, int length` to `ReadOnlySpan<char>` and pass spans everywhere; no copies.
+- [x] **Span parameters for `DecimalTryParse` / `Int32TryParse` / `Int64TryParse`** — [ConvertUtils.cs](src/Argon/Utilities/ConvertUtils.cs), [JsonReader.cs](src/Argon/JsonReader.cs).
+  The three parsers take `CharSpan` instead of `char[] chars, int start, int length` (the `start`/`length` pair is kept, since `JsonTextReader` passes a slice of its shared buffer). `ReadDecimalString` no longer copies through `ToCharArray()`/`ToArray()` for exponent-form decimals. **42% less allocation** on `ReadExponentDecimals`.
 
-- [ ] **`JsonConvert.ToString(char)` allocates a temp array** — `src/Argon/JsonConvert.cs:92-93`.
-  `new[]{value}.AsSpan()` heap-allocates per call; use `stackalloc char[1]` or `new ReadOnlySpan<char>(in value)`.
+- [x] **`JsonConvert.ToString(char)` allocates a temp array** — [JsonConvert.cs](src/Argon/JsonConvert.cs).
+  Now a `stackalloc char[1]`.
 
-### Low priority
+### Low priority — done
 
-- [ ] **Integer math in `ShiftBufferIfNeeded`** — `src/Argon/JsonTextReader.cs:141`.
-  `length - charPos <= length * 0.1` does double conversion/multiply once per string/number token; use `(length - charPos) * 10L <= length`.
-
-- [ ] **(Benchmark first) `ReadNumberIntoBuffer` per-char switch** — `src/Argon/JsonTextReader.cs:1172-1248`.
-  28-case switch per digit; `IndexOfAnyExcept` with `SearchValues` of `[0-9a-fA-FxX.+-]` would find the terminator in one call, but numbers are usually short — measure before doing.
+- [x] **Integer math in `ShiftBufferIfNeeded`** — [JsonTextReader.cs](src/Argon/JsonTextReader.cs).
+  `(length - charPos) * 10L <= length`, so the once-per-token check no longer converts to double. The `10L` keeps it correct for buffers past 214M chars.
 
 ## Serialization
 
@@ -95,24 +125,24 @@ Notes on the two rows that are not a clean win:
 - [x] **Single-lookup `SetPropertyPresence`** — [JsonSerializerInternalReader.cs](src/Argon/Serialization/JsonSerializerInternalReader.cs).
   `ContainsKey` followed by an indexer set hashed the key twice per property. Uses `CollectionsMarshal.GetValueRefOrNullRef` on net6+, with the original two-lookup form kept under `#if` for net4x.
 
-### Medium priority
+### Medium priority — done
 
-- [ ] **Cache transformed dictionary keys in naming strategies** — `src/Argon/NamingStrategy/NamingStrategy.cs:46-54` (+ snake/kebab/camel implementations), reached via `DefaultContractResolver.cs:905-913` from `JsonSerializerInternalWriter.cs:991-994`.
-  With `ProcessDictionaryKeys = true`, every dictionary entry pays a case-conversion allocation per serialization call for keys that repeat across calls. Add a bounded `ThreadSafeStore<string, string>` cache (key space is user data — cap growth).
+- [x] **Cache transformed dictionary keys in naming strategies** — [NamingStrategy.cs](src/Argon/NamingStrategy/NamingStrategy.cs).
+  `GetDictionaryKey` memoizes resolved keys in a `ConcurrentDictionary<string, string>` on the strategy instance, created lazily and only when `ProcessDictionaryKeys` is set. Dictionary keys are user data, so the cache stops accepting new entries at 512 — past that keys are still resolved, just not remembered. Caching assumes `ResolvePropertyName` is a pure function of the name, which holds for every strategy in Argon; a strategy that resolves a name from outside state can opt out by overriding the new `CacheDictionaryKeys` to false. **28% less allocation** on `SerializeCamelCaseKeys`.
 
-- [ ] **Kill the StringWriter per DateTime dictionary key** — `src/Argon/Serialization/JsonSerializerInternalWriter.cs:1045-1059`.
-  `GetDictionaryPropertyName` allocates a `StringWriter` + `StringBuilder` per date key; add direct string-returning overloads in `DateTimeUtils` (pairs with the stackalloc item above).
+- [x] **Kill the StringWriter per DateTime dictionary key** — [JsonSerializerInternalWriter.cs](src/Argon/Serialization/JsonSerializerInternalWriter.cs), [DateTimeUtils.cs](src/Argon/Utilities/DateTimeUtils.cs).
+  `GetDictionaryPropertyName` calls new `ToDateTimeString` / `ToDateTimeOffsetString` overloads that format into a stack buffer and return the string, instead of writing into a `StringWriter` over a `StringBuilder` and calling `ToString` on it.
 
-- [ ] **Cache `$type` name splitting during deserialization** — `src/Argon/Serialization/JsonSerializerInternalReader.cs:646-654`.
-  `SplitFullyQualifiedTypeName` allocates substrings per `$type` occurrence; only `BindToType` is cached. Cache `string -> TypeNameKey` (bounded — input is untrusted JSON).
+- [x] **Cache `$type` name splitting during deserialization** — [JsonSerializerInternalReader.cs](src/Argon/Serialization/JsonSerializerInternalReader.cs).
+  `SplitTypeName` memoizes `string -> TypeNameKey` on the reader, which is created per deserialize call. Capped at 128 entries since `$type` values come from untrusted JSON; a polymorphic payload repeats a handful of type names, so the cap costs nothing in practice. **33% less allocation** on `DeserializeWithTypeNames`.
 
-### Low priority
+### Low priority — done
 
-- [ ] **Indexed loop in `CheckForCircularReference` with custom comparer** — `src/Argon/Serialization/JsonSerializerInternalWriter.cs:269-271`.
-  `serializeStack.Contains(value, Serializer.EqualityComparer)` is LINQ `Enumerable.Contains` (boxed enumerator per value); replace with a `for` loop.
+- [x] **Indexed loop in `CheckForCircularReference` with custom comparer** — [JsonSerializerInternalWriter.cs](src/Argon/Serialization/JsonSerializerInternalWriter.cs).
+  Extracted `SerializeStackContains`, which walks the list by index when a custom `EqualityComparer` is set rather than going through `Enumerable.Contains` and its boxed enumerator. The no-comparer path still uses `List<T>.Contains`, which was already an indexed scan.
 
-- [ ] **One-time contract creation: duplicate reflection scan + O(n²) `Contains`** — `src/Argon/Serialization/DefaultContractResolver.cs:101-133, 144`.
-  `GetFieldsAndProperties` runs twice and `defaultMembers.Contains(member)` is linear per member. First-use latency only (result is cached); use a `HashSet<MemberInfo>` opportunistically.
+- [x] **O(n²) `Contains` during one-time contract creation** — [DefaultContractResolver.cs](src/Argon/Serialization/DefaultContractResolver.cs).
+  `defaultMembers` is a `HashSet<MemberInfo>`, so the `ShouldSerialize` probe per member is a hash rather than a scan. The other half of that item — the two `GetFieldsAndProperties` calls — was left alone deliberately: the calls pass different `BindingFlags` (public-instance vs public-and-non-public-instance), so collapsing them means re-implementing the binding flag semantics by hand for a first-use-only cost.
 
 ## LINQ-to-JSON / JSONPath
 
@@ -130,27 +160,32 @@ Notes on the two rows that are not a clean win:
 - [x] **Override `GetItem` in `JArray`** — [JArray.cs](src/Argon/Linq/JArray.cs).
   Indexes the backing list directly instead of going through the virtual `ChildrenTokens` property and an `IList<JToken>` interface dispatch, mirroring what `IndexOfItem` already did.
 
-### Medium priority
+### Medium priority — done
 
-- [ ] **Indexed loops in `ClearItems` / `CopyItemsTo` / `ContentsHashCode`** — `src/Argon/Linq/JContainer.cs:315-327, 361, 614-623`.
-  `foreach` over interface-typed `children` boxes an enumerator per container; `ContentsHashCode` recurses over whole trees via `JTokenEqualityComparer.GetHashCode`. Use the indexed-loop pattern already used in the copy constructor (lines 26-32).
+- [x] **Indexed loops in `ClearItems` / `CopyItemsTo` / `ContentsHashCode`** — [JContainer.cs](src/Argon/Linq/JContainer.cs).
+  All three index `ChildrenTokens` rather than `foreach`ing over it, matching the copy constructor, so none of them boxes an enumerator any more.
 
-- [ ] **Special-case `JArray`/`JObject` iteration in JSONPath filters** — `src/Argon.JsonPath/ArrayIndexFilter.cs:12-17`, `src/Argon.JsonPath/QueryFilter.cs:8-16`.
-  `foreach (var v in t)` routes through `Children()` → `JEnumerable` over interface-typed lists (boxed enumerator per input token). `ArrayIndexFilter` already pattern-matches `JArray` — bind it and index the backing list.
+- [x] **Special-case `JArray`/`JObject` iteration in JSONPath filters** — [ArrayIndexFilter.cs](src/Argon.JsonPath/ArrayIndexFilter.cs), [QueryFilter.cs](src/Argon.JsonPath/QueryFilter.cs).
+  `ArrayIndexFilter` binds the `JArray` it already pattern-matches and indexes it. `QueryFilter` walks `First`/`Next` for any `JContainer` — `ChildrenTokens` is `protected`, so it is not reachable from the JsonPath assembly, and the sibling links are the same walk `ScanFilter` uses. Non-containers are skipped, which is what enumerating them produced anyway. One boxed enumerator per input token gone.
 
-- [ ] **Skip triple dictionary hash per property in `JTokenWriter.WritePropertyName`** — `src/Argon/Linq/JTokenWriter.cs:120-131`, `src/Argon/Linq/JObject.cs:104`.
-  `Remove(name)` + `ValidateToken`'s `Contains(name)` + `AddKey` = three hashes per property on the `FromObject` path. The writer path already flows through `AddAndSkipParentCheck`; let `JObject.InsertItem` skip the duplicate-name `Contains` when that flag is set (the preceding `Remove` guarantees uniqueness).
+- [x] **Skip triple dictionary hash per property in `JTokenWriter.WritePropertyName`** — [JContainer.cs](src/Argon/Linq/JContainer.cs), [JObject.cs](src/Argon/Linq/JObject.cs).
+  `ValidateToken` takes a `skipDuplicateNameCheck` flag, set from `InsertItem`'s `skipParentCheck`. That flag has exactly one source — `AddAndSkipParentCheck`, called only by `JTokenWriter.AddParent`, and both `WritePropertyName` overloads remove any property of that name immediately before — so the duplicate name check is provably redundant there. The type check still runs, and every other path (including `JObject.Load`, which is where a duplicate name in a document is caught) is unchanged.
 
-- [ ] **Iterate `InnerList` in `JObject.CopyTo` (KVP)** — `src/Argon/Linq/JObject.cs:503-510`.
-  Boxed enumerator + per-item cast; iterate `properties.InnerList` as `GetEnumerator()` does.
+- [x] **Iterate `InnerList` in `JObject.CopyTo` (KVP)** — no action needed.
+  Stale finding: `CopyTo` already iterates `properties.InnerList`, which is typed `List<JToken>`, so the `foreach` uses the struct enumerator and boxes nothing.
 
 ### Low priority
 
-- [ ] **Span-based JSONPath parse for numbers and escape-free strings** — `src/Argon.JsonPath/JPath.cs:563-590, 626-684`.
-  `TryParseValue` accumulates digits into a `StringBuilder` before parsing (parse the `expression.AsSpan(start, length)` slice instead); `ReadQuotedString` allocates a `StringBuilder` even with no escapes (defer until first `\`, else `Substring`). Mitigated by the path cache, so parse-time only.
+- [x] **Span-based JSONPath parse for numbers and escape-free strings** — [JPath.cs](src/Argon.JsonPath/JPath.cs).
+  `TryParseValue` parses the `expression.AsSpan(start, length)` slice for numbers, and `ReadQuotedString` returns a `Substring` when the string holds no escapes, only building a `StringBuilder` from the first backslash on (copying the run between escapes in one `Append`). The span number parsers need Polyfill, which this project does not reference, so `TryParseInt64`/`TryParseDouble` fall back to a string on net4x.
 
 - [ ] **(Awareness only) `JToken.Path` is O(depth × width)** — `src/Argon/Linq/JToken.cs:197-240`.
   Per array ancestor it does a linear `IndexOf(previous)`; building paths for every element of a big array is quadratic. A real fix needs per-child indices (invasive; matches Newtonsoft behavior as-is).
+
+## Still open
+
+- [ ] **(Benchmark first) `ReadNumberIntoBuffer` per-char switch** — `src/Argon/JsonTextReader.cs:1172-1248`.
+  28-case switch per digit; `IndexOfAnyExcept` with `SearchValues` of `[0-9a-fA-FxX.+-]` would find the terminator in one call, but numbers are usually short. Still open because it cannot be decided without a measurement, and the machine was swinging 2× between runs of identical binaries during this session (see the caveat above), which is far wider than the effect being looked for. `NumberScanBenchmark` in [PerValueBenchmarks.cs](src/ArgonTests/Benchmarks/PerValueBenchmarks.cs) is in place for it: on the current scalar switch it reads 500 short integers in 10.83 µs and 500 long decimals in 43.05 µs.
 
 ## Incidental changes made while implementing the above
 
@@ -163,7 +198,17 @@ Notes on the two rows that are not a clean win:
 - **Fixed a pre-existing test failure** — [XmlNodeConverterTest.cs](src/ArgonTests/Converters/XmlNodeConverterTest.cs).
   `FloatParseHandlingDecimal` failed on both net10.0 and net48, before and after these changes. It built its input as `(decimal) Math.PI + 1000000000m`, but the `double` → `decimal` conversion returns full precision (`3.1415926535897931159979634685`) rather than the 15 significant digits its hardcoded expectation was written for, so it had become a test of conversion precision rather than of the XML/JSON round trip. Confirmed with a standalone console app that no Argon code was involved in producing the differing value. Now uses the decimal literal `1000000003.14159265358979m` directly, so it tests what it intends to; both the XML assertion and the round-trip assertion pass.
 
-  Full suite is green: **2358/2358 on net10.0, 2337/2337 on net48, 9/9 F#**.
+- **New tests for the JSONPath quoted string parse** — [JPathParseTests.cs](src/ArgonTests/Linq/JsonPath/JPathParseTests.cs).
+  `SinglePropertyAndFilterWithEscapesAroundText`, `SinglePropertyAndFilterWithEscapeAtEnd` and `SinglePropertyAndFilterWithEmptyString`. Deferring the `StringBuilder` until the first escape means the parser now tracks how much of the expression has been copied in, and the existing tests only covered a single escape (`'h\\i'`) or none at all. These cover text between two escapes, an escape as the final character, and the empty string.
+
+- **New benchmarks** — [PerValueBenchmarks.cs](src/ArgonTests/Benchmarks/PerValueBenchmarks.cs), registered in [Program.cs](src/Benchmark.Tests/Program.cs).
+  One per medium/low priority item, in the same shape as `HotPathBenchmarks`.
+
+  Full suite: **2361/2361 net10.0, 2360/2360 net9.0 and net8.0, 2340/2340 net48, 9/9 F#**. net11.0 has
+  13 failures, all `double` → `decimal` conversions returning full precision where the expectation was
+  written for 15 significant digits — the same class of problem as the `FloatParseHandlingDecimal` fix
+  above, and confirmed to fail identically on a clean worktree at the parent commit, so they are
+  pre-existing on that preview runtime rather than caused by any of this work.
 
 ## Already optimal (checked, no action)
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2007 James Newton-King. All rights reserved.
+// Copyright (c) 2007 James Newton-King. All rights reserved.
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
@@ -574,13 +574,13 @@ class JPath
 
                     if (numberText.IndexOfAny(floatCharacters) == -1)
                     {
-                        var result = long.TryParse(numberText, NumberStyles.Integer, InvariantCulture, out var l);
+                        var result = TryParseInt64(numberText, out var l);
                         value = l;
                         return result;
                     }
                     else
                     {
-                        var result = double.TryParse(numberText, NumberStyles.Float | NumberStyles.AllowThousands, InvariantCulture, out var d);
+                        var result = TryParseDouble(numberText, out var d);
                         value = d;
                         return result;
                     }
@@ -622,6 +622,22 @@ class JPath
         value = null;
         return false;
     }
+
+    // the span overloads of the number parsers need Polyfill on the old frameworks, and this
+    // project does not reference it, so those keep paying for a string
+#if NET6_0_OR_GREATER
+    static bool TryParseInt64(CharSpan text, out long value) =>
+        long.TryParse(text, NumberStyles.Integer, InvariantCulture, out value);
+
+    static bool TryParseDouble(CharSpan text, out double value) =>
+        double.TryParse(text, NumberStyles.Float | NumberStyles.AllowThousands, InvariantCulture, out value);
+#else
+    static bool TryParseInt64(CharSpan text, out long value) =>
+        long.TryParse(text.ToString(), NumberStyles.Integer, InvariantCulture, out value);
+
+    static bool TryParseDouble(CharSpan text, out double value) =>
+        double.TryParse(text.ToString(), NumberStyles.Float | NumberStyles.AllowThousands, InvariantCulture, out value);
+#endif
 
     string ReadQuotedString()
     {

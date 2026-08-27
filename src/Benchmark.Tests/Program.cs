@@ -37,7 +37,14 @@ public class Program
             typeof(TypeNameWriteBenchmark),
             typeof(WideCreatorBenchmark),
             typeof(PopulateExistingBenchmark),
-            typeof(JTokenHotPathBenchmark)
+            typeof(JTokenHotPathBenchmark),
+            typeof(DictionaryKeyBenchmark),
+            typeof(EscapeFreeStringBenchmark),
+            typeof(TypeNameReadBenchmark),
+            typeof(ReadValueBenchmark),
+            typeof(JTokenPropertyWriteBenchmark),
+            typeof(JsonPathFilterBenchmark),
+            typeof(NumberScanBenchmark)
         ]);
         if (args.Length == 0)
         {
