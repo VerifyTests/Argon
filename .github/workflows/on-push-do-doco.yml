@@ -6,6 +6,12 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
+    # global.json pins a preview SDK that the runner image does not carry, so every dotnet
+    # command in the repo directory fails to resolve one. Install the pinned SDK rather than
+    # relying on what happens to be preinstalled
+    - uses: actions/setup-dotnet@v6
+      with:
+        global-json-file: global.json
     - name: Run MarkdownSnippets
       run: |
         dotnet tool install --global MarkdownSnippets.Tool
