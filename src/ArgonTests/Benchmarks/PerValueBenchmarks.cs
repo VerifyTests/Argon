@@ -187,39 +187,36 @@ public class ReadValueBenchmark
 }
 
 // JsonTextReader.ReadNumberIntoBuffer walks a number a char at a time through a 28 case switch.
-// This is here to decide whether finding the terminator with a vectorized IndexOfAnyExcept is
-// worth it, given how short numbers usually are.
+// Replacing that with a vectorized IndexOfAnyExcept over a SearchValues of the number chars was
+// measured and turned down: it costs more than it saves on the short numbers JSON is mostly made
+// of. See todo.md. This stays as the cost profile of number reading by length, for whoever picks
+// that up next.
 [MemoryDiagnoser]
 public class NumberScanBenchmark
 {
-    string shortNumbers;
-    string longNumbers;
+    string json;
+
+    // digits per number, spanning ids and small quantities through to high precision decimals
+    [Params(1, 3, 8, 18)]
+    public int Digits { get; set; }
 
     [GlobalSetup]
     public void Setup()
     {
-        // the length JSON numbers usually are: ids, counts, small quantities
-        shortNumbers = $"[{string.Join(",", Enumerable.Range(0, 500).Select(_ => _ % 1000))}]";
-
-        // long enough for a vectorized scan to have something to do
-        longNumbers = $"[{string.Join(",", Enumerable.Range(0, 500).Select(_ => $"{_}.123456789012345"))}]";
+        var number = Digits <= 2
+            ? new string('7', Digits)
+            : $"{new string('7', Digits - 2)}.7";
+        json = $"[{string.Join(",", Enumerable.Repeat(number, 500))}]";
     }
 
     [Benchmark]
-    public long ReadShortNumbers() =>
-        Sum(shortNumbers);
-
-    [Benchmark]
-    public long ReadLongNumbers() =>
-        Sum(longNumbers);
-
-    static long Sum(string json)
+    public int ReadNumbers()
     {
         using var reader = new JsonTextReader(new StringReader(json));
-        long count = 0;
+        var count = 0;
         while (reader.Read())
         {
-            if (reader.TokenType == JsonToken.Integer || reader.TokenType == JsonToken.Float)
+            if (reader.TokenType is JsonToken.Integer or JsonToken.Float)
             {
                 count++;
             }

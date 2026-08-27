@@ -3,8 +3,8 @@
 Findings from a perf review of the core read/write path, serialization, and LINQ-to-JSON / JSONPath (2026-08-27).
 Prioritized within each section; high-priority items sit on per-character / per-token / per-property hot paths.
 
-**All high, medium and low priority items are implemented**, except one that was explicitly
-"benchmark first" and could not be measured reliably — see [Still open](#still-open).
+**All high, medium and low priority items are resolved.** One was explicitly "benchmark first";
+it was measured and turned down — see [Measured and turned down](#measured-and-turned-down).
 
 ## Measured impact — high priority
 
@@ -182,10 +182,34 @@ doubt, not because a number was produced. Worth re-running on a quiet machine.
 - [ ] **(Awareness only) `JToken.Path` is O(depth × width)** — `src/Argon/Linq/JToken.cs:197-240`.
   Per array ancestor it does a linear `IndexOf(previous)`; building paths for every element of a big array is quadratic. A real fix needs per-child indices (invasive; matches Newtonsoft behavior as-is).
 
-## Still open
+## Measured and turned down
 
-- [ ] **(Benchmark first) `ReadNumberIntoBuffer` per-char switch** — `src/Argon/JsonTextReader.cs:1172-1248`.
-  28-case switch per digit; `IndexOfAnyExcept` with `SearchValues` of `[0-9a-fA-FxX.+-]` would find the terminator in one call, but numbers are usually short. Still open because it cannot be decided without a measurement, and the machine was swinging 2× between runs of identical binaries during this session (see the caveat above), which is far wider than the effect being looked for. `NumberScanBenchmark` in [PerValueBenchmarks.cs](src/ArgonTests/Benchmarks/PerValueBenchmarks.cs) is in place for it: on the current scalar switch it reads 500 short integers in 10.83 µs and 500 long decimals in 43.05 µs.
+- [x] **(Benchmark first) `ReadNumberIntoBuffer` per-char switch** — measured, not taken.
+  The idea was to replace the 28-case switch per digit with `IndexOfAnyExcept` over a
+  `SearchValues` of `[0-9a-fA-FxX.+-]`, finding the terminator in one call. It was implemented
+  behind a temporary toggle so both scans could be compared in the same process, and it passed the
+  full suite on every framework, so the implementation was sound. It is not worth taking:
+
+  | Digits per number | Scalar switch | Vectorized | |
+  |---|---|---|---|
+  | 1 | 11.5–12.0 µs | 14.6 µs | **25% slower** |
+  | 3 | 31.4–31.6 µs | 32.9 µs | **4% slower** |
+  | 8 | 44.6–44.9 µs | 38.4–40.2 µs | 10% faster |
+  | 18 | 71.2–72.1 µs | 49.9–54.8 µs | 27% faster |
+
+  Reading 500 numbers, `--job medium --launchCount 3`, from the two runs that agreed with each
+  other. The crossover sits between 3 and 8 digits: the vectorized scan has setup cost to earn back,
+  and a short number never gives it the chance. The premise in the original finding — that numbers
+  are usually short — is what decides it, since ids, counts and small quantities are most of the
+  numbers in real JSON, and those get slower.
+
+  A hybrid (scalar for the first 8 chars, vectorized for whatever is left) should in principle take
+  the win without the loss, and also passed the full suite, but it could not be measured to a
+  conclusion: across five runs the *same* code measured 1.17× to 1.78× apart run to run, which is
+  wider than the effect. That is the thing to try first if this is ever revisited on a quiet
+  machine. The experiment itself is reverted; `NumberScanBenchmark` in
+  [PerValueBenchmarks.cs](src/ArgonTests/Benchmarks/PerValueBenchmarks.cs) stays as the cost profile
+  of number reading by length.
 
 ## Incidental changes made while implementing the above
 
