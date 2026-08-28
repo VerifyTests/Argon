@@ -14,6 +14,33 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
     int rootLevel;
     readonly List<object> serializeStack = [];
 
+    bool SerializeStackContains(object value)
+    {
+        var comparer = Serializer.EqualityComparer;
+        if (comparer == null)
+        {
+            return serializeStack.Contains(value);
+        }
+
+        // indexed loop: Enumerable.Contains boxes an enumerator for every value serialized
+        for (var i = 0; i < serializeStack.Count; i++)
+        {
+            if (comparer.Equals(serializeStack[i], value))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // formatted $type names, cached for the duration of this serialization. building one
+    // concatenates the type and assembly names and then re-parses the result through
+    // RemoveAssemblyDetails, allocating a StringBuilder and a string, and polymorphic payloads
+    // repeat the same handful of types over and over. the binder and format handling are fixed
+    // for a run, so the type alone is a sufficient key
+    Dictionary<Type, string>? typeNames;
+
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public void Serialize(JsonWriter jsonWriter, object? value, Type? type)
@@ -116,7 +143,7 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
             containerProperty?.ItemConverter ??
             containerContract?.ItemConverter ??
             valueContract.Converter ??
-            Serializer.GetMatchingConverter(valueContract.UnderlyingType) ??
+            GetMatchingConverter(valueContract.UnderlyingType) ??
             valueContract.InternalConverter;
 
         if (converter is {CanWrite: true})
@@ -266,9 +293,7 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
             referenceLoopHandling = containerContract.ItemReferenceLoopHandling;
         }
 
-        var exists = Serializer.EqualityComparer == null
-            ? serializeStack.Contains(value)
-            : serializeStack.Contains(value, Serializer.EqualityComparer);
+        var exists = SerializeStackContains(value);
 
         if (!exists)
         {
@@ -507,8 +532,15 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
 
     void WriteTypeProperty(JsonWriter writer, Type type)
     {
-        var binder = Serializer.SerializationBinder ?? DefaultSerializationBinder.Instance;
-        var typeName = type.GetTypeName(Serializer.TypeNameAssemblyFormatHandling, binder);
+        typeNames ??= [];
+
+        if (!typeNames.TryGetValue(type, out var typeName))
+        {
+            var binder = Serializer.SerializationBinder ?? DefaultSerializationBinder.Instance;
+            typeName = type.GetTypeName(Serializer.TypeNameAssemblyFormatHandling, binder);
+            typeNames[type] = typeName;
+        }
+
         writer.WritePropertyName(JsonTypeReflector.TypePropertyName, false);
         writer.WriteValue(typeName);
     }
@@ -1047,16 +1079,12 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
                     var dt = (DateTime) key;
 
                     escape = false;
-                    var writer = new StringWriter(InvariantCulture);
-                    DateTimeUtils.WriteDateTimeString(writer, dt);
-                    return writer.ToString();
+                    return DateTimeUtils.ToDateTimeString(dt);
                 }
                 case PrimitiveTypeCode.DateTimeOffset:
                 {
                     escape = false;
-                    var writer = new StringWriter(InvariantCulture);
-                    DateTimeUtils.WriteDateTimeOffsetString(writer, (DateTimeOffset) key);
-                    return writer.ToString();
+                    return DateTimeUtils.ToDateTimeOffsetString((DateTimeOffset) key);
                 }
                 case PrimitiveTypeCode.Double:
                 {

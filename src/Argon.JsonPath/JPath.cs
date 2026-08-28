@@ -560,8 +560,9 @@ class JPath
 
         if (char.IsDigit(currentChar) || currentChar == '-')
         {
-            var stringBuilder = new StringBuilder();
-            stringBuilder.Append(currentChar);
+            // parse the slice of the expression the number occupies: accumulating it into a
+            // StringBuilder first allocated the builder and a string for every number in a path
+            var start = currentIndex;
 
             currentIndex++;
             while (currentIndex < expression.Length)
@@ -569,23 +570,22 @@ class JPath
                 currentChar = expression[currentIndex];
                 if (currentChar is ' ' or ')' or '&' or '|')
                 {
-                    var numberText = stringBuilder.ToString();
+                    var numberText = expression.AsSpan(start, currentIndex - start);
 
                     if (numberText.IndexOfAny(floatCharacters) == -1)
                     {
-                        var result = long.TryParse(numberText, NumberStyles.Integer, InvariantCulture, out var l);
+                        var result = TryParseInt64(numberText, out var l);
                         value = l;
                         return result;
                     }
                     else
                     {
-                        var result = double.TryParse(numberText, NumberStyles.Float | NumberStyles.AllowThousands, InvariantCulture, out var d);
+                        var result = TryParseDouble(numberText, out var d);
                         value = d;
                         return result;
                     }
                 }
 
-                stringBuilder.Append(currentChar);
                 currentIndex++;
             }
         }
@@ -623,9 +623,29 @@ class JPath
         return false;
     }
 
+    // the span overloads of the number parsers need Polyfill on the old frameworks, and this
+    // project does not reference it, so those keep paying for a string
+#if NET6_0_OR_GREATER
+    static bool TryParseInt64(CharSpan text, out long value) =>
+        long.TryParse(text, NumberStyles.Integer, InvariantCulture, out value);
+
+    static bool TryParseDouble(CharSpan text, out double value) =>
+        double.TryParse(text, NumberStyles.Float | NumberStyles.AllowThousands, InvariantCulture, out value);
+#else
+    static bool TryParseInt64(CharSpan text, out long value) =>
+        long.TryParse(text.ToString(), NumberStyles.Integer, InvariantCulture, out value);
+
+    static bool TryParseDouble(CharSpan text, out double value) =>
+        double.TryParse(text.ToString(), NumberStyles.Float | NumberStyles.AllowThousands, InvariantCulture, out value);
+#endif
+
     string ReadQuotedString()
     {
-        var stringBuilder = new StringBuilder();
+        // the builder is only created once an escape is found: a string with no escapes in it
+        // is a slice of the expression
+        StringBuilder? stringBuilder = null;
+        var start = currentIndex + 1;
+        var copiedTo = start;
 
         currentIndex++;
         while (currentIndex < expression.Length)
@@ -633,6 +653,9 @@ class JPath
             var currentChar = expression[currentIndex];
             if (currentChar == '\\' && currentIndex + 1 < expression.Length)
             {
+                stringBuilder ??= new();
+                stringBuilder.Append(expression, copiedTo, currentIndex - copiedTo);
+
                 currentIndex++;
                 currentChar = expression[currentIndex];
 
@@ -667,16 +690,24 @@ class JPath
                 stringBuilder.Append(resolvedChar);
 
                 currentIndex++;
+                copiedTo = currentIndex;
             }
             else if (currentChar == '\'')
             {
+                if (stringBuilder == null)
+                {
+                    var text = expression.Substring(start, currentIndex - start);
+                    currentIndex++;
+                    return text;
+                }
+
+                stringBuilder.Append(expression, copiedTo, currentIndex - copiedTo);
                 currentIndex++;
                 return stringBuilder.ToString();
             }
             else
             {
                 currentIndex++;
-                stringBuilder.Append(currentChar);
             }
         }
 

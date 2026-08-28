@@ -6,3 +6,5 @@ global using System.Linq.Expressions;
 global using System.Reflection.Emit;
 global using System.Text.RegularExpressions;
 global using System.Collections.Frozen;
+global using System.Runtime.CompilerServices;
+global using System.Runtime.InteropServices;

@@ -89,8 +89,12 @@ public static class JsonConvert
     /// <summary>
     /// Converts the <see cref="Char" /> to its JSON string representation.
     /// </summary>
-    public static string ToString(char value) =>
-        ToString(new[]{value}.AsSpan());
+    public static string ToString(char value)
+    {
+        Span<char> chars = stackalloc char[1];
+        chars[0] = value;
+        return ToString(chars);
+    }
 
     /// <summary>
     /// Converts the <see cref="Enum" /> to its JSON string representation.

@@ -1213,6 +1213,80 @@ public class JsonTextWriterTest : TestFixtureBase
     }
 
     [Fact]
+    public void PathWithSpanPropertyNames()
+    {
+        // the span overload does not materialize the name into a string, it copies the chars into
+        // a buffer reused across the properties written at that depth, so the path has to stay
+        // correct as names change length, as depths are pushed and popped, and when the two
+        // overloads are mixed
+        var stringWriter = new StringWriter();
+
+        using (var jsonWriter = new JsonTextWriter(stringWriter))
+        {
+            jsonWriter.WriteStartArray();
+            jsonWriter.WriteStartObject();
+
+            jsonWriter.WritePropertyName("Property1".AsSpan());
+            Assert.Equal("[0].Property1", jsonWriter.Path);
+            jsonWriter.WriteValue(1);
+
+            // shorter name over a buffer a longer one already wrote into
+            jsonWriter.WritePropertyName("P2".AsSpan());
+            Assert.Equal("[0].P2", jsonWriter.Path);
+
+            // the parent name has to survive being pushed and popped
+            jsonWriter.WriteStartObject();
+            jsonWriter.WritePropertyName("Child".AsSpan());
+            Assert.Equal("[0].P2.Child", jsonWriter.Path);
+            jsonWriter.WriteValue(2);
+            jsonWriter.WriteEndObject();
+
+            jsonWriter.WritePropertyName("AfterNested".AsSpan());
+            Assert.Equal("[0].AfterNested", jsonWriter.Path);
+            jsonWriter.WriteValue(3);
+
+            // names with special characters take the escaping branch of the path builder
+            jsonWriter.WritePropertyName("has space".AsSpan());
+            Assert.Equal("[0]['has space']", jsonWriter.Path);
+            jsonWriter.WriteValue(4);
+
+            // a slice of a larger buffer must not pick up the chars around it
+            jsonWriter.WritePropertyName("XXXSlicedXXX".AsSpan(3, 6));
+            Assert.Equal("[0].Sliced", jsonWriter.Path);
+            jsonWriter.WriteValue(5);
+
+            // back to the string overload at the same depth
+            jsonWriter.WritePropertyName("Plain");
+            Assert.Equal("[0].Plain", jsonWriter.Path);
+            jsonWriter.WriteValue(6);
+
+            jsonWriter.WriteEndObject();
+            jsonWriter.WriteEndArray();
+        }
+
+        Assert.Equal(
+            """[{"Property1":1,"P2":{"Child":2},"AfterNested":3,"has space":4,"Sliced":5,"Plain":6}]""",
+            stringWriter.ToString());
+    }
+
+    [Fact]
+    public void SpanPropertyNameInExceptionPath()
+    {
+        // the deferred name is read back when an error path is built, which is the only thing
+        // that consumes it
+        var stringWriter = new StringWriter();
+        var jsonWriter = new JsonTextWriter(stringWriter);
+        jsonWriter.WriteStartObject();
+        jsonWriter.WritePropertyName("badProperty".AsSpan());
+        // nest so the position holding the span name is on the stack that ContainerPath builds from
+        jsonWriter.WriteStartObject();
+
+        var exception = Assert.Throws<JsonWriterException>(() => jsonWriter.WriteValue(new Version(1, 2)));
+
+        Assert.Contains("Path 'badProperty'", exception.Message);
+    }
+
+    [Fact]
     public Task BuildStateArray()
     {
         var stateArray = JsonWriter.BuildStateArray();

@@ -82,11 +82,16 @@ public class JObject :
         return base.InsertItem(index, item, skipParentCheck);
     }
 
-    internal override void ValidateToken(JToken o, JToken? existing)
+    internal override void ValidateToken(JToken o, JToken? existing, bool skipDuplicateNameCheck)
     {
         if (o.Type != JTokenType.Property)
         {
             throw new ArgumentException($"Can not add {o.GetType()} to {GetType()}.");
+        }
+
+        if (skipDuplicateNameCheck)
+        {
+            return;
         }
 
         var newProperty = (JProperty) o;
@@ -119,8 +124,15 @@ public class JObject :
     /// Gets an <see cref="IEnumerable{T}" /> of <see cref="JProperty" /> of this object's properties.
     /// </summary>
     /// <returns>An <see cref="IEnumerable{T}" /> of <see cref="JProperty" /> of this object's properties.</returns>
-    public IEnumerable<JProperty> Properties() =>
-        properties.Cast<JProperty>();
+    public IEnumerable<JProperty> Properties()
+    {
+        // iterate InnerList rather than using Cast: avoids the LINQ wrapper
+        // enumerable and the boxed interface enumerator on every call
+        foreach (var token in properties.InnerList)
+        {
+            yield return (JProperty) token;
+        }
+    }
 
     /// <summary>
     /// Gets the <see cref="JProperty" /> with the specified name.
@@ -502,8 +514,9 @@ public class JObject :
         }
 
         var index = 0;
-        foreach (JProperty property in properties)
+        foreach (var token in properties.InnerList)
         {
+            var property = (JProperty) token;
             array[arrayIndex + index] = new(property.Name, property.Value);
             index++;
         }

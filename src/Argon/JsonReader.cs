@@ -757,7 +757,7 @@ public abstract class JsonReader : IDisposable
             return d;
         }
 
-        if (ConvertUtils.DecimalTryParse(s.ToCharArray(), 0, s.Length, out d) == ParseResult.Success)
+        if (ConvertUtils.DecimalTryParse(s.AsSpan(), 0, s.Length, out d) == ParseResult.Success)
         {
             // This is to handle strings like "96.014e-05" that are not supported by traditional decimal.TryParse
             SetToken(d);
@@ -783,8 +783,7 @@ public abstract class JsonReader : IDisposable
         }
 
         // fallback handles strings like "96.014e-05" not supported by decimal.TryParse
-        var chars = s.ToArray();
-        if (ConvertUtils.DecimalTryParse(chars, 0, chars.Length, out d) == ParseResult.Success)
+        if (ConvertUtils.DecimalTryParse(s, 0, s.Length, out d) == ParseResult.Success)
         {
             SetToken(d);
             return d;

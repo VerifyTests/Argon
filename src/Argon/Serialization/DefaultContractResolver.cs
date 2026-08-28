@@ -102,8 +102,10 @@ public class DefaultContractResolver : IContractResolver
         var dataContractAttribute = JsonTypeReflector.GetDataContractAttribute(type);
 
         // Exclude index properties and ByRef types
-        var defaultMembers = type.GetFieldsAndProperties(BindingFlags.Instance | BindingFlags.Public)
-            .Where(FilterMembers).ToList();
+        // HashSet: ShouldSerialize probes this for every member of the type, and a list probe is linear
+        var defaultMembers = new HashSet<MemberInfo>(
+            type.GetFieldsAndProperties(BindingFlags.Instance | BindingFlags.Public)
+                .Where(FilterMembers));
 
         // Do not filter ByRef types here because accessing FieldType/PropertyType can trigger additional assembly loads
         foreach (var member in type.GetFieldsAndProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
@@ -132,7 +134,7 @@ public class DefaultContractResolver : IContractResolver
         return serializableMembers;
     }
 
-    bool ShouldSerialize(MemberInfo member, List<MemberInfo> defaultMembers, DataContractAttribute? dataContractAttribute)
+    bool ShouldSerialize(MemberInfo member, HashSet<MemberInfo> defaultMembers, DataContractAttribute? dataContractAttribute)
     {
         // exclude members that are compiler generated if set
         if (!SerializeCompilerGeneratedMembers &&

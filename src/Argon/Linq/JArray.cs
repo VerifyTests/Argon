@@ -221,6 +221,11 @@ public class JArray :
         set => SetItem(index, value);
     }
 
+    // index the backing list directly: the base implementation goes through the
+    // virtual ChildrenTokens property and then an IList<JToken> interface dispatch
+    internal override JToken GetItem(int index) =>
+        values[index];
+
     internal override int IndexOfItem(JToken? item)
     {
         if (item == null)

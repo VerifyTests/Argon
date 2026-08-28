@@ -725,7 +725,10 @@ public class XmlNodeConverterTest : TestFixtureBase
     [Fact]
     public void FloatParseHandlingDecimal()
     {
-        var d = (decimal) Math.PI + 1000000000m;
+        // a decimal literal rather than (decimal) Math.PI: the double to decimal conversion
+        // returns full precision on modern runtimes, so casting would make this a test of
+        // conversion precision rather than of the XML/JSON round trip
+        var d = 1000000003.14159265358979m;
         var x = new DecimalContainer {Number = d};
 
         var json = JsonConvert.SerializeObject(x, Formatting.Indented);
@@ -737,7 +740,7 @@ public class XmlNodeConverterTest : TestFixtureBase
         });
 
         var xml = doc1.ToString();
-        Assert.Equal("<Number>1000000003.1415926535897931160</Number>", xml);
+        Assert.Equal("<Number>1000000003.14159265358979</Number>", xml);
 
         var settings = new JsonSerializerSettings
         {

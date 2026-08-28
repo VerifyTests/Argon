@@ -1333,7 +1333,9 @@ public class JPathExecuteTests : TestFixtureBase
         Assert.Equal(2, firstProductNames.Count);
         Assert.Null(firstProductNames[0]);
         Assert.Equal("Headlight Fluid", firstProductNames[1]);
-        Assert.Equal(149.95m, totalPrice, 2);
+        // the prices are read from JSON as doubles, and converting a double to decimal is
+        // correctly rounded from .NET 11 on, so the sum carries the binary expansion of 99.95
+        Assert.Equal(149.95m, Math.Round(totalPrice, 2));
     }
 
     [Fact]

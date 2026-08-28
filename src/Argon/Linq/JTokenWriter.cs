@@ -283,7 +283,9 @@ public class JTokenWriter :
     public override void WriteValue(int value)
     {
         base.WriteValue(value);
-        AddRawValue(value, JTokenType.Integer);
+        // int is the most common CLR type for a JSON number, so use the shared
+        // boxes for small values instead of boxing at the call site
+        AddRawValue(BoxedPrimitives.Get(value), JTokenType.Integer);
     }
 
     /// <summary>

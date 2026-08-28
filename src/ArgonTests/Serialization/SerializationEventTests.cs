@@ -185,7 +185,9 @@ public class SerializationEventTests : TestFixtureBase
             1.1m,
             2.222222222m,
             int.MaxValue,
-            (decimal) Math.PI
+            // the value Convert.ToDecimal(Math.PI) produced before .NET 11 made that conversion
+            // correctly rounded; written out so the serialized output is the same on every runtime
+            3.14159265358979m
         };
 
         Assert.Equal(11, obj.Member1);
@@ -204,7 +206,7 @@ public class SerializationEventTests : TestFixtureBase
               1.1,
               2.222222222,
               2147483647.0,
-              3.1415926535897931159979634685
+              3.14159265358979
             ]
             """,
             json);
@@ -230,7 +232,8 @@ public class SerializationEventTests : TestFixtureBase
             {1.1m, "first"},
             {2.222222222m, "second"},
             {int.MaxValue, "third"},
-            {(decimal) Math.PI, "fourth"}
+            // see ListEvents: a literal keeps the serialized key stable across runtimes
+            {3.14159265358979m, "fourth"}
         };
 
         Assert.Equal(11, obj.Member1);
@@ -247,7 +250,7 @@ public class SerializationEventTests : TestFixtureBase
               "1.1": "first",
               "2.222222222": "second",
               "2147483647": "third",
-              "3.1415926535897931159979634685": "fourth",
+              "3.14159265358979": "fourth",
               "79228162514264337593543950335": "Inserted on serializing"
             }
             """,

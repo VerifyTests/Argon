@@ -1,4 +1,4 @@
-class QueryFilter(QueryExpression expression) :
+﻿class QueryFilter(QueryExpression expression) :
     PathFilter
 {
     internal QueryExpression Expression = expression;
@@ -7,12 +7,22 @@ class QueryFilter(QueryExpression expression) :
     {
         foreach (var token in current)
         {
-            foreach (var v in token)
+            if (token is not JContainer container)
+            {
+                continue;
+            }
+
+            // walk the children through the sibling links: foreach over a JToken goes through
+            // Children(), which boxes an enumerator per input token
+            var v = container.First;
+            while (v != null)
             {
                 if (Expression.IsMatch(root, v, settings))
                 {
                     yield return v;
                 }
+
+                v = v.Next;
             }
         }
     }

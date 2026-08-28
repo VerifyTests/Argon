@@ -170,14 +170,10 @@ static class JavaScriptUtils
             writer.Write(value.Slice(0, lastWritePosition));
         }
 
-        for (var i = lastWritePosition; i < value.Length; i++)
+        var i = lastWritePosition;
+        while (true)
         {
             var c = value[i];
-
-            if (c < escapeFlags.Length && !escapeFlags[c])
-            {
-                continue;
-            }
 
             string? escapedValue;
 
@@ -245,31 +241,45 @@ static class JavaScriptUtils
                     break;
             }
 
-            if (escapedValue == null)
+            if (escapedValue != null)
             {
-                continue;
+                // Safe to use ReferenceEquals: escapedValue is either null (handled above),
+                // a string literal from the switch branches, or the escapedUnicodeText sentinel
+                // assigned directly in the default branch. No other branch produces "!".
+                var isEscapedUnicodeText = ReferenceEquals(escapedValue, escapedUnicodeText);
+
+                if (i > lastWritePosition)
+                {
+                    // write unchanged chars before writing escaped text
+                    writer.Write(value.Slice(lastWritePosition, i - lastWritePosition));
+                }
+
+                lastWritePosition = i + 1;
+                if (isEscapedUnicodeText)
+                {
+                    writer.Write(buffer!, 0, unicodeTextLength);
+                }
+                else
+                {
+                    writer.Write(escapedValue);
+                }
             }
 
-            // Safe to use ReferenceEquals: escapedValue is either null (handled above),
-            // a string literal from the switch branches, or the escapedUnicodeText sentinel
-            // assigned directly at line 199. No other branch produces a string equal to "!".
-            var isEscapedUnicodeText = ReferenceEquals(escapedValue, escapedUnicodeText);
-
-            if (i > lastWritePosition)
+            // jump to the next char needing an escape rather than stepping over the
+            // clean run one char at a time; FirstCharToEscape vectorizes the scan
+            i++;
+            if (i == value.Length)
             {
-                // write unchanged chars before writing escaped text
-                writer.Write(value.Slice(lastWritePosition, i - lastWritePosition));
+                break;
             }
 
-            lastWritePosition = i + 1;
-            if (isEscapedUnicodeText)
+            var next = FirstCharToEscape(value.Slice(i), escapeFlags, escapeHandling);
+            if (next == -1)
             {
-                writer.Write(buffer!, 0, unicodeTextLength);
+                break;
             }
-            else
-            {
-                writer.Write(escapedValue);
-            }
+
+            i += next;
         }
 
         MiscellaneousUtils.Assert(lastWritePosition != 0);
@@ -283,6 +293,29 @@ static class JavaScriptUtils
     public static string ToEscapedJavaScriptString(CharSpan value, char delimiter, bool appendDelimiters, EscapeHandling escapeHandling)
     {
         var escapeFlags = GetCharEscapeFlags(escapeHandling, delimiter);
+
+        if (FirstCharToEscape(value, escapeFlags, escapeHandling) == -1)
+        {
+            // nothing to escape: build the result directly rather than through a StringBuilder
+            if (!appendDelimiters)
+            {
+                return value.ToString();
+            }
+
+            var length = value.Length + 2;
+            var quoted = BufferUtils.RentBuffer(length);
+            try
+            {
+                quoted[0] = delimiter;
+                value.CopyTo(quoted.AsSpan(1));
+                quoted[length - 1] = delimiter;
+                return new(quoted, 0, length);
+            }
+            finally
+            {
+                BufferUtils.ReturnBuffer(quoted);
+            }
+        }
 
         // size for the delimiters too, otherwise the StringBuilder always grows on the first write
         using var w = StringUtils.CreateStringWriter(value.Length + (appendDelimiters ? 2 : 0));

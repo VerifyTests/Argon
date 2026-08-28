@@ -48,6 +48,36 @@ public class JsonObjectContract : JsonContainerContract
 
     internal ObjectConstructor? ParameterizedCreator { get; set; }
 
+    Dictionary<JsonProperty, int>? creatorParameterIndexes;
+
+    /// <summary>
+    /// Gets the index of a creator parameter within <see cref="CreatorParameters" />, or -1 when it is not one.
+    /// </summary>
+    /// <remarks>
+    /// Backed by a lookup rather than a scan of <see cref="CreatorParameters" />: the index is needed
+    /// once per matched parameter while deserializing, so scanning makes every object built through a
+    /// parameterized constructor - records and immutable types - quadratic in its parameter count.
+    /// Built on first use because the contract resolver populates <see cref="CreatorParameters" />
+    /// after the contract is constructed, and rebuilt if that collection is later changed.
+    /// </remarks>
+    internal int IndexOfCreatorParameter(JsonProperty property)
+    {
+        var indexes = creatorParameterIndexes;
+        if (indexes == null ||
+            indexes.Count != CreatorParameters.Count)
+        {
+            indexes = new(CreatorParameters.Count);
+            for (var index = 0; index < CreatorParameters.Count; index++)
+            {
+                indexes[CreatorParameters[index]] = index;
+            }
+
+            creatorParameterIndexes = indexes;
+        }
+
+        return indexes.GetValueOrDefault(property, -1);
+    }
+
     bool? hasRequiredOrDefaultValueProperties;
 
     internal bool HasRequiredOrDefaultValueProperties

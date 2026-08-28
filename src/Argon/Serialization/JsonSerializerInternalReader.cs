@@ -2,7 +2,6 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
-
 // ReSharper disable NullableWarningSuppressionIsUsed
 // ReSharper disable RedundantSuppressNullableWarningExpression
 
@@ -28,6 +27,31 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
 
     JsonContract GetContract(Type type) =>
         Serializer.ResolveContract(type);
+
+    // type names are untrusted input, so the cache is capped; once it is full later names are
+    // split without being added
+    const int typeNameCacheMax = 128;
+
+    Dictionary<string, TypeNameKey>? typeNameKeys;
+
+    // the same $type repeats for every item of a polymorphic collection, and splitting it
+    // allocates a substring for the type and one for the assembly every time
+    TypeNameKey SplitTypeName(string qualifiedTypeName)
+    {
+        var keys = typeNameKeys ??= new();
+        if (keys.TryGetValue(qualifiedTypeName, out var key))
+        {
+            return key;
+        }
+
+        key = ReflectionUtils.SplitFullyQualifiedTypeName(qualifiedTypeName);
+        if (keys.Count < typeNameCacheMax)
+        {
+            keys.Add(qualifiedTypeName, key);
+        }
+
+        return key;
+    }
 
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
@@ -273,7 +297,7 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
                 return contract.Converter;
             }
 
-            if (Serializer.GetMatchingConverter(contract.UnderlyingType) is { } matchingConverter)
+            if (GetMatchingConverter(contract.UnderlyingType) is { } matchingConverter)
             {
                 // passed in converters
                 return matchingConverter;
@@ -645,7 +669,7 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
 
         if (resolvedTypeNameHandling != TypeNameHandling.None)
         {
-            var typeNameKey = ReflectionUtils.SplitFullyQualifiedTypeName(qualifiedTypeName);
+            var typeNameKey = SplitTypeName(qualifiedTypeName);
 
             var binder = Serializer.SerializationBinder ?? DefaultSerializationBinder.Instance;
             Type specifiedType;
@@ -978,8 +1002,9 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         }
         else
         {
-            propertyContract = GetContract(currentValue.GetType());
-
+            // currentValue is only ever non null when the block above ran, and that already
+            // resolved propertyContract from the same currentValue.GetType(). resolving it
+            // again would repeat a GetType and a contract dictionary lookup per property
             if (propertyContract != property.PropertyContract)
             {
                 propertyConverter = GetConverter(propertyContract, property.Converter, containerContract, containerProperty);
@@ -1746,7 +1771,7 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
                     }
                 }
 
-                var i = contract.CreatorParameters.IndexOf(constructorProperty);
+                var i = contract.IndexOfCreatorParameter(constructorProperty);
                 creatorParameterValues[i] = context.Value;
 
                 context.Used = true;
@@ -2228,11 +2253,25 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
     static void SetPropertyPresence(JsonReader reader, JsonProperty property, Dictionary<JsonProperty, PropertyPresence>? requiredProperties)
     {
         // the dictionary only tracks presence-relevant properties; do not add others back
-        if (requiredProperties == null ||
-            !requiredProperties.ContainsKey(property))
+        if (requiredProperties == null)
         {
             return;
         }
+
+#if NET6_0_OR_GREATER
+        // one hash lookup rather than a ContainsKey probe followed by an indexer set,
+        // which runs for every property of every object with tracked presence
+        ref var presenceSlot = ref CollectionsMarshal.GetValueRefOrNullRef(requiredProperties, property);
+        if (Unsafe.IsNullRef(ref presenceSlot))
+        {
+            return;
+        }
+#else
+        if (!requiredProperties.ContainsKey(property))
+        {
+            return;
+        }
+#endif
 
         PropertyPresence propertyPresence;
         switch (reader.TokenType)
@@ -2257,7 +2296,11 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
                 break;
         }
 
+#if NET6_0_OR_GREATER
+        presenceSlot = propertyPresence;
+#else
         requiredProperties[property] = propertyPresence;
+#endif
     }
 
     void HandleError(JsonReader reader, bool readPastError, int initialDepth)
