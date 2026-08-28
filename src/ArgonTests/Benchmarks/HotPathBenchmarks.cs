@@ -2,8 +2,6 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
-using BenchmarkDotNet.Attributes;
-
 // Benchmarks covering the hot path fixes from the performance review in todo.md.
 //
 // The reader string scan and the escape writer fixes are already measured by
@@ -285,7 +283,7 @@ public class JTokenHotPathBenchmark
             .Select(_ => _ % 9)
             .ToArray();
 
-        array = new(Enumerable.Range(0, 500));
+        array = [with(Enumerable.Range(0, 500))];
     }
 
     [Benchmark]

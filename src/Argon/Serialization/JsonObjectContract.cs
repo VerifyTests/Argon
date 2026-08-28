@@ -75,12 +75,7 @@ public class JsonObjectContract : JsonContainerContract
             creatorParameterIndexes = indexes;
         }
 
-        if (indexes.TryGetValue(property, out var result))
-        {
-            return result;
-        }
-
-        return -1;
+        return indexes.GetValueOrDefault(property, -1);
     }
 
     bool? hasRequiredOrDefaultValueProperties;

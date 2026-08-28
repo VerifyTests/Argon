@@ -2,8 +2,6 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
-using BenchmarkDotNet.Attributes;
-
 // Benchmarks covering the medium and low priority items from the performance review in todo.md.
 // The high priority items are covered by HotPathBenchmarks.
 
