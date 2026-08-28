@@ -4,6 +4,7 @@
 
 using Microsoft.FSharp.Reflection;
 using TestObjects;
+using Formatting = Argon.Formatting;
 
 public class DiscriminatedUnionConverterTests : TestFixtureBase
 {

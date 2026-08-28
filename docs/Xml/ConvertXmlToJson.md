@@ -46,5 +46,5 @@ Console.WriteLine(json);
 //   }
 // }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Xml/ConvertXmlToJson.cs#L12-L55' title='Snippet source file'>snippet source</a> | <a href='#snippet-ConvertXmlToJson' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Xml/ConvertXmlToJson.cs#L10-L53' title='Snippet source file'>snippet source</a> | <a href='#snippet-ConvertXmlToJson' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

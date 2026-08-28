@@ -42,7 +42,7 @@ public class SerializationEventTestObject :
         Member4 = "This value was set after deserialization.";
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializationCallbackInterfaces.cs#L7-L44' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializationCallbackInterfaces' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializationCallbackInterfaces.cs#L9-L46' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializationCallbackInterfaces' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 <!-- snippet: SerializationCallbackInterfacesUsage -->
@@ -89,5 +89,5 @@ Console.WriteLine(obj.Member3);
 Console.WriteLine(obj.Member4);
 // This value was set after deserialization.
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializationCallbackInterfaces.cs#L49-L92' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializationCallbackInterfacesUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializationCallbackInterfaces.cs#L51-L94' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializationCallbackInterfacesUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

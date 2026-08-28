@@ -2,10 +2,9 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
-using System.Data;
 using System.Data.SqlTypes;
-using Argon.DataSets;
 using TestObjects;
+using Formatting = Argon.Formatting;
 
 public class DataTableConverterTests : TestFixtureBase
 {
@@ -50,7 +49,7 @@ public class DataTableConverterTests : TestFixtureBase
             dt.Columns.Add(ss.Name, ss);
         }
 
-        dt.Rows.Add(types.Select(_ => (object) null).ToArray());
+        dt.Rows.Add(types.Select(object (_) => null).ToArray());
 
         var stringWriter = new StringWriter();
         var jsonWriter = new JsonTextWriter(stringWriter)

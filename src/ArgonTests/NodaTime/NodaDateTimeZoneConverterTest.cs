@@ -5,6 +5,7 @@
 using Argon.NodaTime;
 using NodaTime;
 using NodaTime.TimeZones;
+using Formatting = Argon.Formatting;
 
 public class NodaDateTimeZoneConverterTest
 {

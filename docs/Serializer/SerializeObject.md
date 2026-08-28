@@ -13,7 +13,7 @@ public class Account
     public IList<string> Roles { get; set; }
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializeObject.cs#L7-L17' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializeObjectTypes' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializeObject.cs#L9-L19' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializeObjectTypes' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 <!-- snippet: SerializeObjectUsage -->
@@ -44,5 +44,5 @@ var json = JsonConvert.SerializeObject(account, Formatting.Indented);
 
 Console.WriteLine(json);
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializeObject.cs#L22-L49' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializeObjectUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializeObject.cs#L24-L51' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializeObjectUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

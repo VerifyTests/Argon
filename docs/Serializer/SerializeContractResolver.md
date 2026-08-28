@@ -13,7 +13,7 @@ public class Person
     public string FullName => $"{FirstName} {LastName}";
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializeContractResolver.cs#L7-L17' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializeContractResolverTypes' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializeContractResolver.cs#L9-L19' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializeContractResolverTypes' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 <!-- snippet: SerializeContractResolverUsage -->
@@ -37,5 +37,5 @@ Console.WriteLine(json);
 //   "fullName": "Sarah Security"
 // }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializeContractResolver.cs#L22-L42' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializeContractResolverUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializeContractResolver.cs#L24-L44' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializeContractResolverUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

@@ -38,5 +38,5 @@ foreach (DataRow row in dataTable.Rows)
 // 0 - item 0
 // 1 - item 1
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/DeserializeDataSet.cs#L12-L47' title='Snippet source file'>snippet source</a> | <a href='#snippet-DeserializeDataSet' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/DeserializeDataSet.cs#L10-L45' title='Snippet source file'>snippet source</a> | <a href='#snippet-DeserializeDataSet' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

@@ -5,6 +5,7 @@
 using Argon.NodaTime;
 using NodaTime;
 using static TestHelper;
+using Formatting = Argon.Formatting;
 
 /// <summary>
 /// The same tests as NodaDateIntervalConverterTest, but using the ISO-based interval converter.

@@ -2,6 +2,8 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
+using Formatting = Argon.Formatting;
+
 public class SerializeRawJson : TestFixtureBase
 {
     #region SerializeRawJsonTypes
@@ -21,8 +23,8 @@ public class SerializeRawJson : TestFixtureBase
 
         var settings = new JavaScriptSettings
         {
-            OnLoadFunction = new("OnLoad"),
-            OnUnloadFunction = new("function(e) { alert(e); }")
+            OnLoadFunction = [with("OnLoad")],
+            OnUnloadFunction = [with("function(e) { alert(e); }")]
         };
 
         var json = JsonConvert.SerializeObject(settings, Formatting.Indented);

@@ -1,4 +1,6 @@
-﻿public class KeyValuePairConverterTests : TestFixtureBase
+﻿using Formatting = Argon.Formatting;
+
+public class KeyValuePairConverterTests : TestFixtureBase
 {
     [Fact]
     public void SerializeUsingInternalConverter()

@@ -4,6 +4,7 @@
 
 using Argon.NodaTime;
 using NodaTime.Utility;
+using Formatting = Argon.Formatting;
 
 public class NodaConverterBaseTest
 {

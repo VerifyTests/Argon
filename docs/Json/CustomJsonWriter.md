@@ -277,7 +277,7 @@ public class XmlJsonWriter(XmlWriter writer) :
     }
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Json/CustomJsonWriter.cs#L9-L283' title='Snippet source file'>snippet source</a> | <a href='#snippet-CustomJsonWriterTypes' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Json/CustomJsonWriter.cs#L7-L281' title='Snippet source file'>snippet source</a> | <a href='#snippet-CustomJsonWriterTypes' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 <!-- snippet: CustomJsonWriterUsage -->
@@ -317,5 +317,5 @@ Console.WriteLine(stringWriter.ToString());
 //  </Roles>
 //</Root>
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Json/CustomJsonWriter.cs#L290-L326' title='Snippet source file'>snippet source</a> | <a href='#snippet-CustomJsonWriterUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Json/CustomJsonWriter.cs#L288-L324' title='Snippet source file'>snippet source</a> | <a href='#snippet-CustomJsonWriterUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

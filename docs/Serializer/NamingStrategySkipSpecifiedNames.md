@@ -12,7 +12,7 @@ public class User
     [JsonProperty(PropertyName = "UPN")] public string Upn { get; set; }
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/NamingStrategySkipSpecifiedNames.cs#L7-L16' title='Snippet source file'>snippet source</a> | <a href='#snippet-NamingStrategySkipSpecifiedNamesTypes' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/NamingStrategySkipSpecifiedNames.cs#L9-L18' title='Snippet source file'>snippet source</a> | <a href='#snippet-NamingStrategySkipSpecifiedNamesTypes' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 <!-- snippet: NamingStrategySkipSpecifiedNamesUsage -->
@@ -46,5 +46,5 @@ Console.WriteLine(json);
 //   "UPN": "john.smith@acme.com"
 // }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/NamingStrategySkipSpecifiedNames.cs#L21-L51' title='Snippet source file'>snippet source</a> | <a href='#snippet-NamingStrategySkipSpecifiedNamesUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/NamingStrategySkipSpecifiedNames.cs#L23-L53' title='Snippet source file'>snippet source</a> | <a href='#snippet-NamingStrategySkipSpecifiedNamesUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

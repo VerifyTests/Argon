@@ -2,6 +2,8 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
+using Formatting = Argon.Formatting;
+
 namespace TestObjects;
 
 public class ThisGenericTest<T> where T : IKeyValueId

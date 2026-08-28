@@ -3,6 +3,8 @@
 // as found in the license.md file.
 
 using TestObjects;
+using Formatting = Argon.Formatting;
+
 // ReSharper disable UnusedVariable
 
 public class JObjectTests : TestFixtureBase
@@ -145,7 +147,7 @@ public class JObjectTests : TestFixtureBase
     public void Keys()
     {
         var o = new JObject();
-        var d = (IDictionary<string, JToken>) o;
+        IDictionary<string, JToken> d = o;
 
         Assert.Empty(d.Keys);
 
@@ -450,7 +452,7 @@ public class JObjectTests : TestFixtureBase
         var raw = new PersonRaw
         {
             FirstName = "FirstNameValue",
-            RawContent = new("[1,2,3,4,5]"),
+            RawContent = [with("[1,2,3,4,5]")],
             LastName = "LastNameValue"
         };
 
@@ -468,7 +470,7 @@ public class JObjectTests : TestFixtureBase
         var raw = new PersonRaw
         {
             FirstName = "FirstNameValue",
-            RawContent = new("[1,2,3,4,5]"),
+            RawContent = [with("[1,2,3,4,5]")],
             LastName = "LastNameValue"
         };
 
@@ -509,7 +511,7 @@ public class JObjectTests : TestFixtureBase
         var raw = new PersonRaw
         {
             FirstName = "FirstNameValue",
-            RawContent = new("[1,2,3,4,5]"),
+            RawContent = [with("[1,2,3,4,5]")],
             LastName = "LastNameValue"
         };
 

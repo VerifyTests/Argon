@@ -2,8 +2,6 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
-using BenchmarkDotNet.Attributes;
-
 [MemoryDiagnoser]
 public class PropertyOrderBenchmark
 {
@@ -18,7 +16,7 @@ public class PropertyOrderBenchmark
     [GlobalSetup]
     public void Setup()
     {
-        properties = new(typeof(object));
+        properties = [with(typeof(object))];
         for (var i = 0; i < Count; i++)
         {
             var property = new JsonProperty(typeof(string), typeof(object))

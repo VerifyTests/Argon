@@ -3,6 +3,8 @@
 // as found in the license.md file.
 
 using TestObjects;
+using Formatting = Argon.Formatting;
+
 // ReSharper disable UnusedVariable
 // ReSharper disable RedundantAssignment
 
@@ -198,10 +200,10 @@ public class JValueTests : TestFixtureBase
         var v = new JValue(true);
         Assert.Equal("True", v.ToString());
 
-        v = new("Blah"u8.ToArray());
+        v = [with("Blah"u8.ToArray())];
         Assert.Equal("System.Byte[]", v.ToString(null, InvariantCulture));
 
-        v = new("I am a string!");
+        v = [with("I am a string!")];
         Assert.Equal("I am a string!", v.ToString());
 
         v = JValue.CreateNull();
@@ -210,19 +212,19 @@ public class JValueTests : TestFixtureBase
         v = JValue.CreateNull();
         Assert.Equal("", v.ToString(null, InvariantCulture));
 
-        v = new(new DateTime(2000, 12, 12, 20, 59, 59, DateTimeKind.Utc), JTokenType.Date);
+        v = [with(new DateTime(2000, 12, 12, 20, 59, 59, DateTimeKind.Utc), JTokenType.Date)];
         Assert.Equal("12/12/2000 20:59:59", v.ToString(null, InvariantCulture));
 
-        v = new(new Uri("http://json.codeplex.com/"));
+        v = [with(new Uri("http://json.codeplex.com/"))];
         Assert.Equal("http://json.codeplex.com/", v.ToString(null, InvariantCulture));
 
-        v = new(TimeSpan.FromDays(1));
+        v = [with(TimeSpan.FromDays(1))];
         Assert.Equal("1.00:00:00", v.ToString(null, InvariantCulture));
 
-        v = new(new Guid("B282ADE7-C520-496C-A448-4084F6803DE5"));
+        v = [with(new Guid("B282ADE7-C520-496C-A448-4084F6803DE5"))];
         Assert.Equal("b282ade7-c520-496c-a448-4084f6803de5", v.ToString(null, InvariantCulture));
 
-        v = new(BigInteger.Parse("123456789999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999990"));
+        v = [with(BigInteger.Parse("123456789999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999990"))];
         Assert.Equal("123456789999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999990", v.ToString(null, InvariantCulture));
     }
 
@@ -704,7 +706,7 @@ public class JValueTests : TestFixtureBase
         var e3 = (StringComparison) d;
         Assert.Equal(StringComparison.OrdinalIgnoreCase, e3);
 
-        v = new("ORDINAL");
+        v = [with("ORDINAL")];
         d = v;
         var e4 = (StringComparison) d;
         Assert.Equal(StringComparison.Ordinal, e4);
@@ -712,7 +714,7 @@ public class JValueTests : TestFixtureBase
         var e5 = v.ToObject<StringComparison>();
         Assert.Equal(StringComparison.Ordinal, e5);
 
-        v = new((int) StringComparison.OrdinalIgnoreCase);
+        v = [with((int)StringComparison.OrdinalIgnoreCase)];
         Assert.Equal(JTokenType.Integer, v.Type);
         var e6 = v.ToObject<StringComparison>();
         Assert.Equal(StringComparison.OrdinalIgnoreCase, e6);
@@ -744,95 +746,95 @@ public class JValueTests : TestFixtureBase
         Assert.Equal(1, v2.CompareTo(v1));
         Assert.Equal(1, ((IComparable) v2).CompareTo(v1));
 
-        v1 = new(1.5);
-        v2 = new("2");
+        v1 = [with(1.5)];
+        v2 = [with("2")];
 
         Assert.Equal(-1, v1.CompareTo(v2));
         Assert.Equal(-1, ((IComparable) v1).CompareTo(v2));
         Assert.Equal(1, v2.CompareTo(v1));
         Assert.Equal(1, ((IComparable) v2).CompareTo(v1));
 
-        v1 = new(1.5m);
-        v2 = new("2");
+        v1 = [with(1.5m)];
+        v2 = [with("2")];
 
         Assert.Equal(-1, v1.CompareTo(v2));
         Assert.Equal(-1, ((IComparable) v1).CompareTo(v2));
         Assert.Equal(1, v2.CompareTo(v1));
         Assert.Equal(1, ((IComparable) v2).CompareTo(v1));
 
-        v1 = new(1.5m);
-        v2 = new(2);
+        v1 = [with(1.5m)];
+        v2 = [with(2)];
 
         Assert.Equal(-1, v1.CompareTo(v2));
         Assert.Equal(-1, ((IComparable) v1).CompareTo(v2));
         Assert.Equal(1, v2.CompareTo(v1));
         Assert.Equal(1, ((IComparable) v2).CompareTo(v1));
 
-        v1 = new(1.5m);
-        v2 = new(2.1);
+        v1 = [with(1.5m)];
+        v2 = [with(2.1)];
 
         Assert.Equal(-1, v1.CompareTo(v2));
         Assert.Equal(-1, ((IComparable) v1).CompareTo(v2));
         Assert.Equal(1, v2.CompareTo(v1));
         Assert.Equal(1, ((IComparable) v2).CompareTo(v1));
 
-        v1 = new(2);
-        v2 = new("2");
+        v1 = [with(2)];
+        v2 = [with("2")];
 
         Assert.Equal(0, v1.CompareTo(v2));
         Assert.Equal(0, ((IComparable) v1).CompareTo(v2));
         Assert.Equal(0, v2.CompareTo(v1));
         Assert.Equal(0, ((IComparable) v2).CompareTo(v1));
 
-        v1 = new(2);
-        v2 = new(2m);
+        v1 = [with(2)];
+        v2 = [with(2m)];
 
         Assert.Equal(0, v1.CompareTo(v2));
         Assert.Equal(0, ((IComparable) v1).CompareTo(v2));
         Assert.Equal(0, v2.CompareTo(v1));
         Assert.Equal(0, ((IComparable) v2).CompareTo(v1));
 
-        v1 = new(2f);
-        v2 = new(2m);
+        v1 = [with(2f)];
+        v2 = [with(2m)];
 
         Assert.Equal(0, v1.CompareTo(v2));
         Assert.Equal(0, ((IComparable) v1).CompareTo(v2));
         Assert.Equal(0, v2.CompareTo(v1));
         Assert.Equal(0, ((IComparable) v2).CompareTo(v1));
 
-        v1 = new(2);
-        v2 = new("10");
+        v1 = [with(2)];
+        v2 = [with("10")];
 
         Assert.Equal(-1, v1.CompareTo(v2));
         Assert.Equal(-1, ((IComparable) v1).CompareTo(v2));
         Assert.Equal(1, v2.CompareTo(v1));
         Assert.Equal(1, ((IComparable) v2).CompareTo(v1));
 
-        v1 = new(2);
-        v2 = new((object) null);
+        v1 = [with(2)];
+        v2 = [with((object)null)];
 
         Assert.Equal(1, v1.CompareTo(v2));
         Assert.Equal(1, ((IComparable) v1).CompareTo(v2));
         Assert.Equal(-1, v2.CompareTo(v1));
         Assert.Equal(-1, ((IComparable) v2).CompareTo(v1));
 
-        v1 = new("2");
-        v2 = new((object) null);
+        v1 = [with("2")];
+        v2 = [with((object)null)];
 
         Assert.Equal(1, v1.CompareTo(v2));
         Assert.Equal(1, ((IComparable) v1).CompareTo(v2));
         Assert.Equal(-1, v2.CompareTo(v1));
         Assert.Equal(-1, ((IComparable) v2).CompareTo(v1));
 
-        v1 = new((object) null);
-        v2 = new("2");
+        v1 = [with((object)null)];
+        v2 = [with("2")];
 
         Assert.Equal(-1, v1.CompareTo(v2));
         Assert.Equal(-1, ((IComparable) v1).CompareTo(v2));
         Assert.Equal(1, v2.CompareTo(v1));
         Assert.Equal(1, ((IComparable) v2).CompareTo(v1));
 
-        v1 = new("2");
+        v1 = [with("2")];
         v2 = null;
 
         // ReSharper disable ExpressionIsAlwaysNull
@@ -840,7 +842,7 @@ public class JValueTests : TestFixtureBase
         Assert.Equal(1, ((IComparable) v1).CompareTo(v2));
         // ReSharper restore ExpressionIsAlwaysNull
 
-        v1 = new((object) null);
+        v1 = [with((object)null)];
         v2 = null;
 
         // ReSharper disable ExpressionIsAlwaysNull

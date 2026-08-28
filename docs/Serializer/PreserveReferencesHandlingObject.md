@@ -18,7 +18,7 @@ public class File
     public Directory Parent { get; set; }
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/PreserveReferencesHandlingObject.cs#L7-L22' title='Snippet source file'>snippet source</a> | <a href='#snippet-PreserveReferencesHandlingObjectTypes' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/PreserveReferencesHandlingObject.cs#L9-L24' title='Snippet source file'>snippet source</a> | <a href='#snippet-PreserveReferencesHandlingObjectTypes' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 <!-- snippet: PreserveReferencesHandlingObjectUsage -->
@@ -100,5 +100,5 @@ Console.WriteLine(preserveReferenacesObjects);
 //   ]
 // }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/PreserveReferencesHandlingObject.cs#L27-L105' title='Snippet source file'>snippet source</a> | <a href='#snippet-PreserveReferencesHandlingObjectUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/PreserveReferencesHandlingObject.cs#L29-L107' title='Snippet source file'>snippet source</a> | <a href='#snippet-PreserveReferencesHandlingObjectUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

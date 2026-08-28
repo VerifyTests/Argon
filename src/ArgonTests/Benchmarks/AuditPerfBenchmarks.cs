@@ -2,7 +2,7 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
-using BenchmarkDotNet.Attributes;
+
 
 // Benchmarks covering the performance fixes from the deep-dive audit.
 
@@ -98,9 +98,14 @@ public class JsonPathRegexBenchmark
 
     [GlobalSetup]
     public void Setup() =>
-        data = new(
-            Enumerable.Range(0, 500)
-                .Select(i => new JObject {["name"] = $"Argon.Package{i}"}));
+        data =
+        [
+            with(Enumerable.Range(0, 500)
+                .Select(i => new JObject
+                {
+                    ["name"] = $"Argon.Package{i}"
+                }))
+        ];
 
     [Benchmark]
     public int RegexFilter() =>

@@ -38,5 +38,5 @@ Console.WriteLine(node.ToString());
 //   </Team>
 // </Root>
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Xml/ConvertJsonToXml.cs#L12-L47' title='Snippet source file'>snippet source</a> | <a href='#snippet-ConvertJsonToXml' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Xml/ConvertJsonToXml.cs#L10-L45' title='Snippet source file'>snippet source</a> | <a href='#snippet-ConvertJsonToXml' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

@@ -5,6 +5,7 @@
 using Argon.NodaTime;
 using NodaTime;
 using static TestHelper;
+using Formatting = Argon.Formatting;
 
 public class NodaIntervalConverterTest
 {

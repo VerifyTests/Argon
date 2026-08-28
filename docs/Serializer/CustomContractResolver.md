@@ -28,5 +28,5 @@ Console.WriteLine(startingWithL);
 //   "LastName": "Deepwater-Diver"
 // }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/CustomContractResolver.cs#L36-L61' title='Snippet source file'>snippet source</a> | <a href='#snippet-CustomContractResolverUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/CustomContractResolver.cs#L38-L63' title='Snippet source file'>snippet source</a> | <a href='#snippet-CustomContractResolverUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

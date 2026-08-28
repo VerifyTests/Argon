@@ -2,8 +2,6 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
-using System.Runtime.Serialization.Json;
-using BenchmarkDotNet.Attributes;
 using TestObjects;
 #if !NET6_0_OR_GREATER
 using System.Runtime.Serialization.Formatters.Binary;

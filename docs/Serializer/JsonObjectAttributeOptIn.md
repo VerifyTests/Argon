@@ -17,7 +17,7 @@ public class File
     [JsonProperty] public int Size { get; set; }
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonObjectAttributeOptIn.cs#L7-L21' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonObjectAttributeOptInTypes' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonObjectAttributeOptIn.cs#L9-L23' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonObjectAttributeOptInTypes' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 <!-- snippet: JsonObjectAttributeOptInUsage -->
@@ -38,5 +38,5 @@ Console.WriteLine(json);
 //   "Size": 51200
 // }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonObjectAttributeOptIn.cs#L26-L43' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonObjectAttributeOptInUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonObjectAttributeOptIn.cs#L28-L45' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonObjectAttributeOptInUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

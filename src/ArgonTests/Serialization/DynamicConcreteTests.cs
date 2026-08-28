@@ -4,6 +4,7 @@
 
 #if !NET6_0_OR_GREATER
 using System.Reflection.Emit;
+using PropertyAttributes = System.Reflection.PropertyAttributes;
 
 public class DynamicConcreteTests : TestFixtureBase
 {
@@ -94,8 +95,8 @@ public static class DynamicConcrete
     public static T GetInstanceFor<T>() =>
         (T) GetInstanceFor(typeof(T));
 
-    static readonly ModuleBuilder ModuleBuilder;
-    static readonly AssemblyBuilder DynamicAssembly;
+    static readonly ModuleBuilder moduleBuilder;
+    static readonly AssemblyBuilder dynamicAssembly;
 
     /// <summary>
     /// Get an empty instance of a dynamic proxy for the given type.
@@ -103,9 +104,9 @@ public static class DynamicConcrete
     /// </summary>
     public static object GetInstanceFor(Type targetType)
     {
-        lock (DynamicAssembly)
+        lock (dynamicAssembly)
         {
-            var constructedType = DynamicAssembly.GetType(ProxyName(targetType)) ?? GetConstructedType(targetType);
+            var constructedType = dynamicAssembly.GetType(ProxyName(targetType)) ?? GetConstructedType(targetType);
             var instance = Activator.CreateInstance(constructedType);
             return instance;
         }
@@ -117,13 +118,13 @@ public static class DynamicConcrete
     static DynamicConcrete()
     {
         var assemblyName = new AssemblyName("DynImpl");
-        DynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
-        ModuleBuilder = DynamicAssembly.DefineDynamicModule("DynImplModule");
+        dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
+        moduleBuilder = dynamicAssembly.DefineDynamicModule("DynImplModule");
     }
 
     static Type GetConstructedType(Type targetType)
     {
-        var typeBuilder = ModuleBuilder.DefineType($"{targetType.Name}Proxy", TypeAttributes.Public);
+        var typeBuilder = moduleBuilder.DefineType($"{targetType.Name}Proxy", TypeAttributes.Public);
 
         var ctorBuilder = typeBuilder.DefineConstructor(
             MethodAttributes.Public,

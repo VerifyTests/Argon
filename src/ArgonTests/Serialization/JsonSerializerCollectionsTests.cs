@@ -2,9 +2,9 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
-using System.Collections.Specialized;
-using System.Xml.Linq;
 using TestObjects;
+using Formatting = Argon.Formatting;
+
 // ReSharper disable UnusedParameter.Local
 
 public class JsonSerializerCollectionsTests : TestFixtureBase
@@ -188,20 +188,20 @@ public class JsonSerializerCollectionsTests : TestFixtureBase
 
     public class TestCollectionPrivateParameterized : IEnumerable<int>
     {
-        readonly List<int> _bars;
+        readonly List<int> bars;
 
         public TestCollectionPrivateParameterized() =>
-            _bars = [];
+            bars = [];
 
         [Argon.JsonConstructor]
         TestCollectionPrivateParameterized(IEnumerable<int> bars) =>
-            _bars = [..bars];
+            this.bars = [..bars];
 
         public void Add(int bar) =>
-            _bars.Add(bar);
+            bars.Add(bar);
 
         public IEnumerator<int> GetEnumerator() =>
-            _bars.GetEnumerator();
+            bars.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() =>
             GetEnumerator();
@@ -623,10 +623,10 @@ public class JsonSerializerCollectionsTests : TestFixtureBase
     public class EnumerableClass<T>(IEnumerable<T> values) :
         IEnumerable<T>
     {
-        readonly IList<T> _values = [.. values];
+        readonly IList<T> values = [.. values];
 
         public IEnumerator<T> GetEnumerator() =>
-            _values.GetEnumerator();
+            values.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() =>
             GetEnumerator();
@@ -1179,6 +1179,7 @@ public class JsonSerializerCollectionsTests : TestFixtureBase
             new ReadOnlyCollection<int>([6]);
 
         public ReadOnlyCollection<int> ReadOnlyCollection { get; set; } =
+            // ReSharper disable once UseCollectionExpression
             new([7]);
 
         public IReadOnlyList<int> IReadOnlyList { get; set; } =
