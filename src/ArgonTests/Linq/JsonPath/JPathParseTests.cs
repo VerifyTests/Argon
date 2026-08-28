@@ -301,7 +301,7 @@ public class JPathParseTests : TestFixtureBase
     [Fact]
     public void SinglePropertyAndFilterWithEmptyString()
     {
-        var path = new JPath(@"Blah[ ?( @.name=='' ) ]");
+        var path = new JPath("Blah[ ?( @.name=='' ) ]");
         Assert.Equal(2, path.Filters.Count);
         var expressions = (BooleanQueryExpression) ((QueryFilter) path.Filters[1]).Expression;
         Assert.Equal("", (string) (JToken) expressions.Right);

@@ -202,7 +202,7 @@ public class NumberScanBenchmark
     public void Setup()
     {
         var number = Digits <= 2
-            ? new string('7', Digits)
+            ? new('7', Digits)
             : $"{new string('7', Digits - 2)}.7";
         json = $"[{string.Join(",", Enumerable.Repeat(number, 500))}]";
     }
