@@ -50,7 +50,7 @@ public class DataTableConverterTests : TestFixtureBase
             dt.Columns.Add(ss.Name, ss);
         }
 
-        dt.Rows.Add(types.Select(_ => (object) null).ToArray());
+        dt.Rows.Add(types.Select(object (_) => null).ToArray());
 
         var stringWriter = new StringWriter();
         var jsonWriter = new JsonTextWriter(stringWriter)

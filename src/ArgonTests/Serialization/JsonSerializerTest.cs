@@ -2113,7 +2113,7 @@ public class JsonSerializerTest : TestFixtureBase
         var personRaw = new PersonRaw
         {
             FirstName = "FirstNameValue",
-            RawContent = new("[1,2,3,4,5]"),
+            RawContent = [with("[1,2,3,4,5]")],
             LastName = "LastNameValue"
         };
 
@@ -5599,8 +5599,7 @@ public class JsonSerializerTest : TestFixtureBase
         Assert.Equal(new("d8220a4b-75b1-4b7a-8112-b7bdae956a45"), actual.SourceTypeID);
         Assert.Equal(new("951663c4-924e-4c86-a57a-7ed737501dbd"), actual.BrokerID);
         var bytes = (byte[]) actual.Payload;
-        Assert.Equal(new byte[]
-        {
+        Assert.Equal([
             0,
             1,
             2,
@@ -5611,7 +5610,7 @@ public class JsonSerializerTest : TestFixtureBase
             7,
             8,
             9
-        }.ToList(), bytes.ToList());
+        ], bytes.ToList());
     }
 
     [Fact]
