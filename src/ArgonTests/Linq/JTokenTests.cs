@@ -13,11 +13,11 @@ public class JTokenTests : TestFixtureBase
         var settings = new JsonLoadSettings {LineInfoHandling = LineInfoHandling.Load};
         var original = JObject.Parse("{\r\n  \"a\": 1\r\n}", settings);
 
-        var originalLineInfo = (IJsonLineInfo) original;
+        IJsonLineInfo originalLineInfo = original;
         Assert.True(originalLineInfo.HasLineInfo());
 
         var clone = (JObject) original.DeepClone();
-        var cloneLineInfo = (IJsonLineInfo) clone;
+        IJsonLineInfo cloneLineInfo = clone;
 
         // before the fix the container clone copied line info from itself (a no-op), so it was lost
         Assert.True(cloneLineInfo.HasLineInfo());

@@ -1470,7 +1470,7 @@ public class TypeNameHandlingTests : TestFixtureBase
             count = 0;
 
         public CustomEnumerable<T> AddFirst(T newVal) =>
-            new(newVal, this);
+            [with(newVal, this)];
 
         public IEnumerator<T> GetEnumerator()
         {
@@ -2117,20 +2117,20 @@ public class TypeNameHandlingTests : TestFixtureBase
 
     public class DynamicDictionary : DynamicObject
     {
-        readonly IDictionary<string, object> _values = new Dictionary<string, object>();
+        readonly IDictionary<string, object> values = new Dictionary<string, object>();
 
         public override IEnumerable<string> GetDynamicMemberNames() =>
-            _values.Keys;
+            values.Keys;
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            result = _values[binder.Name];
+            result = values[binder.Name];
             return true;
         }
 
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
-            _values[binder.Name] = value;
+            values[binder.Name] = value;
             return true;
         }
     }
@@ -2393,12 +2393,12 @@ public class TypeNameHandlingTests : TestFixtureBase
 
     public class FancyBinder : ISerializationBinder
     {
-        static readonly string Annotate = new(':', 3);
+        static readonly string annotate = new(':', 3);
 
         public void BindToName(Type serializedType, out string assemblyName, out string typeName)
         {
             assemblyName = $"FancyAssemblyName=>{Assembly.GetAssembly(serializedType)?.GetName().Name}";
-            typeName = $"{Annotate}{serializedType.Name}{Annotate}";
+            typeName = $"{annotate}{serializedType.Name}{annotate}";
         }
 
         public Type BindToType(string assemblyName, string typeName) =>

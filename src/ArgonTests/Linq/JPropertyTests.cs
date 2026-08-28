@@ -37,7 +37,7 @@ public class JPropertyTests : TestFixtureBase
     [Fact]
     public void IListAdd()
     {
-        var p = (IList<JToken>) new JProperty("TestProperty", null);
+        IList<JToken> p = new JProperty("TestProperty", null);
 
         var exception = Assert.Throws<JsonException>(() => p.Add(null));
         Assert.Equal("Argon.JProperty cannot have multiple values.", exception.Message);
@@ -46,7 +46,7 @@ public class JPropertyTests : TestFixtureBase
     [Fact]
     public void IListRemoveAt()
     {
-        var p = (IList<JToken>) new JProperty("TestProperty", null);
+        IList<JToken> p = new JProperty("TestProperty", null);
 
         var exception = Assert.Throws<JsonException>(() => p.RemoveAt(0));
         Assert.Equal("Cannot add or remove items from Argon.JProperty.", exception.Message);
@@ -73,7 +73,7 @@ public class JPropertyTests : TestFixtureBase
     public void JPropertyIndexOf()
     {
         var v = new JValue(1);
-        var p = (IList<JToken>) new JProperty("TestProperty", v);
+        IList<JToken> p = new JProperty("TestProperty", v);
         Assert.Equal(0, p.IndexOf(v));
     }
 
