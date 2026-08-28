@@ -28,7 +28,7 @@ public class JPropertyTests : TestFixtureBase
     [Fact]
     public void IListClear()
     {
-        var p = (IList<JToken>) new JProperty("TestProperty", null);
+        IList<JToken> p = new JProperty("TestProperty", null);
 
         var exception = Assert.Throws<JsonException>(() => p.Clear());
         Assert.Equal("Cannot add or remove items from Argon.JProperty.", exception.Message);

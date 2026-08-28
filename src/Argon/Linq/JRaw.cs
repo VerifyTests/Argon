@@ -38,7 +38,7 @@ public class JRaw :
         using var jsonWriter = new JsonTextWriter(stringWriter);
         jsonWriter.WriteToken(reader);
 
-        return new(stringWriter.ToString());
+        return [with(stringWriter.ToString())];
     }
 
     internal override JToken CloneToken() =>

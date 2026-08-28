@@ -19,8 +19,8 @@ public class JavaScriptSettings
 ```cs
 var settings = new JavaScriptSettings
 {
-    OnLoadFunction = new("OnLoad"),
-    OnUnloadFunction = new("function(e) { alert(e); }")
+    OnLoadFunction = [with("OnLoad")],
+    OnUnloadFunction = [with("function(e) { alert(e); }")]
 };
 
 var json = JsonConvert.SerializeObject(settings, Formatting.Indented);

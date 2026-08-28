@@ -18,7 +18,7 @@ public class PropertyOrderBenchmark
     [GlobalSetup]
     public void Setup()
     {
-        properties = new(typeof(object));
+        properties = [with(typeof(object))];
         for (var i = 0; i < Count; i++)
         {
             var property = new JsonProperty(typeof(string), typeof(object))

@@ -98,9 +98,14 @@ public class JsonPathRegexBenchmark
 
     [GlobalSetup]
     public void Setup() =>
-        data = new(
-            Enumerable.Range(0, 500)
-                .Select(i => new JObject {["name"] = $"Argon.Package{i}"}));
+        data =
+        [
+            with(Enumerable.Range(0, 500)
+                .Select(i => new JObject
+                {
+                    ["name"] = $"Argon.Package{i}"
+                }))
+        ];
 
     [Benchmark]
     public int RegexFilter() =>

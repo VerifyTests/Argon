@@ -460,7 +460,7 @@ public class JObject :
 
     ICollection<JToken?> IDictionary<string, JToken?>.Values =>
         Properties()
-            .Select(_ => (JToken?) _.Value)
+            .Select(JToken? (_) => _.Value)
             .ToList();
 
     #endregion

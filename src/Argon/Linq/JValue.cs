@@ -497,28 +497,28 @@ public class JValue :
     /// </summary>
     /// <returns>A <see cref="JValue" /> comment with the given value.</returns>
     public static JValue CreateComment(string? value) =>
-        new(value, JTokenType.Comment);
+        [with(value, JTokenType.Comment)];
 
     /// <summary>
     /// Creates a <see cref="JValue" /> string with the given value.
     /// </summary>
     /// <returns>A <see cref="JValue" /> string with the given value.</returns>
     public static JValue CreateString(string? value) =>
-        new(value, JTokenType.String);
+        [with(value, JTokenType.String)];
 
     /// <summary>
     /// Creates a <see cref="JValue" /> null value.
     /// </summary>
     /// <returns>A <see cref="JValue" /> null value.</returns>
     public static JValue CreateNull() =>
-        new(null, JTokenType.Null);
+        [with(null, JTokenType.Null)];
 
     /// <summary>
     /// Creates a <see cref="JValue" /> undefined value.
     /// </summary>
     /// <returns>A <see cref="JValue" /> undefined value.</returns>
     public static JValue CreateUndefined() =>
-        new(null, JTokenType.Undefined);
+        [with(null, JTokenType.Undefined)];
 
     static JTokenType GetValueType(JTokenType? current, object? value)
     {
