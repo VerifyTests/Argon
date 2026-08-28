@@ -2,10 +2,9 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
-using System.Data;
 using System.Data.SqlTypes;
-using Argon.DataSets;
 using TestObjects;
+using Formatting = Argon.Formatting;
 
 public class DataTableConverterTests : TestFixtureBase
 {

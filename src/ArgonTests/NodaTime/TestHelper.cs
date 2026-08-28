@@ -3,6 +3,7 @@
 // as found in the LICENSE.txt file.
 
 using NodaTime.Utility;
+using Formatting = Argon.Formatting;
 
 static class TestHelper
 {

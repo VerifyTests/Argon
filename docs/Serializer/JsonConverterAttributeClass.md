@@ -34,7 +34,7 @@ public class User
     public string UserName { get; set; }
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonConverterAttributeClass.cs#L7-L38' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonConverterAttributeClassTypes' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonConverterAttributeClass.cs#L9-L40' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonConverterAttributeClassTypes' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 <!-- snippet: JsonConverterAttributeClassUsage -->
@@ -50,5 +50,5 @@ var json = JsonConvert.SerializeObject(user, Formatting.Indented);
 Console.WriteLine(json);
 // "domain\\username"
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonConverterAttributeClass.cs#L43-L55' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonConverterAttributeClassUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonConverterAttributeClass.cs#L45-L57' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonConverterAttributeClassUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

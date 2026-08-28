@@ -3,6 +3,8 @@
 // as found in the license.md file.
 
 using TestObjects;
+using Formatting = Argon.Formatting;
+
 // ReSharper disable UnusedVariable
 
 public class JObjectTests : TestFixtureBase

@@ -2,9 +2,9 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
-using System.Collections.Specialized;
-using System.Xml.Linq;
 using TestObjects;
+using Formatting = Argon.Formatting;
+
 // ReSharper disable UnusedParameter.Local
 
 public class JsonSerializerCollectionsTests : TestFixtureBase
@@ -623,10 +623,10 @@ public class JsonSerializerCollectionsTests : TestFixtureBase
     public class EnumerableClass<T>(IEnumerable<T> values) :
         IEnumerable<T>
     {
-        readonly IList<T> _values = [.. values];
+        readonly IList<T> values = [.. values];
 
         public IEnumerator<T> GetEnumerator() =>
-            _values.GetEnumerator();
+            values.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() =>
             GetEnumerator();

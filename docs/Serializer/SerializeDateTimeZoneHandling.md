@@ -14,7 +14,7 @@ public class Flight
     public TimeSpan Duration { get; set; }
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializeDateTimeZoneHandling.cs#L7-L18' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializeDateTimeZoneHandlingTypes' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializeDateTimeZoneHandling.cs#L9-L20' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializeDateTimeZoneHandlingTypes' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 <!-- snippet: SerializeDateTimeZoneHandlingUsage -->
@@ -40,5 +40,5 @@ Console.WriteLine(jsonWithRoundtripTimeZone);
 //   "Duration": "05:30:00"
 // }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializeDateTimeZoneHandling.cs#L23-L45' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializeDateTimeZoneHandlingUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializeDateTimeZoneHandling.cs#L25-L47' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializeDateTimeZoneHandlingUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

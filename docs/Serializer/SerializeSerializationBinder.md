@@ -25,7 +25,7 @@ public class Car
     public string Model { get; set; }
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializeSerializationBinder.cs#L7-L29' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializeSerializationBinderTypes' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializeSerializationBinder.cs#L9-L31' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializeSerializationBinderTypes' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 <!-- snippet: SerializeSerializationBinderUsage -->
@@ -64,5 +64,5 @@ var newValue = JsonConvert.DeserializeObject(json, new JsonSerializerSettings
 Console.WriteLine(newValue.GetType().Name);
 // Car
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializeSerializationBinder.cs#L34-L69' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializeSerializationBinderUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/SerializeSerializationBinder.cs#L36-L71' title='Snippet source file'>snippet source</a> | <a href='#snippet-SerializeSerializationBinderUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

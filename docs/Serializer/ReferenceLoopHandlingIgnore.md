@@ -11,7 +11,7 @@ public class Employee
     public Employee Manager { get; set; }
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/ReferenceLoopHandlingIgnore.cs#L7-L15' title='Snippet source file'>snippet source</a> | <a href='#snippet-ReferenceLoopHandlingIgnoreTypes' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/ReferenceLoopHandlingIgnore.cs#L9-L17' title='Snippet source file'>snippet source</a> | <a href='#snippet-ReferenceLoopHandlingIgnoreTypes' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 <!-- snippet: ReferenceLoopHandlingIgnoreUsage -->
@@ -35,5 +35,5 @@ Console.WriteLine(json);
 //   }
 // }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/ReferenceLoopHandlingIgnore.cs#L20-L40' title='Snippet source file'>snippet source</a> | <a href='#snippet-ReferenceLoopHandlingIgnoreUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/ReferenceLoopHandlingIgnore.cs#L22-L42' title='Snippet source file'>snippet source</a> | <a href='#snippet-ReferenceLoopHandlingIgnoreUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

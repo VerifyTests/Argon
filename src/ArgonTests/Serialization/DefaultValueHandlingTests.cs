@@ -4,6 +4,7 @@
 
 using System.ComponentModel;
 using TestObjects;
+using Formatting = Argon.Formatting;
 #if !NET6_0_OR_GREATER
 using System.Runtime.Serialization.Json;
 #endif

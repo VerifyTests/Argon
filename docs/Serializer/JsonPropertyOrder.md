@@ -21,7 +21,7 @@ public class Account
     [JsonProperty(Order = -2)] public string FullName { get; set; }
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonPropertyOrder.cs#L7-L25' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonPropertyOrderTypes' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonPropertyOrder.cs#L9-L27' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonPropertyOrderTypes' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 <!-- snippet: JsonPropertyOrderUsage -->
@@ -49,5 +49,5 @@ Console.WriteLine(json);
 //   "DeletedDate": "2013-01-25T00:00:00"
 // }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonPropertyOrder.cs#L30-L54' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonPropertyOrderUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonPropertyOrder.cs#L32-L56' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonPropertyOrderUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

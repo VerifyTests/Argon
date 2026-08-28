@@ -4,6 +4,8 @@
 
 #if NET6_0_OR_GREATER
 
+using Formatting = Argon.Formatting;
+
 public class DateTests : TestFixtureBase
 {
     [Fact]

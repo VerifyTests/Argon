@@ -3,6 +3,7 @@
 // as found in the license.md file.
 
 using TestObjects;
+using Formatting = Argon.Formatting;
 
 public class MissingMemberHandlingTests : TestFixtureBase
 {

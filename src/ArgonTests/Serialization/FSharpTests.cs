@@ -3,6 +3,8 @@
 // as found in the license.md file.
 
 using Microsoft.FSharp.Collections;
+using Formatting = Argon.Formatting;
+
 // ReSharper disable UnusedVariable
 
 public class FSharpTests : TestFixtureBase

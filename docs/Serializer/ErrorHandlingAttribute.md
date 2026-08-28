@@ -32,7 +32,7 @@ public class Employee :
         markAsHandled();
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/ErrorHandlingAttribute.cs#L7-L35' title='Snippet source file'>snippet source</a> | <a href='#snippet-ErrorHandlingAttributeTypes' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/ErrorHandlingAttribute.cs#L9-L37' title='Snippet source file'>snippet source</a> | <a href='#snippet-ErrorHandlingAttributeTypes' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 <!-- snippet: ErrorHandlingAttributeUsage -->
@@ -57,5 +57,5 @@ Console.WriteLine(json);
 //   "Title": "Mister Manager"
 // }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/ErrorHandlingAttribute.cs#L40-L61' title='Snippet source file'>snippet source</a> | <a href='#snippet-ErrorHandlingAttributeUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/ErrorHandlingAttribute.cs#L42-L63' title='Snippet source file'>snippet source</a> | <a href='#snippet-ErrorHandlingAttributeUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

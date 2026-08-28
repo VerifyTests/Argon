@@ -1,3 +1,13 @@
-﻿global using System.Collections.Immutable;
+﻿global using System.Buffers;
+global using System.Collections.Immutable;
 global using System.Collections.ObjectModel;
+global using System.Collections.Specialized;
+global using System.Data;
+global using System.Dynamic;
+global using System.Runtime.Serialization.Json;
+global using System.Text.RegularExpressions;
+global using System.Xml;
+global using System.Xml.Linq;
+global using Argon.DataSets;
+global using BenchmarkDotNet.Attributes;
 global using Polyfills;

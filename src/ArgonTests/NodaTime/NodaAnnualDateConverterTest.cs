@@ -4,6 +4,7 @@
 
 using Argon.NodaTime;
 using NodaTime;
+using Formatting = Argon.Formatting;
 
 public class NodaAnnualDateConverterTest
 {

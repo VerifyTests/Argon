@@ -2,9 +2,10 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
-using System.Dynamic;
 using System.Net;
 using TestObjects;
+using Formatting = Argon.Formatting;
+
 // ReSharper disable UnusedVariable
 
 public class TypeNameHandlingTests : TestFixtureBase

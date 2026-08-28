@@ -5,6 +5,7 @@
 using Argon.NodaTime;
 using NodaTime;
 using static TestHelper;
+using Formatting = Argon.Formatting;
 
 /// <summary>
 /// Tests for the converters exposed in NodaConverters.

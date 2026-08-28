@@ -3,6 +3,7 @@
 // as found in the license.md file.
 
 using System.ComponentModel;
+using Formatting = Argon.Formatting;
 
 public class DefaultValueAttributeIgnore : TestFixtureBase
 {

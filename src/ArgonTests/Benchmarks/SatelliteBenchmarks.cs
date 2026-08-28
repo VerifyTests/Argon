@@ -2,8 +2,6 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
-using System.Data;
-using BenchmarkDotNet.Attributes;
 using Microsoft.FSharp.Collections;
 
 [MemoryDiagnoser]
@@ -34,7 +32,7 @@ public class SatelliteBenchmarks
         {
             ContractResolver = new DefaultContractResolver {NamingStrategy = new CamelCaseNamingStrategy()}
         };
-        dataTableSettings.Converters.Add(new Argon.DataSets.DataTableConverter());
+        dataTableSettings.Converters.Add(new DataTableConverter());
 
         fsharpListJson = "[" + string.Join(",", Enumerable.Range(0, 50)) + "]";
         fsharpConverters = FSharpConverters.Instances;

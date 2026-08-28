@@ -18,7 +18,7 @@ public class Directory : IEnumerable<string>
         GetEnumerator();
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonObjectAttributeOverrideIEnumerable.cs#L7-L22' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonObjectAttributeOverrideIEnumerableTypes' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonObjectAttributeOverrideIEnumerable.cs#L9-L24' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonObjectAttributeOverrideIEnumerableTypes' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 <!-- snippet: JsonObjectAttributeOverrideIEnumerableUsage -->
@@ -45,5 +45,5 @@ Console.WriteLine(json);
 //   ]
 // }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonObjectAttributeOverrideIEnumerable.cs#L27-L50' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonObjectAttributeOverrideIEnumerableUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonObjectAttributeOverrideIEnumerable.cs#L29-L52' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonObjectAttributeOverrideIEnumerableUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

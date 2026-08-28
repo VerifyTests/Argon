@@ -11,7 +11,7 @@ public class User
     public bool Enabled { get; set; }
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/NamingStrategyCamelCase.cs#L7-L15' title='Snippet source file'>snippet source</a> | <a href='#snippet-NamingStrategyCamelCaseTypes' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/NamingStrategyCamelCase.cs#L9-L17' title='Snippet source file'>snippet source</a> | <a href='#snippet-NamingStrategyCamelCaseTypes' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 <!-- snippet: NamingStrategyCamelCaseUsage -->
@@ -40,5 +40,5 @@ Console.WriteLine(json);
 //   "enabled": true
 // }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/NamingStrategyCamelCase.cs#L20-L45' title='Snippet source file'>snippet source</a> | <a href='#snippet-NamingStrategyCamelCaseUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/NamingStrategyCamelCase.cs#L22-L47' title='Snippet source file'>snippet source</a> | <a href='#snippet-NamingStrategyCamelCaseUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

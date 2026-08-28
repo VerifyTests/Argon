@@ -2,8 +2,9 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
-using System.Text.RegularExpressions;
 using TestObjects;
+using Formatting = Argon.Formatting;
+
 // ReSharper disable PossibleMultipleEnumeration
 
 public class DynamicContractResolver(char startingWithChar) : DefaultContractResolver

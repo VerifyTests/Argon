@@ -2,9 +2,11 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
-using System.Data;
+
 // ReSharper disable UnusedVariable
 // ReSharper disable RedundantAssignment
+
+using Formatting = Argon.Formatting;
 
 public class DemoTests : TestFixtureBase
 {

@@ -23,6 +23,8 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
+using Formatting = Argon.Formatting;
+
 #if NET6_0_OR_GREATER
 public class TimeTests : TestFixtureBase
 {

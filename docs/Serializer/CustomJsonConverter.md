@@ -42,7 +42,7 @@ public class Employee
     public IList<string> Roles { get; set; }
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/CustomJsonConverter.cs#L7-L46' title='Snippet source file'>snippet source</a> | <a href='#snippet-CustomJsonConverterTypes' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/CustomJsonConverter.cs#L9-L48' title='Snippet source file'>snippet source</a> | <a href='#snippet-CustomJsonConverterTypes' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 <!-- snippet: CustomJsonConverterUsage -->
@@ -79,5 +79,5 @@ var newEmployee = JsonConvert.DeserializeObject<Employee>(json, new KeysJsonConv
 Console.WriteLine(newEmployee.FirstName);
 // James
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/CustomJsonConverter.cs#L51-L84' title='Snippet source file'>snippet source</a> | <a href='#snippet-CustomJsonConverterUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/CustomJsonConverter.cs#L53-L86' title='Snippet source file'>snippet source</a> | <a href='#snippet-CustomJsonConverterUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

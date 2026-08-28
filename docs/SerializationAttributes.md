@@ -108,7 +108,7 @@ public class User
     public UserStatus Status { get; set; }
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonConverterAttributeProperty.cs#L7-L24' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonConverterAttributePropertyTypes' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/JsonConverterAttributeProperty.cs#L9-L26' title='Snippet source file'>snippet source</a> | <a href='#snippet-JsonConverterAttributePropertyTypes' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 This example shows the JsonConverterAttribute being applied to a property.

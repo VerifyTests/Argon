@@ -13,7 +13,7 @@ public class Person
     public decimal? Salary { get; set; }
 }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/NullValueHandlingIgnore.cs#L7-L17' title='Snippet source file'>snippet source</a> | <a href='#snippet-NullValueHandlingIgnoreTypes' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/NullValueHandlingIgnore.cs#L9-L19' title='Snippet source file'>snippet source</a> | <a href='#snippet-NullValueHandlingIgnoreTypes' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 <!-- snippet: NullValueHandlingIgnoreUsage -->
@@ -46,5 +46,5 @@ Console.WriteLine(jsonIgnoreNullValues);
 //   "Age": 1
 // }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/NullValueHandlingIgnore.cs#L22-L51' title='Snippet source file'>snippet source</a> | <a href='#snippet-NullValueHandlingIgnoreUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/NullValueHandlingIgnore.cs#L24-L53' title='Snippet source file'>snippet source</a> | <a href='#snippet-NullValueHandlingIgnoreUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

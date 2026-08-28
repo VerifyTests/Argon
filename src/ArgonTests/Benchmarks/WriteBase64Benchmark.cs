@@ -2,14 +2,11 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
-using System.Buffers;
-using BenchmarkDotNet.Attributes;
-
 [MemoryDiagnoser]
 public class WriteBase64Benchmark
 {
-    const int Base64LineSize = 76;
-    const int LineSizeInBytes = 57;
+    const int base64LineSize = 76;
+    const int lineSizeInBytes = 57;
 
     byte[] data = null!;
 
@@ -39,32 +36,32 @@ public class WriteBase64Benchmark
 
     static void WriteBase64Old(TextWriter writer, ReadOnlySpan<byte> buffer)
     {
-        var charsLine = new char[Base64LineSize];
+        var charsLine = new char[base64LineSize];
         var index = 0;
         do
         {
-            var min = Math.Min(LineSizeInBytes, buffer.Length - index);
+            var min = Math.Min(lineSizeInBytes, buffer.Length - index);
             var slice = buffer.Slice(index, min);
             var written = Convert.ToBase64CharArray(slice.ToArray(), 0, min, charsLine, 0);
             writer.Write(charsLine, 0, written);
-            index += LineSizeInBytes;
+            index += lineSizeInBytes;
         } while (index < buffer.Length);
     }
 
     static void WriteBase64New(TextWriter writer, ReadOnlySpan<byte> buffer)
     {
-        var charsLine = new char[Base64LineSize];
-        var bytesLine = ArrayPool<byte>.Shared.Rent(LineSizeInBytes);
+        var charsLine = new char[base64LineSize];
+        var bytesLine = ArrayPool<byte>.Shared.Rent(lineSizeInBytes);
         try
         {
             var index = 0;
             do
             {
-                var min = Math.Min(LineSizeInBytes, buffer.Length - index);
+                var min = Math.Min(lineSizeInBytes, buffer.Length - index);
                 buffer.Slice(index, min).CopyTo(bytesLine);
                 var written = Convert.ToBase64CharArray(bytesLine, 0, min, charsLine, 0);
                 writer.Write(charsLine, 0, written);
-                index += LineSizeInBytes;
+                index += lineSizeInBytes;
             } while (index < buffer.Length);
         }
         finally

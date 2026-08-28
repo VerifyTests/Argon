@@ -30,5 +30,5 @@ json = JsonConvert.SerializeObject(s);
 //   "jobTitle": "Web Dude"
 // }
 ```
-<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/DefaultSettings.cs#L16-L43' title='Snippet source file'>snippet source</a> | <a href='#snippet-DefaultSettingsUsage' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/ArgonTests/Documentation/Samples/Serializer/DefaultSettings.cs#L17-L44' title='Snippet source file'>snippet source</a> | <a href='#snippet-DefaultSettingsUsage' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->

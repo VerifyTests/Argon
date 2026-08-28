@@ -4,6 +4,10 @@
 
 
 // ReSharper disable UseIndexFromEndExpression
+
+using Formatting = Argon.Formatting;
+using WriteState = Argon.WriteState;
+
 public class JTokenWriterTest : TestFixtureBase
 {
     [Fact]
