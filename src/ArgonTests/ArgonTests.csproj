@@ -14,11 +14,11 @@
     <PackageReference Include="NodaTime" />
     <PackageReference Include="ProjectDefaults" PrivateAssets="all" />
     <PackageReference Include="FSharp.Core" />
-    <PackageReference Include="Verify.XunitV3" PrivateAssets="all" />
+    <PackageReference Include="Verify.XunitV3" VersionOverride="33.0.0-beta.3" PrivateAssets="all" />
     <PackageReference Include="DiffEngine" />
     <PackageReference Include="EmptyFiles" />
     <PackageReference Include="SimpleInfoName" />
-    <PackageReference Include="Verify" />
+    <PackageReference Include="Verify" VersionOverride="33.0.0-beta.3" />
     <PackageReference Include="xunit.v3" PrivateAssets="all" />
     <PackageReference Include="BenchmarkDotNet" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
