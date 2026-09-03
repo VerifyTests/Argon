@@ -24,7 +24,7 @@ dotnet run --project src/Benchmark.Tests --configuration Release
 
 ## SDK & Framework Requirements
 
-- Requires .NET SDK 10.0.102 (preview) — see `src/global.json`
+- Requires .NET SDK 10.0.102 (preview) - see `src/global.json`
 - C# language version: `preview` (latest features enabled)
 - Target frameworks for Argon core: net462, net472, net48, net6.0, net7.0, net8.0, net9.0, net10.0
 - Tests target: net48 (Windows only), net8.0, net9.0, net10.0
