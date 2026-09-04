@@ -9,3 +9,4 @@ obj/
 nugets/
 /BenchmarkDotNet.Artifacts
 /src/BenchmarkDotNet.Artifacts
+*.lnk
