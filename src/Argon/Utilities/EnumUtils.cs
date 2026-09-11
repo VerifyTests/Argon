@@ -4,14 +4,14 @@
 
 static class EnumUtils
 {
-    const char EnumSeparatorChar = ',';
-    const string EnumSeparatorString = ", ";
+    const char separatorChar = ',';
+    const string separatorString = ", ";
 
     // struct key: a Tuple class key would allocate on every cache probe,
     // i.e. once per enum value read or written
     readonly record struct EnumKey(Type EnumType, NamingStrategy? NamingStrategy);
 
-    static readonly ThreadSafeStore<EnumKey, EnumInfo> ValuesAndNamesPerEnum = new(InitializeValuesAndNames);
+    static readonly ThreadSafeStore<EnumKey, EnumInfo> valuesAndNamesPerEnum = new(InitializeValuesAndNames);
 
     [UnconditionalSuppressMessage("TrimAnalysis", "IL2075", Justification = "Enum fields are not trimmed")]
     static EnumInfo InitializeValuesAndNames(EnumKey key)
@@ -52,7 +52,7 @@ static class EnumUtils
 
     public static bool TryToString(Type enumType, object value, NamingStrategy? namingStrategy, [NotNullWhen(true)] out string? name)
     {
-        var enumInfo = ValuesAndNamesPerEnum.Get(new(enumType, namingStrategy));
+        var enumInfo = valuesAndNamesPerEnum.Get(new(enumType, namingStrategy));
         var v = ToUInt64(value, enumInfo.TypeCode);
 
         if (enumInfo.IsFlags)
@@ -128,7 +128,7 @@ static class EnumUtils
         {
             if (i < matchedCount - 1)
             {
-                stringBuilder.Append(EnumSeparatorString);
+                stringBuilder.Append(separatorString);
             }
 
             stringBuilder.Append(resolvedNames[matchedIndices[i]]);
@@ -175,7 +175,7 @@ static class EnumUtils
             throw new ArgumentException("Type provided must be an Enum.", nameof(enumType));
         }
 
-        var entry = ValuesAndNamesPerEnum.Get(new(enumType, namingStrategy));
+        var entry = valuesAndNamesPerEnum.Get(new(enumType, namingStrategy));
         var enumNames = entry.Names;
         var resolvedNames = entry.ResolvedNames;
         var enumValues = entry.Values;
@@ -239,7 +239,7 @@ static class EnumUtils
         while (valueIndex <= value.Length) // '=' is to handle invalid case of an ending comma
         {
             // Find the next separator, if there is one, otherwise the end of the string.
-            var endIndex = value.IndexOf(EnumSeparatorChar, valueIndex);
+            var endIndex = value.IndexOf(separatorChar, valueIndex);
             if (endIndex == -1)
             {
                 endIndex = value.Length;
