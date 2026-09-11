@@ -507,7 +507,11 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
             WriteReferenceIdProperty(writer, value);
         }
 
-        if (ShouldWriteType(TypeNameHandling.Objects, contract, member, collectionContract, containerProperty))
+        if (TryGetClosedTypeDiscriminator(writer, contract, member, collectionContract, out var discriminator))
+        {
+            WriteDiscriminatorProperty(writer, discriminator);
+        }
+        else if (ShouldWriteType(TypeNameHandling.Objects, contract, member, collectionContract, containerProperty))
         {
             WriteTypeProperty(writer, contract.UnderlyingType);
         }
@@ -543,6 +547,56 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
 
         writer.WritePropertyName(JsonTypeReflector.TypePropertyName, false);
         writer.WriteValue(typeName);
+    }
+
+    /// <summary>
+    /// Resolves the inferred type discriminator for a value whose declared type is a closed type
+    /// hierarchy, or reports that there is none to write.
+    /// </summary>
+    bool TryGetClosedTypeDiscriminator(JsonWriter writer, JsonContract contract, JsonProperty? member, JsonContainerContract? containerContract, [NotNullWhen(true)] out string? discriminator)
+    {
+        discriminator = null;
+
+        // a single field read for everyone who has not opted in
+        if (Serializer.InferClosedTypePolymorphism != true)
+        {
+            return false;
+        }
+
+        var declaredType = ResolveDeclaredType(member, containerContract);
+        if (declaredType == null ||
+            ClosedTypeInfo.Find(declaredType) is not {} info)
+        {
+            return false;
+        }
+
+        if (info.Error != null)
+        {
+            throw JsonSerializationException.Create(null, writer.ContainerPath, info.Error, null);
+        }
+
+        var type = contract.NonNullableUnderlyingType;
+
+        if (info.TryGetDiscriminator(type, out discriminator))
+        {
+            return true;
+        }
+
+        if (type != declaredType)
+        {
+            throw JsonSerializationException.Create(null, writer.ContainerPath, $"Type '{type}' is not a terminal derived type of closed type '{declaredType}' so no type discriminator can be inferred for it.", null);
+        }
+
+        // the value is the closed base itself, which needs no discriminator
+        return false;
+    }
+
+    // written directly rather than through WriteTypeProperty, whose cache is keyed by type alone
+    // and holds assembly qualified names
+    static void WriteDiscriminatorProperty(JsonWriter writer, string discriminator)
+    {
+        writer.WritePropertyName(JsonTypeReflector.TypePropertyName, false);
+        writer.WriteValue(discriminator);
     }
 
     static bool HasFlag(PreserveReferencesHandling? value, PreserveReferencesHandling flag) =>
@@ -751,7 +805,8 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
         // don't make readonly fields that aren't creator parameters the referenced value because they can't be deserialized to
         isReference = isReference && (member == null || member.Writable || HasCreatorParameter(containerContract, member));
 
-        var includeTypeDetails = ShouldWriteType(TypeNameHandling.Arrays, contract, member, containerContract, containerProperty);
+        var hasDiscriminator = TryGetClosedTypeDiscriminator(writer, contract, member, containerContract, out var discriminator);
+        var includeTypeDetails = hasDiscriminator || ShouldWriteType(TypeNameHandling.Arrays, contract, member, containerContract, containerProperty);
         var writeMetadataObject = isReference || includeTypeDetails;
 
         if (writeMetadataObject)
@@ -763,7 +818,11 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
                 WriteReferenceIdProperty(writer, values);
             }
 
-            if (includeTypeDetails)
+            if (discriminator != null)
+            {
+                WriteDiscriminatorProperty(writer, discriminator);
+            }
+            else if (includeTypeDetails)
             {
                 WriteTypeProperty(writer, values.GetType());
             }
@@ -872,13 +931,38 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
                (memberValue != null && !MiscellaneousUtils.ValueEquals(memberValue, ReflectionUtils.GetDefaultValue(memberValue.GetType())));
     }
 
+    TypeNameHandling? ResolveTypeNameHandling(JsonProperty? member, JsonContainerContract? containerContract, JsonProperty? containerProperty) =>
+        member?.TypeNameHandling ??
+        containerProperty?.ItemTypeNameHandling ??
+        containerContract?.ItemTypeNameHandling ??
+        Serializer.TypeNameHandling;
+
+    // the type the value is declared as at this position: the property type, the container's item
+    // type, or the root type. null when there is no declared type to compare against
+    Type? ResolveDeclaredType(JsonProperty? member, JsonContainerContract? containerContract)
+    {
+        if (member != null)
+        {
+            return member.PropertyContract?.CreatedType;
+        }
+
+        if (containerContract != null)
+        {
+            return containerContract.ItemContract?.CreatedType;
+        }
+
+        if (rootType != null &&
+            serializeStack.Count == rootLevel)
+        {
+            return Serializer.ResolveContract(rootType).CreatedType;
+        }
+
+        return null;
+    }
+
     bool ShouldWriteType(TypeNameHandling typeNameHandlingFlag, JsonContract contract, JsonProperty? member, JsonContainerContract? containerContract, JsonProperty? containerProperty)
     {
-        var resolvedTypeNameHandling =
-            member?.TypeNameHandling ??
-            containerProperty?.ItemTypeNameHandling ??
-            containerContract?.ItemTypeNameHandling ??
-            Serializer.TypeNameHandling;
+        var resolvedTypeNameHandling = ResolveTypeNameHandling(member, containerContract, containerProperty);
 
         if (HasFlag(resolvedTypeNameHandling, typeNameHandlingFlag))
         {
@@ -886,34 +970,23 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
         }
 
         // instance type and the property's type's contract default type are different (no need to put the type in JSON because the type will be created by default)
-        if (HasFlag(resolvedTypeNameHandling, TypeNameHandling.Auto))
+        if (!HasFlag(resolvedTypeNameHandling, TypeNameHandling.Auto))
         {
-            if (member != null)
-            {
-                if (contract.NonNullableUnderlyingType != member.PropertyContract!.CreatedType)
-                {
-                    return true;
-                }
-            }
-            else if (containerContract != null)
-            {
-                if (containerContract.ItemContract == null || contract.NonNullableUnderlyingType != containerContract.ItemContract.CreatedType)
-                {
-                    return true;
-                }
-            }
-            else if (rootType != null && serializeStack.Count == rootLevel)
-            {
-                var rootContract = Serializer.ResolveContract(rootType);
-
-                if (contract.NonNullableUnderlyingType != rootContract.CreatedType)
-                {
-                    return true;
-                }
-            }
+            return false;
         }
 
-        return false;
+        // a container with no item contract has no declared item type, so the instance type can
+        // never be implied
+        if (member == null &&
+            containerContract is {ItemContract: null})
+        {
+            return true;
+        }
+
+        var declaredType = ResolveDeclaredType(member, containerContract);
+
+        return declaredType != null &&
+               contract.NonNullableUnderlyingType != declaredType;
     }
 
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]

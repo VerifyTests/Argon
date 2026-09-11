@@ -21,6 +21,7 @@
   * [ Serializing Collections](/docs/SerializingCollections.md)
   * [Serializing and Deserializing JSON](/docs/SerializingJSON.md)
   * [Deserializing Partial JSON Fragments](/docs/SerializingJSONFragments.md)
+  * [Unions and closed type hierarchies](/docs/Unions.md)
   * [Json](/docs/Json)
     * [Custom JsonReader](/docs/Json/CustomJsonReader.md)
     * [Custom JsonWriter](/docs/Json/CustomJsonWriter.md)

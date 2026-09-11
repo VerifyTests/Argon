@@ -105,6 +105,12 @@ class JsonSerializerProxy : JsonSerializer
         set => serializer.TypeNameHandling = value;
     }
 
+    public override bool? InferClosedTypePolymorphism
+    {
+        get => serializer.InferClosedTypePolymorphism;
+        set => serializer.InferClosedTypePolymorphism = value;
+    }
+
     public override MetadataPropertyHandling? MetadataPropertyHandling
     {
         get => serializer.MetadataPropertyHandling;

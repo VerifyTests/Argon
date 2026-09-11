@@ -59,6 +59,20 @@ public class JsonSerializer
     public virtual TypeNameHandling? TypeNameHandling { get; set; }
 
     /// <summary>
+    /// Gets or sets whether a type discriminator is inferred for <c>closed</c> type hierarchies.
+    /// The default value is <c>false</c>.
+    /// </summary>
+    /// <remarks>
+    /// When enabled, a value whose declared type is a closed base is written with a <c>$type</c>
+    /// property holding the simple name of its runtime type, and read back by matching that name
+    /// against the derived types the compiler recorded on the base. Unlike
+    /// <see cref="JsonSerializer.TypeNameHandling" /> the candidate types are fixed at compile time, so an
+    /// incoming discriminator can never name an arbitrary type and no
+    /// <see cref="ISerializationBinder" /> is needed to validate it.
+    /// </remarks>
+    public virtual bool? InferClosedTypePolymorphism { get; set; }
+
+    /// <summary>
     /// Gets or sets how a type name assembly is written and resolved by the serializer.
     /// The default value is <see cref="Argon.TypeNameAssemblyFormatHandling.Simple" />.
     /// </summary>
@@ -296,6 +310,11 @@ public class JsonSerializer
         if (settings.TypeNameHandling != null)
         {
             serializer.TypeNameHandling = settings.TypeNameHandling;
+        }
+
+        if (settings.InferClosedTypePolymorphism != null)
+        {
+            serializer.InferClosedTypePolymorphism = settings.InferClosedTypePolymorphism;
         }
 
         if (settings.MetadataPropertyHandling != null)

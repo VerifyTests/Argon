@@ -667,6 +667,31 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
             Serializer.TypeNameHandling ??
             TypeNameHandling.None;
 
+        if (Serializer.InferClosedTypePolymorphism == true &&
+            type != null &&
+            ClosedTypeInfo.Find(type) is {} closedInfo)
+        {
+            if (closedInfo.Error != null)
+            {
+                throw JsonSerializationException.Create(reader, closedInfo.Error);
+            }
+
+            if (closedInfo.TryGetType(qualifiedTypeName, out var closedType))
+            {
+                type = closedType;
+                contract = GetContract(closedType);
+                return;
+            }
+
+            if (resolvedTypeNameHandling == TypeNameHandling.None)
+            {
+                throw JsonSerializationException.Create(reader, $"Type discriminator '{qualifiedTypeName}' is not a known derived type of closed type '{type}'.");
+            }
+
+            // TypeNameHandling is enabled too, so this may be an assembly qualified name written
+            // before inference was turned on. fall through to the binder
+        }
+
         if (resolvedTypeNameHandling != TypeNameHandling.None)
         {
             var typeNameKey = SplitTypeName(qualifiedTypeName);
@@ -2029,7 +2054,14 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
                 throw JsonSerializationException.Create(reader, $"Unable to find a constructor to use for type {objectContract.UnderlyingType}. A class should either have a default constructor, one constructor with arguments or a constructor marked with the JsonConstructor attribute.");
             }
 
-            throw JsonSerializationException.Create(reader, $"Could not create an instance of type {objectContract.UnderlyingType}. Type is an interface or abstract class and cannot be instantiated.");
+            var message = $"Could not create an instance of type {objectContract.UnderlyingType}. Type is an interface or abstract class and cannot be instantiated.";
+            if (Serializer.InferClosedTypePolymorphism != true &&
+                ClosedTypeInfo.Find(objectContract.UnderlyingType) != null)
+            {
+                message += " The type is a closed type hierarchy, so setting JsonSerializerSettings.InferClosedTypePolymorphism will deserialize its derived types.";
+            }
+
+            throw JsonSerializationException.Create(reader, message);
         }
 
         createdFromNonDefaultCreator = false;

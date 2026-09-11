@@ -10,6 +10,18 @@ WIP
 
 ### JsonArrayContract.ShouldSerializeItem
 
+### C# union support
+
+Unions are serialized as their active case with no wrapper and no discriminator, matching
+System.Text.Json. No converter or configuration is required. See
+[Unions and closed type hierarchies](Unions.md).
+
+### JsonSerializerSettings.InferClosedTypePolymorphism
+
+Writes and reads a short `$type` discriminator for C# `closed` type hierarchies, using the
+descendants the compiler recorded, without needing `TypeNameHandling` or an `ISerializationBinder`.
+See [Unions and closed type hierarchies](Unions.md).
+
 ### DateOnly and TimeOnly support
 
 Serialized and deserialized as ISO strings with no converter required, on net6.0 and above. See [Dates in JSON](DatesInJSON.md).

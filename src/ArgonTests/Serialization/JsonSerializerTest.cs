@@ -7404,6 +7404,9 @@ public class JsonSerializerTest : TestFixtureBase
         Assert.Equal(settings.TypeNameHandling, clone.TypeNameHandling);
         Assert.True(propertyNames.Remove(nameof(JsonSerializerSettings.TypeNameHandling)));
 
+        Assert.Equal(settings.InferClosedTypePolymorphism, clone.InferClosedTypePolymorphism);
+        Assert.True(propertyNames.Remove(nameof(JsonSerializerSettings.InferClosedTypePolymorphism)));
+
         Assert.Equal(settings.MetadataPropertyHandling, clone.MetadataPropertyHandling);
         Assert.True(propertyNames.Remove(nameof(JsonSerializerSettings.MetadataPropertyHandling)));
 

@@ -200,6 +200,58 @@ The value of the `$type` property can be customized and validated by creating yo
 TypeNameHandling can be used as an argument when calling the serializer, it can be set on an object's properties or a collection's items using `Argon.JsonContainerAttribute.ItemTypeNameHandling`, customized on a property with `Argon.JsonPropertyAttribute.TypeNameHandling` or a property's object properties or collection items using `Argon.JsonPropertyAttribute.ItemTypeNameHandling`.
 
 
+## InferClosedTypePolymorphism
+
+A C# 15 `closed` type records its permitted descendants at compile time. `InferClosedTypePolymorphism`
+uses that recorded list to write and read a type discriminator, so a closed hierarchy round trips
+without `TypeNameHandling` and without an `Argon.ISerializationBinder`. It is off by default.
+
+```cs
+public closed record class PaymentEvent(string PaymentId);
+
+public sealed record class PaymentAuthorized(string PaymentId, decimal Amount) : PaymentEvent(PaymentId);
+
+var settings = new JsonSerializerSettings
+{
+    InferClosedTypePolymorphism = true
+};
+```
+
+A value whose declared type is the closed base is written with a `$type` property holding the simple
+name of its runtime type, which is the same shape System.Text.Json produces for its own
+`InferClosedTypePolymorphism` option:
+
+```json
+{"$type":"PaymentAuthorized","Amount":42.5,"PaymentId":"p-123"}
+```
+
+Unlike `TypeNameHandling`, the set of types an incoming discriminator can name is fixed by the
+compiler. A payload can only ever select one of the hierarchy's declared descendants, so there is no
+need for an `Argon.ISerializationBinder` to validate type names, and the warning above about
+deserializing JSON from an external source does not apply.
+
+Points worth knowing:
+
+ * Only terminal descendants carry a discriminator. A closed type nested inside a closed hierarchy is
+   expanded through, and a branch that is not itself closed is where inference stops. Serializing a
+   type below that boundary throws rather than emitting JSON that cannot be read back.
+ * A discriminator is only written where there is a declared type to compare against: a property, a
+   collection item, a dictionary value, or a root serialized with an explicit type. As with
+   `TypeNameHandling.Auto`, a root passed without a type carries no discriminator, so use
+   `JsonConvert.SerializeObject(value, typeof(PaymentEvent), settings)`.
+ * Discriminators are simple type names, so two descendants of the same hierarchy cannot share a name
+   even when they are in different namespaces. Attempting it throws.
+ * Where both this setting and `TypeNameHandling` apply to the same value, the inferred simple name
+   wins. Types that are not part of a closed hierarchy are unaffected and keep using
+   `TypeNameHandling` and the binder.
+ * The `$type` property has to be the first property of the object, which is where Argon writes it.
+   `Argon.MetadataPropertyHandling.ReadAhead` lifts that restriction for payloads from other
+   producers, and `Argon.MetadataPropertyHandling.Ignore` disables the feature on read.
+
+See [Unions and closed type hierarchies](Unions.md) for union support, which is unrelated and needs
+no configuration.
+
+
 ## TypeNameAssemblyFormat
 
 `System.Runtime.Serialization.Formatters.FormatterAssemblyStyle` controls how type names are written during serialization.
