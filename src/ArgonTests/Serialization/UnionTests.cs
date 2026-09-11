@@ -14,7 +14,11 @@ public class UnionTests : TestFixtureBase
 
     [Fact]
     public void SerializeStringCase() =>
-        Assert.Equal(@"""hi""", JsonConvert.SerializeObject(new IntOrString("hi")));
+        Assert.Equal(
+            """
+            "hi"
+            """,
+            JsonConvert.SerializeObject(new IntOrString("hi")));
 
     [Fact]
     public void SerializeObjectCase() =>
@@ -32,7 +36,12 @@ public class UnionTests : TestFixtureBase
 
     [Fact]
     public void DeserializeStringCase() =>
-        Assert.Equal("hi", JsonConvert.DeserializeObject<IntOrString>(@"""hi""").Value);
+        Assert.Equal(
+            "hi",
+            JsonConvert.DeserializeObject<IntOrString>(
+                """
+                "hi"
+                """).Value);
 
     [Fact]
     public void DeserializeObjectCase() =>
@@ -61,8 +70,7 @@ public class UnionTests : TestFixtureBase
     [Fact]
     public void DeserializeObjectCaseMatchingNeither()
     {
-        var exception = Assert.Throws<JsonSerializationException>(
-            () => JsonConvert.DeserializeObject<UnionPet>("""{"Unknown":1}"""));
+        var exception = Assert.Throws<JsonSerializationException>(() => JsonConvert.DeserializeObject<UnionPet>("""{"Unknown":1}"""));
 
         Assert.Contains("No case of union type", exception.Message);
         Assert.Contains("Cat", exception.Message);
@@ -75,7 +83,7 @@ public class UnionTests : TestFixtureBase
         var json = JsonConvert.SerializeObject(new HasUnion {Value = new(7)});
 
         Assert.Equal("""{"Value":7}""", json);
-        Assert.Equal(7, JsonConvert.DeserializeObject<HasUnion>(json)!.Value.Value);
+        Assert.Equal(7, JsonConvert.DeserializeObject<HasUnion>(json).Value.Value);
     }
 
     [Fact]
@@ -112,7 +120,7 @@ public class UnionTests : TestFixtureBase
     [Fact]
     public void RoundTripNullableUnion()
     {
-        Assert.Equal("null", JsonConvert.SerializeObject((IntOrString?) null));
+        Assert.Equal("null", JsonConvert.SerializeObject(null));
         Assert.Null(JsonConvert.TryDeserializeObject<IntOrString?>("null"));
         Assert.Null(JsonConvert.TryDeserializeObject<int?>("null"));
     }
@@ -123,10 +131,17 @@ public class UnionTests : TestFixtureBase
     {
         var settings = new JsonSerializerSettings
         {
-            Converters = {new FixedUnionConverter()}
+            Converters =
+            {
+                new FixedUnionConverter()
+            }
         };
 
-        Assert.Equal(@"""fixed""", JsonConvert.SerializeObject(new IntOrString(42), settings));
+        Assert.Equal(
+            """
+            "fixed"
+            """,
+            JsonConvert.SerializeObject(new IntOrString(42), settings));
     }
 
     // the marker is matched by full name because the attribute definition can come from a polyfill

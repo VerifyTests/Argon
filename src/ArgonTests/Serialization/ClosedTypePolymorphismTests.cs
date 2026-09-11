@@ -4,10 +4,6 @@
 
 #nullable enable
 
-using ClosedTypeFixtures;
-using ClosedTypeFixtures.Discriminators.First;
-using ClosedTypeFixtures.Discriminators.Second;
-
 public class ClosedTypePolymorphismTests : TestFixtureBase
 {
     static JsonSerializerSettings Infer =>
@@ -30,7 +26,7 @@ public class ClosedTypePolymorphismTests : TestFixtureBase
 
         Assert.Equal(
             new PaymentAuthorized("p-123", 42.5m),
-            JsonConvert.DeserializeObject<HasEvent>(json, Infer)!.Event);
+            JsonConvert.DeserializeObject<HasEvent>(json, Infer).Event);
     }
 
     [Fact]
@@ -57,8 +53,16 @@ public class ClosedTypePolymorphismTests : TestFixtureBase
 
         var json = JsonConvert.SerializeObject(events, Infer);
 
-        Assert.Contains(@"""$type"":""PaymentAuthorized""", json);
-        Assert.Contains(@"""$type"":""PaymentCaptured""", json);
+        Assert.Contains(
+            """
+            "$type":"PaymentAuthorized"
+            """,
+            json);
+        Assert.Contains(
+            """
+            "$type":"PaymentCaptured"
+            """,
+            json);
         Assert.Equal(events, JsonConvert.DeserializeObject<List<PaymentEvent>>(json, Infer));
     }
 
@@ -82,8 +86,12 @@ public class ClosedTypePolymorphismTests : TestFixtureBase
     {
         var json = JsonConvert.SerializeObject(new HasNode {Node = new NamedLeaf("x")}, Infer);
 
-        Assert.Contains(@"""$type"":""NamedLeaf""", json);
-        Assert.Equal(new NamedLeaf("x"), JsonConvert.DeserializeObject<HasNode>(json, Infer)!.Node);
+        Assert.Contains(
+            """
+            "$type":"NamedLeaf"
+            """,
+            json);
+        Assert.Equal(new NamedLeaf("x"), JsonConvert.DeserializeObject<HasNode>(json, Infer).Node);
     }
 
     // a closed type is always implicitly abstract, so a closed base or an intermediate closed type
@@ -172,7 +180,7 @@ public class ClosedTypePolymorphismTests : TestFixtureBase
         Assert.Equal("""{"Event":{"$type":"PaymentAuthorized","Amount":42.5,"PaymentId":"p-123"}}""", json);
         Assert.Equal(
             new PaymentAuthorized("p-123", 42.5m),
-            JsonConvert.DeserializeObject<HasEvent>(json, settings)!.Event);
+            JsonConvert.DeserializeObject<HasEvent>(json, settings).Event);
     }
 
     // a non closed type is untouched by inference and still uses the binder
@@ -192,8 +200,12 @@ public class ClosedTypePolymorphismTests : TestFixtureBase
     {
         var json = JsonConvert.SerializeObject(new HasContainer {Value = new Wrapper<int>(7)}, Infer);
 
-        Assert.Contains(@"""$type"":""Wrapper""", json);
-        Assert.Equal(new Wrapper<int>(7), JsonConvert.DeserializeObject<HasContainer>(json, Infer)!.Value);
+        Assert.Contains(
+            """
+            "$type":"Wrapper"
+            """,
+            json);
+        Assert.Equal(new Wrapper<int>(7), JsonConvert.DeserializeObject<HasContainer>(json, Infer).Value);
     }
 
     // the default metadata handling only inspects the first property, which is where the writer puts
@@ -210,7 +222,7 @@ public class ClosedTypePolymorphismTests : TestFixtureBase
 
         Assert.Equal(
             new PaymentAuthorized("p-123", 42.5m),
-            JsonConvert.DeserializeObject<HasEvent>(json, readAhead)!.Event);
+            JsonConvert.DeserializeObject<HasEvent>(json, readAhead).Event);
     }
 
     public class HasEvent
@@ -257,54 +269,54 @@ public class ClosedTypePolymorphismTests : TestFixtureBase
 namespace ClosedTypeFixtures
 {
     // every closed type here is implicitly abstract; only the sealed leaves can be instantiated
-    public closed record class PaymentEvent(string PaymentId);
+    public closed record PaymentEvent(string PaymentId);
 
-    public sealed record class PaymentAuthorized(string PaymentId, decimal Amount) : PaymentEvent(PaymentId);
+    public sealed record PaymentAuthorized(string PaymentId, decimal Amount) : PaymentEvent(PaymentId);
 
-    public sealed record class PaymentCaptured(string PaymentId, string Reference) : PaymentEvent(PaymentId);
+    public sealed record PaymentCaptured(string PaymentId, string Reference) : PaymentEvent(PaymentId);
 
-    public closed record class ClosedShape;
+    public closed record ClosedShape;
 
-    public sealed record class ClosedCircle(double Radius) : ClosedShape;
+    public sealed record ClosedCircle(double Radius) : ClosedShape;
 
-    public closed record class Node;
+    public closed record Node;
 
     // an intermediate closed type, expanded through rather than given a discriminator of its own
-    public closed record class Branch : Node;
+    public closed record Branch : Node;
 
-    public sealed record class NamedLeaf(string Name) : Branch;
+    public sealed record NamedLeaf(string Name) : Branch;
 
-    public closed record class Root;
+    public closed record Root;
 
     // not closed, so this is where inference stops
-    public record class OpenBranch : Root;
+    public record OpenBranch : Root;
 
-    public sealed record class OpenLeaf : OpenBranch;
+    public sealed record OpenLeaf : OpenBranch;
 
-    public abstract record class PlainBase(string Id);
+    public abstract record PlainBase(string Id);
 
-    public sealed record class PlainDerived(string Id) : PlainBase(Id);
+    public sealed record PlainDerived(string Id) : PlainBase(Id);
 
-    public closed record class Container<T>(T Value);
+    public closed record Container<T>(T Value);
 
-    public sealed record class Wrapper<T>(T Value) : Container<T>(Value);
+    public sealed record Wrapper<T>(T Value) : Container<T>(Value);
 
-    public closed record class AmbiguousBase;
+    public closed record AmbiguousBase;
 
     [MyCompany.IsClosedType(DerivedTypes = [typeof(DecoyDerived)])]
-    public record class DecoyBase;
+    public record DecoyBase;
 
-    public sealed record class DecoyDerived : DecoyBase;
+    public sealed record DecoyDerived : DecoyBase;
 }
 
 namespace ClosedTypeFixtures.Discriminators.First
 {
-    public sealed record class Circle : AmbiguousBase;
+    public sealed record Circle : AmbiguousBase;
 }
 
 namespace ClosedTypeFixtures.Discriminators.Second
 {
-    public sealed record class Circle : AmbiguousBase;
+    public sealed record Circle : AmbiguousBase;
 }
 
 namespace MyCompany

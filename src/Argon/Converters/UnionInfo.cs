@@ -51,8 +51,7 @@ class UnionInfo
         {
             var attributeType = data.AttributeType;
             // Name is compared before FullName because FullName allocates for constructed and nested types
-            if (attributeType.Name == unionAttributeName &&
-                attributeType.FullName == unionAttributeFullName)
+            if (attributeType is {Name: unionAttributeName, FullName: unionAttributeFullName})
             {
                 return true;
             }

@@ -71,8 +71,11 @@ partial class ClosedTypeInfo
 
             foreach (var argument in data.NamedArguments)
             {
-                if (argument.MemberName == derivedTypesName &&
-                    argument.TypedValue.Value is IList<CustomAttributeTypedArgument> values)
+                if (argument is
+                    {
+                        MemberName: derivedTypesName,
+                        TypedValue.Value: IList<CustomAttributeTypedArgument> values
+                    })
                 {
                     derivedTypes = values;
                     return true;
