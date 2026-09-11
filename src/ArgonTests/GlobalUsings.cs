@@ -10,4 +10,5 @@ global using System.Xml;
 global using System.Xml.Linq;
 global using Argon.DataSets;
 global using BenchmarkDotNet.Attributes;
+global using ClosedTypeFixtures;
 global using Polyfills;

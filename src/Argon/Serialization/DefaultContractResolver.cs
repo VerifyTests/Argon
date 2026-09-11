@@ -42,7 +42,8 @@ public class DefaultContractResolver : IContractResolver
         new RegexConverter(),
         new TimeZoneInfoConverter(),
         new VersionConverter(),
-        new StringWriterConverter()
+        new StringWriterConverter(),
+        new UnionConverter()
         ];
 
     public static List<JsonConverter> Converters => builtInConverters;
