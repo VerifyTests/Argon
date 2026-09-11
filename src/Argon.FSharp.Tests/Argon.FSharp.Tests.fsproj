@@ -12,6 +12,7 @@
     <Compile Include="NullTokenTests.fs" />
     <PackageReference Include="FSharp.Core" />
     <PackageReference Include="xunit.v3" />
+    <PackageReference Include="Verify" VersionOverride="33.0.0-beta.8" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <ProjectReference Include="..\Argon.FSharp\Argon.FSharp.csproj" />
     <ProjectReference Include="..\ArgonTests\ArgonTests.csproj" />
