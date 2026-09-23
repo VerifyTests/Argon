@@ -1,6 +1,6 @@
 # <img src='/src/icon.png' height='30px'> Argon
 
-[![Build status](https://img.shields.io/appveyor/build/SimonCropp/Argon)](https://ci.appveyor.com/project/SimonCropp/Argon)
+[![Build status](https://github.com/VerifyTests/Argon/actions/workflows/build.yml/badge.svg)](https://github.com/VerifyTests/Argon/actions/workflows/build.yml)
 [![NuGet Status](https://img.shields.io/nuget/v/Argon.svg?label=Argon)](https://www.nuget.org/packages/Argon/)
 [![NuGet Status](https://img.shields.io/nuget/v/Argon.DataSets.svg?label=Argon.DataSets)](https://www.nuget.org/packages/Argon.DataSets/)
 [![NuGet Status](https://img.shields.io/nuget/v/Argon.Xml.svg?label=Argon.Xml)](https://www.nuget.org/packages/Argon.Xml/)
