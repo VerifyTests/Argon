@@ -8,12 +8,12 @@
     <PackageVersion Include="FSharp.Core" Version="11.0.100" />
     <PackageVersion Include="MarkdownSnippets.MsBuild" Version="28.4.4" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
-    <PackageVersion Include="Microsoft.Sbom.Targets" Version="4.1.13" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="NodaTime" Version="3.3.4" />
     <PackageVersion Include="Polyfill" Version="11.4.0" />
     <PackageVersion Include="ProjectDefaults" Version="1.0.181" />
     <PackageVersion Include="ProjectFiles" Version="1.4.0" />
+    <PackageVersion Include="Sbom" Version="0.2.0" />
     <PackageVersion Include="System.ValueTuple" Version="4.5.0" Pinned="true" />
     <PackageVersion Include="Verify.XunitV3" Version="33.1.4" />
     <PackageVersion Include="xunit.v3" Version="4.0.1" />
