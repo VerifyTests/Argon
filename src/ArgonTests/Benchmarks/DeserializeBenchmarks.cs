@@ -12,7 +12,7 @@ public class DeserializeBenchmarks
 
     static DeserializeBenchmarks()
     {
-        LargeJsonText = File.ReadAllText("large.json");
+        LargeJsonText = ProjectFiles.large_json.ReadAllText();
 
         FloatArrayJson = new JArray(Enumerable.Range(0, 5000).Select(_ => _ * 1.1m)).ToString(Formatting.None);
     }
@@ -24,7 +24,7 @@ public class DeserializeBenchmarks
     [Benchmark]
     public IList<RootObject> DeserializeLargeJsonFile()
     {
-        using var jsonFile = File.OpenText("large.json");
+        using var jsonFile = ProjectFiles.large_json.OpenText();
         using var jsonTextReader = new JsonTextReader(jsonFile);
         var serializer = new JsonSerializer();
         return serializer.Deserialize<IList<RootObject>>(jsonTextReader);

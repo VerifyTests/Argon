@@ -20,7 +20,7 @@ public class XmlNodeConverterBenchmarks
     public void ConvertXNode()
     {
         XDocument doc;
-        using (var file = File.OpenRead("large_sample.xml"))
+        using (var file = ProjectFiles.large_sample_xml.OpenRead())
         {
             doc = XDocument.Load(file);
         }

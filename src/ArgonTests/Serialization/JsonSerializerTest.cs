@@ -122,7 +122,7 @@ public class JsonSerializerTest : TestFixtureBase
     [Fact]
     public void DontCloseInputOnDeserializeError()
     {
-        using var stream = File.OpenRead("large.json");
+        using var stream = ProjectFiles.large_json.OpenRead();
         try
         {
             using (var reader = new JsonTextReader(new StreamReader(stream)))

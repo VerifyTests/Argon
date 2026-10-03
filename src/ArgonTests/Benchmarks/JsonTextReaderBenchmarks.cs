@@ -14,7 +14,7 @@ public class JsonTextReaderBenchmarks
     [Benchmark]
     public void ReadLargeJson()
     {
-        using var fileStream = File.OpenText("large.json");
+        using var fileStream = ProjectFiles.large_json.OpenText();
         using var jsonTextReader = new JsonTextReader(fileStream);
         while (jsonTextReader.Read())
         {

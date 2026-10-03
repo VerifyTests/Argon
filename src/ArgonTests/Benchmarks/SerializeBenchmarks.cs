@@ -11,7 +11,7 @@ public class SerializeBenchmarks
 
     static SerializeBenchmarks()
     {
-        var json = File.ReadAllText("large.json");
+        var json = ProjectFiles.large_json.ReadAllText();
 
         LargeCollection = JsonConvert.DeserializeObject<IList<RootObject>>(json);
     }
