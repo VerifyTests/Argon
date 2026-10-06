@@ -4,21 +4,15 @@
 
 static class DateTimeUtils
 {
-    const string IsoDateFormat = "yyyy-MM-ddTHH:mm:ss.FFFFFFFK";
+    const string isoDateFormat = "yyyy-MM-ddTHH:mm:ss.FFFFFFFK";
 
-    const int DaysPer100Years = 36524;
-    const int DaysPer400Years = 146097;
-    const int DaysPer4Years = 1461;
-    const int DaysPerYear = 365;
-    const long TicksPerDay = 864000000000L;
-    static readonly int[] DaysToMonth365;
-    static readonly int[] DaysToMonth366;
-
-    static DateTimeUtils()
-    {
-        DaysToMonth365 = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365];
-        DaysToMonth366 = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366];
-    }
+    const int daysPer100Years = 36524;
+    const int daysPer400Years = 146097;
+    const int daysPer4Years = 1461;
+    const int daysPerYear = 365;
+    const long ticksPerDay = 864000000000L;
+    static int[] daysToMonth365 = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365];
+    static int[] daysToMonth366 = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366];
 
     public static TimeSpan GetUtcOffset(this DateTime d) =>
         TimeZoneInfo.Local.GetUtcOffset(d);
@@ -294,7 +288,7 @@ static class DateTimeUtils
                     return true;
                 }
 
-                if (DateTime.TryParseExact(s, IsoDateFormat, InvariantCulture, DateTimeStyles.RoundtripKind, out dt))
+                if (DateTime.TryParseExact(s, isoDateFormat, InvariantCulture, DateTimeStyles.RoundtripKind, out dt))
                 {
                     return true;
                 }
@@ -318,7 +312,7 @@ static class DateTimeUtils
 
                 // TryParseExact fully validates and produces the same result the custom ISO
                 // parser would; re-parsing (and the ToCharArray copy) was pure overhead.
-                if (DateTimeOffset.TryParseExact(s, IsoDateFormat, InvariantCulture, DateTimeStyles.RoundtripKind, out dt))
+                if (DateTimeOffset.TryParseExact(s, isoDateFormat, InvariantCulture, DateTimeStyles.RoundtripKind, out dt))
                 {
                     return true;
                 }
@@ -447,13 +441,13 @@ static class DateTimeUtils
     {
         var ticks = td.Ticks;
         // n = number of days since 1/1/0001
-        var n = (int) (ticks / TicksPerDay);
+        var n = (int) (ticks / ticksPerDay);
         // y400 = number of whole 400-year periods since 1/1/0001
-        var y400 = n / DaysPer400Years;
+        var y400 = n / daysPer400Years;
         // n = day number within 400-year period
-        n -= y400 * DaysPer400Years;
+        n -= y400 * daysPer400Years;
         // y100 = number of whole 100-year periods within 400-year period
-        var y100 = n / DaysPer100Years;
+        var y100 = n / daysPer100Years;
         // Last 100-year period has an extra day, so decrement result if 4
         if (y100 == 4)
         {
@@ -461,13 +455,13 @@ static class DateTimeUtils
         }
 
         // n = day number within 100-year period
-        n -= y100 * DaysPer100Years;
+        n -= y100 * daysPer100Years;
         // y4 = number of whole 4-year periods within 100-year period
-        var y4 = n / DaysPer4Years;
+        var y4 = n / daysPer4Years;
         // n = day number within 4-year period
-        n -= y4 * DaysPer4Years;
+        n -= y4 * daysPer4Years;
         // y1 = number of whole years within 4-year period
-        var y1 = n / DaysPerYear;
+        var y1 = n / daysPerYear;
         // Last year has an extra day, so decrement result if 4
         if (y1 == 4)
         {
@@ -477,12 +471,12 @@ static class DateTimeUtils
         year = y400 * 400 + y100 * 100 + y4 * 4 + y1 + 1;
 
         // n = day number within year
-        n -= y1 * DaysPerYear;
+        n -= y1 * daysPerYear;
 
         // Leap year calculation looks different from IsLeapYear since y1, y4,
         // and y100 are relative to year 1, not year 0
         var leapYear = y1 == 3 && (y4 != 24 || y100 == 3);
-        var days = leapYear ? DaysToMonth366 : DaysToMonth365;
+        var days = leapYear ? daysToMonth366 : daysToMonth365;
         // All months have less than 32 days, so n >> 5 is a good conservative
         // estimate for the month
         var m = n >> (5 + 1);

@@ -879,7 +879,7 @@ public class JValueTests : TestFixtureBase
             Assert.False(two.Equals(actual));
         }
 
-        Assert.True(new JValue(new BigInteger(ulong.MaxValue)).Equals(new JValue((object) UnsignedEnum.MaxValue)));
+        Assert.True(new JValue(new BigInteger(ulong.MaxValue)).Equals(new(UnsignedEnum.MaxValue)));
         Assert.False(JToken.DeepEquals(JToken.Parse("""{"A":99999999999999999999}"""), JToken.FromObject(new {A = (short) 1})));
     }
 
