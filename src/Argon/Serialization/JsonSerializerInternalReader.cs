@@ -855,6 +855,13 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
                 return null;
             }
 
+            // a Nullable<T> target is handed the boxed T it needs. converting it would only
+            // box the same value a second time
+            if (valueType == contract.NonNullableUnderlyingType)
+            {
+                return value;
+            }
+
             try
             {
 #if NET6_0_OR_GREATER
@@ -1730,13 +1737,40 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         return newObject;
     }
 
-    class CreatorPropertyContext
+    struct CreatorPropertyContext
     {
         public JsonProperty? Property;
         public JsonProperty? ConstructorProperty;
         public PropertyPresence? Presence;
         public object? Value;
         public bool Used;
+    }
+
+    // The values read for one object that is built through a parameterized constructor. They are
+    // structs in a pooled array: as classes in a list they cost an allocation for every JSON
+    // property of every such object, which for a record was about half of everything allocated.
+    struct CreatorContexts(int capacity)
+    {
+        public CreatorPropertyContext[] Items = ArrayPool<CreatorPropertyContext>.Shared.Rent(capacity);
+        public int Count;
+
+        // the returned reference is only valid until the next Add
+        public ref CreatorPropertyContext Add()
+        {
+            if (Count == Items.Length)
+            {
+                var larger = ArrayPool<CreatorPropertyContext>.Shared.Rent(Items.Length * 2);
+                Array.Copy(Items, larger, Count);
+                ArrayPool<CreatorPropertyContext>.Shared.Return(Items, true);
+                Items = larger;
+            }
+
+            return ref Items[Count++];
+        }
+
+        // cleared so the pool does not keep the deserialized values alive
+        public readonly void Return() =>
+            ArrayPool<CreatorPropertyContext>.Shared.Return(Items, true);
     }
 
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
@@ -1747,16 +1781,18 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         var trackPresence = contract.HasRequiredOrDefaultValueProperties ||
                             HasFlag(Serializer.DefaultValueHandling, DefaultValueHandling.Populate);
 
-        var propertyContexts = ResolvePropertyAndCreatorValues(contract, containerProperty, reader, contract.UnderlyingType);
+        var contexts = new CreatorContexts(contract.Properties.Count + 4);
+        ResolvePropertyAndCreatorValues(ref contexts, contract, containerProperty, reader, contract.UnderlyingType);
         if (trackPresence)
         {
             // hash-set membership instead of scanning the context list per property
             var seenProperties = new HashSet<JsonProperty>();
-            foreach (var context in propertyContexts)
+            for (var index = 0; index < contexts.Count; index++)
             {
-                if (context.Property != null)
+                var seen = contexts.Items[index].Property;
+                if (seen != null)
                 {
-                    seenProperties.Add(context.Property);
+                    seenProperties.Add(seen);
                 }
             }
 
@@ -1765,20 +1801,23 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
                 if (!property.Ignored &&
                     !seenProperties.Contains(property))
                 {
-                    propertyContexts.Add(
-                        new()
-                        {
-                            Property = property,
-                            Presence = PropertyPresence.None
-                        });
+                    ref var missing = ref contexts.Add();
+                    missing.Property = property;
+                    missing.Presence = PropertyPresence.None;
                 }
             }
         }
 
         var creatorParameterValues = new object?[contract.CreatorParameters.Count];
 
-        foreach (var context in propertyContexts)
+        // nothing is added from here on, so references into the array stay valid
+        var propertyContexts = contexts.Items;
+        var contextCount = contexts.Count;
+
+        for (var contextIndex = 0; contextIndex < contextCount; contextIndex++)
         {
+            ref var context = ref propertyContexts[contextIndex];
+
             // set presence of read values
             if (trackPresence)
             {
@@ -1851,8 +1890,9 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         OnDeserializing(reader, createdObject);
 
         // go through unused values and set the newly created object's properties
-        foreach (var context in propertyContexts)
+        for (var contextIndex = 0; contextIndex < contextCount; contextIndex++)
         {
+            ref var context = ref propertyContexts[contextIndex];
             if (context.Used ||
                 context.Property == null ||
                 context.Property.Ignored ||
@@ -1941,8 +1981,9 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
 
         if (trackPresence)
         {
-            foreach (var context in propertyContexts)
+            for (var contextIndex = 0; contextIndex < contextCount; contextIndex++)
             {
+                ref var context = ref propertyContexts[contextIndex];
                 if (context.Property == null)
                 {
                     continue;
@@ -1959,6 +2000,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
             }
         }
 
+        contexts.Return();
+
         OnDeserialized(reader, createdObject);
         return createdObject;
     }
@@ -1970,9 +2013,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
 
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
-    List<CreatorPropertyContext> ResolvePropertyAndCreatorValues(JsonObjectContract contract, JsonProperty? containerProperty, JsonReader reader, Type type)
+    void ResolvePropertyAndCreatorValues(ref CreatorContexts contexts, JsonObjectContract contract, JsonProperty? containerProperty, JsonReader reader, Type type)
     {
-        var propertyValues = new List<CreatorPropertyContext>();
         var exit = false;
         do
         {
@@ -1981,14 +2023,17 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
                 case JsonToken.PropertyName:
                     var memberName = (string) reader.GetValue();
 
-                    var creatorPropertyContext = new CreatorPropertyContext
-                    {
-                        ConstructorProperty = contract.CreatorParameters.GetClosestMatchProperty(memberName),
-                        Property = contract.Properties.GetClosestMatchProperty(memberName)
-                    };
-                    propertyValues.Add(creatorPropertyContext);
+                    var constructorProperty = contract.CreatorParameters.GetClosestMatchProperty(memberName);
+                    var memberProperty = contract.Properties.GetClosestMatchProperty(memberName);
 
-                    var property = creatorPropertyContext.ConstructorProperty ?? creatorPropertyContext.Property;
+                    // the value is stored by index once it has been read, rather than through
+                    // this reference
+                    var contextIndex = contexts.Count;
+                    ref var added = ref contexts.Add();
+                    added.ConstructorProperty = constructorProperty;
+                    added.Property = memberProperty;
+
+                    var property = constructorProperty ?? memberProperty;
                     if (property != null)
                     {
                         if (!property.Ignored)
@@ -2002,14 +2047,17 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
                                 throw JsonSerializationException.Create(reader, $"Unexpected end when setting {memberName}'s value.");
                             }
 
+                            object? value;
                             if (propertyConverter is {CanRead: true})
                             {
-                                creatorPropertyContext.Value = DeserializeConvertible(propertyConverter, reader, property.PropertyType!, null);
+                                value = DeserializeConvertible(propertyConverter, reader, property.PropertyType!, null);
                             }
                             else
                             {
-                                creatorPropertyContext.Value = CreateValueInternal(reader, property.PropertyType, property.PropertyContract, property, contract, containerProperty, null);
+                                value = CreateValueInternal(reader, property.PropertyType, property.PropertyContract, property, contract, containerProperty, null);
                             }
+
+                            contexts.Items[contextIndex].Value = value;
 
                             continue;
                         }
@@ -2049,8 +2097,6 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         {
             ThrowUnexpectedEndException(reader, null, "Unexpected end when deserializing object.");
         }
-
-        return propertyValues;
     }
 
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
@@ -2132,6 +2178,7 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         }
 
         var initialDepth = reader.Depth;
+        var expectedPropertyIndex = 0;
 
         var finished = false;
         do
@@ -2151,7 +2198,7 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
                     {
                         // attempt exact case match first
                         // then try match ignoring case
-                        var property = contract.Properties.GetClosestMatchProperty(propertyName);
+                        var property = contract.Properties.GetClosestMatchProperty(propertyName, ref expectedPropertyIndex);
 
                         if (property == null)
                         {

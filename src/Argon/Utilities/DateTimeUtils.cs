@@ -95,12 +95,205 @@ static class DateTimeUtils
         return d;
     }
 
+    static readonly int[] fractionScale = [0, 1000000, 100000, 10000, 1000, 100, 10, 1];
+
+    enum IsoZone
+    {
+        None,
+        Utc,
+        Offset
+    }
+
+    // Parses the ISO 8601 shapes the writer produces: yyyy-MM-ddTHH:mm:ss, an optional fraction of
+    // one to seven digits, then nothing, Z, or an offset of +hh:mm or -hh:mm. Anything else is
+    // rejected and left to the framework. TryParseExact interprets its format string for every
+    // value, which makes it several times slower than reading the fixed positions directly.
+    static bool TryParseIso(CharSpan s, out long ticks, out IsoZone zone, out long offsetTicks)
+    {
+        ticks = 0;
+        zone = IsoZone.None;
+        offsetTicks = 0;
+
+        if (s.Length < 19 ||
+            s[4] != '-' ||
+            s[7] != '-' ||
+            s[10] != 'T' ||
+            s[13] != ':' ||
+            s[16] != ':')
+        {
+            return false;
+        }
+
+        if (!TryParse2Digits(s, 0, out var century) ||
+            !TryParse2Digits(s, 2, out var yearOfCentury) ||
+            !TryParse2Digits(s, 5, out var month) ||
+            !TryParse2Digits(s, 8, out var day) ||
+            !TryParse2Digits(s, 11, out var hour) ||
+            !TryParse2Digits(s, 14, out var minute) ||
+            !TryParse2Digits(s, 17, out var second))
+        {
+            return false;
+        }
+
+        var year = century * 100 + yearOfCentury;
+        if (year < 1 ||
+            month is < 1 or > 12 ||
+            day < 1 ||
+            hour > 23 ||
+            minute > 59 ||
+            second > 59 ||
+            day > DateTime.DaysInMonth(year, month))
+        {
+            return false;
+        }
+
+        var position = 19;
+        var fraction = 0;
+        if (position < s.Length &&
+            s[position] == '.')
+        {
+            position++;
+            var digits = 0;
+            while (position < s.Length &&
+                   digits < 7)
+            {
+                var digit = s[position] - '0';
+                if ((uint) digit > 9)
+                {
+                    break;
+                }
+
+                fraction = fraction * 10 + digit;
+                digits++;
+                position++;
+            }
+
+            if (digits == 0)
+            {
+                return false;
+            }
+
+            fraction *= fractionScale[digits];
+        }
+
+        if (position != s.Length)
+        {
+            var sign = s[position];
+            if (sign == 'Z')
+            {
+                if (position + 1 != s.Length)
+                {
+                    return false;
+                }
+
+                zone = IsoZone.Utc;
+            }
+            else
+            {
+                if (sign is not ('+' or '-') ||
+                    position + 6 != s.Length ||
+                    s[position + 3] != ':' ||
+                    !TryParse2Digits(s, position + 1, out var offsetHours) ||
+                    !TryParse2Digits(s, position + 4, out var offsetMinutes) ||
+                    offsetMinutes > 59)
+                {
+                    return false;
+                }
+
+                offsetTicks = (offsetHours * 60L + offsetMinutes) * TimeSpan.TicksPerMinute;
+                if (offsetTicks > 14 * TimeSpan.TicksPerHour)
+                {
+                    return false;
+                }
+
+                if (sign == '-')
+                {
+                    offsetTicks = -offsetTicks;
+                }
+
+                zone = IsoZone.Offset;
+            }
+        }
+
+        ticks = new DateTime(year, month, day, hour, minute, second).Ticks + fraction;
+        return true;
+    }
+
+    static bool TryParse2Digits(CharSpan s, int start, out int value)
+    {
+        var digit1 = s[start] - '0';
+        var digit2 = s[start + 1] - '0';
+        value = digit1 * 10 + digit2;
+        return (uint) digit1 <= 9 && (uint) digit2 <= 9;
+    }
+
+    // the first and last day of the supported range are left to the framework, which has its own
+    // handling for values an offset would push out of range
+    static bool IsAwayFromRangeEnds(long ticks) =>
+        ticks is >= TimeSpan.TicksPerDay and <= 3155378975999999999 - TimeSpan.TicksPerDay;
+
+    internal static bool TryParseDateTimeIso(CharSpan s, out DateTime dt)
+    {
+        if (TryParseIso(s, out var ticks, out var zone, out var offsetTicks))
+        {
+            switch (zone)
+            {
+                case IsoZone.None:
+                    dt = new(ticks, DateTimeKind.Unspecified);
+                    return true;
+                case IsoZone.Utc:
+                    dt = new(ticks, DateTimeKind.Utc);
+                    return true;
+                default:
+                    var utcTicks = ticks - offsetTicks;
+                    if (IsAwayFromRangeEnds(ticks) &&
+                        IsAwayFromRangeEnds(utcTicks))
+                    {
+                        dt = new DateTime(utcTicks, DateTimeKind.Utc).ToLocalTime();
+                        return true;
+                    }
+
+                    break;
+            }
+        }
+
+        dt = default;
+        return false;
+    }
+
+    internal static bool TryParseDateTimeOffsetIso(CharSpan s, out DateTimeOffset dt)
+    {
+        if (TryParseIso(s, out var ticks, out var zone, out var offsetTicks) &&
+            IsAwayFromRangeEnds(ticks) &&
+            IsAwayFromRangeEnds(ticks - offsetTicks))
+        {
+            switch (zone)
+            {
+                case IsoZone.None:
+                    // no zone means local time, the same as the framework assumes
+                    dt = new(new DateTime(ticks, DateTimeKind.Unspecified));
+                    return true;
+                default:
+                    dt = new(ticks, new(offsetTicks));
+                    return true;
+            }
+        }
+
+        dt = default;
+        return false;
+    }
+
     internal static bool TryParseDateTime(string s, out DateTime dt)
     {
         if (s.Length > 0)
         {
             if (s.Length is >= 19 and <= 40 && char.IsDigit(s[0]) && s[10] == 'T')
             {
+                if (TryParseDateTimeIso(s.AsSpan(), out dt))
+                {
+                    return true;
+                }
+
                 if (DateTime.TryParseExact(s, IsoDateFormat, InvariantCulture, DateTimeStyles.RoundtripKind, out dt))
                 {
                     return true;
@@ -118,6 +311,11 @@ static class DateTimeUtils
         {
             if (s.Length is >= 19 and <= 40 && char.IsDigit(s[0]) && s[10] == 'T')
             {
+                if (TryParseDateTimeOffsetIso(s.AsSpan(), out dt))
+                {
+                    return true;
+                }
+
                 // TryParseExact fully validates and produces the same result the custom ISO
                 // parser would; re-parsing (and the ToCharArray copy) was pure overhead.
                 if (DateTimeOffset.TryParseExact(s, IsoDateFormat, InvariantCulture, DateTimeStyles.RoundtripKind, out dt))

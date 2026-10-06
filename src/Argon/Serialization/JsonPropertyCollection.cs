@@ -159,6 +159,34 @@ public class JsonPropertyCollection : KeyedCollection<string, JsonProperty>
         return null;
     }
 
+    /// <summary>
+    /// Gets the closest matching <see cref="JsonProperty" /> object, first trying the property at
+    /// <paramref name="expectedIndex" />.
+    /// </summary>
+    /// <remarks>
+    /// JSON written by a serializer lists an object's properties in declaration order, and the
+    /// reader's name table returns the same string instance the property was created with. So the
+    /// property after the previous match is the likely next one, and a reference comparison
+    /// confirms it without hashing the name. A few properties ahead are also checked, which
+    /// covers the ones a writer omitted for being null or default.
+    /// </remarks>
+    internal JsonProperty? GetClosestMatchProperty(string name, ref int expectedIndex)
+    {
+        var properties = list;
+        var end = Math.Min(expectedIndex + 4, properties.Count);
+        for (var index = expectedIndex; index < end; index++)
+        {
+            var property = properties[index];
+            if (ReferenceEquals(property.PropertyName, name))
+            {
+                expectedIndex = index + 1;
+                return property;
+            }
+        }
+
+        return GetClosestMatchProperty(name);
+    }
+
     bool TryGetProperty(string key, [NotNullWhen(true)] out JsonProperty? item)
     {
         if (Dictionary == null)

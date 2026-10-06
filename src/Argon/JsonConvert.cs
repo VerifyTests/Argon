@@ -522,11 +522,13 @@ public static class JsonConvert
 
     static string SerializeObjectInternal(object? value, Type? type, JsonSerializer serializer)
     {
-        var builder = new StringBuilder(256);
-        var stringWriter = new StringWriter(builder, InvariantCulture);
+        // the text is read back before the buffer is returned to the pool, so the JSON writer
+        // must not close it
+        using var stringWriter = new PooledStringWriter();
         using (var jsonWriter = new JsonTextWriter(stringWriter)
                {
-                   Formatting = serializer.Formatting.GetValueOrDefault()
+                   Formatting = serializer.Formatting.GetValueOrDefault(),
+                   CloseOutput = false
                })
         {
             serializer.Serialize(jsonWriter, value, type);

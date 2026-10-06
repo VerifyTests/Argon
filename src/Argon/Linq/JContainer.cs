@@ -409,6 +409,12 @@ public abstract class JContainer :
     internal void AddAndSkipParentCheck(JToken token) =>
         TryAddInternal(ChildrenTokens.Count, token, true);
 
+    // content read from a reader is always a new token with no parent, so it can go straight to
+    // InsertItem. Add first has to work out whether its argument is a token, a value to wrap or a
+    // collection to expand, which is several type checks for every token loaded
+    void AddLoaded(JToken token) =>
+        InsertItem(ChildrenTokens.Count, token, false);
+
     /// <summary>
     /// Adds the specified content as the first children of this <see cref="JToken" />.
     /// </summary>
@@ -518,7 +524,7 @@ public abstract class JContainer :
                 case JsonToken.StartArray:
                     var a = new JArray();
                     a.SetLineInfo(lineInfo, settings);
-                    parent.Add(a);
+                    parent.AddLoaded(a);
                     parent = a;
                     break;
 
@@ -533,7 +539,7 @@ public abstract class JContainer :
                 case JsonToken.StartObject:
                     var o = new JObject();
                     o.SetLineInfo(lineInfo, settings);
-                    parent.Add(o);
+                    parent.AddLoaded(o);
                     parent = o;
                     break;
                 case JsonToken.EndObject:
@@ -567,26 +573,26 @@ public abstract class JContainer :
                         ? new JValue(value)
                         : new JValue(value, knownType);
                     v.SetLineInfo(lineInfo, settings);
-                    parent.Add(v);
+                    parent.AddLoaded(v);
                     break;
                 case JsonToken.Comment:
                     if (settings is {CommentHandling: CommentHandling.Load})
                     {
                         v = JValue.CreateComment((string?) r.GetValue());
                         v.SetLineInfo(lineInfo, settings);
-                        parent.Add(v);
+                        parent.AddLoaded(v);
                     }
 
                     break;
                 case JsonToken.Null:
                     v = JValue.CreateNull();
                     v.SetLineInfo(lineInfo, settings);
-                    parent.Add(v);
+                    parent.AddLoaded(v);
                     break;
                 case JsonToken.Undefined:
                     v = JValue.CreateUndefined();
                     v.SetLineInfo(lineInfo, settings);
-                    parent.Add(v);
+                    parent.AddLoaded(v);
                     break;
                 case JsonToken.PropertyName:
                     var property = ReadProperty(r, settings, lineInfo, parent);
@@ -608,7 +614,7 @@ public abstract class JContainer :
         {
             // JObject.ValidateToken rejects duplicate names, so a separate
             // pre-check would hash the name a second time on every property
-            parentObject.Add(property);
+            parentObject.AddLoaded(property);
         }
         catch (ArgumentException)
         {

@@ -112,6 +112,26 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
                 SetToken(text);
                 quoteChar = quote;
                 break;
+            case ReadType.ReadAsDateTime:
+                // an ISO date is parsed straight from the buffer. anything else becomes a string
+                // token for the caller to convert, as before
+                if (DateTimeUtils.TryParseDateTimeIso(stringReference.AsSpan(), out var dateTime))
+                {
+                    SetToken(JsonToken.Date, dateTime, false);
+                    quoteChar = quote;
+                    break;
+                }
+
+                goto default;
+            case ReadType.ReadAsDateTimeOffset:
+                if (DateTimeUtils.TryParseDateTimeOffsetIso(stringReference.AsSpan(), out var dateTimeOffset))
+                {
+                    SetToken(JsonToken.Date, dateTimeOffset, false);
+                    quoteChar = quote;
+                    break;
+                }
+
+                goto default;
             case ReadType.ReadAsInt32:
             case ReadType.ReadAsDecimal:
             case ReadType.ReadAsDouble:
@@ -435,6 +455,8 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
                             ProcessLineFeed();
                             break;
                         case ' ':
+                            SkipSpaces();
+                            break;
                         case StringUtils.Tab:
                             // eat
                             charPos++;
@@ -567,6 +589,8 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
                             ProcessLineFeed();
                             break;
                         case ' ':
+                            SkipSpaces();
+                            break;
                         case StringUtils.Tab:
                             // eat
                             charPos++;
@@ -599,16 +623,17 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
             case ReadType.ReadAsString:
                 return Value;
             case ReadType.ReadAsDateTime:
-                if (Value is DateTime time)
+                // already boxed as the token value, so hand that back rather than boxing again
+                if (Value is DateTime)
                 {
-                    return time;
+                    return Value;
                 }
 
                 return ReadDateTimeString((string?) Value);
             case ReadType.ReadAsDateTimeOffset:
-                if (Value is DateTimeOffset offset)
+                if (Value is DateTimeOffset)
                 {
-                    return offset;
+                    return Value;
                 }
 
                 return ReadDateTimeOffsetString((string?) Value);
@@ -720,6 +745,8 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
                             ProcessLineFeed();
                             break;
                         case ' ':
+                            SkipSpaces();
+                            break;
                         case StringUtils.Tab:
                             // eat
                             charPos++;
@@ -844,6 +871,8 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
                             ProcessLineFeed();
                             break;
                         case ' ':
+                            SkipSpaces();
+                            break;
                         case StringUtils.Tab:
                             // eat
                             charPos++;
@@ -1333,6 +1362,8 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
                     SetStateBasedOnCurrent();
                     return false;
                 case ' ':
+                    SkipSpaces();
+                    break;
                 case StringUtils.Tab:
                     // eat
                     charPos++;
@@ -1402,6 +1433,8 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
                     ProcessLineFeed();
                     break;
                 case ' ':
+                    SkipSpaces();
+                    break;
                 case StringUtils.Tab:
                     // eat
                     charPos++;
@@ -1616,6 +1649,8 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
                     ProcessLineFeed();
                     break;
                 case ' ':
+                    SkipSpaces();
+                    break;
                 case StringUtils.Tab:
                     // eat
                     charPos++;
@@ -1643,6 +1678,21 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
     {
         charPos++;
         OnNewLine(charPos);
+    }
+
+    // Indentation is a run of spaces, so step over the whole run in one tight loop instead of
+    // going around the caller's switch once per space. The '\0' kept at charsUsed is not a space,
+    // so the scan always stops inside the buffer.
+    void SkipSpaces()
+    {
+        var buffer = charBuffer;
+        var position = charPos + 1;
+        while (buffer[position] == ' ')
+        {
+            position++;
+        }
+
+        charPos = position;
     }
 
     void ProcessCarriageReturn(bool append)
@@ -1680,8 +1730,11 @@ public class JsonTextReader : JsonReader, IJsonLineInfo
                 case StringUtils.LineFeed:
                     ProcessLineFeed();
                     break;
+                case ' ':
+                    SkipSpaces();
+                    break;
                 default:
-                    if (currentChar == ' ' || char.IsWhiteSpace(currentChar))
+                    if (char.IsWhiteSpace(currentChar))
                     {
                         charPos++;
                     }

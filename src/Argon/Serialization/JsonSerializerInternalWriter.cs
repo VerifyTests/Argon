@@ -41,6 +41,10 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
     // for a run, so the type alone is a sufficient key
     Dictionary<Type, string>? typeNames;
 
+    // the serializer's converters, wrapped so that JToken values written during this run share
+    // one record of which converter matched which type
+    IList<JsonConverter>? linqConverters;
+
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public void Serialize(JsonWriter jsonWriter, object? value, Type? type)
@@ -101,6 +105,24 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
 
     JsonContract GetContract(object value) =>
         Serializer.ResolveContract(value.GetType());
+
+    // the declared contract is the right one whenever the value is exactly the declared type,
+    // which is the usual case, and saves a resolver cache lookup for every item and member
+    JsonContract? GetContractSafe(JsonContract? declaredContract, object? value)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+
+        if (declaredContract != null &&
+            value.GetType() == declaredContract.UnderlyingType)
+        {
+            return declaredContract;
+        }
+
+        return GetContract(value);
+    }
 
     void SerializePrimitive(JsonWriter writer, object value, JsonPrimitiveContract contract, JsonProperty? member, JsonContainerContract? containerContract, JsonProperty? containerProperty)
     {
@@ -206,7 +228,8 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
             case JsonContractType.Linq:
                 var token = (JToken) value;
                 OnSerializing(writer, token);
-                token.WriteTo(writer, Serializer.Converters);
+                // one cache for the whole run, so each token written does not start its own
+                token.WriteTo(writer, linqConverters ??= ConverterListCache.Wrap(Serializer.Converters));
                 OnSerialized(writer, token);
                 break;
         }
@@ -475,7 +498,7 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
             property.PropertyContract ??= Serializer.ResolveContract(property.PropertyType!);
 
             memberValue = property.ValueProvider!.GetValue(value);
-            memberContract = property.PropertyContract.IsSealed ? property.PropertyContract : GetContractSafe(memberValue);
+            memberContract = property.PropertyContract.IsSealed ? property.PropertyContract : GetContractSafe(property.PropertyContract, memberValue);
 
             if (ShouldWriteProperty(memberValue, contract as JsonObjectContract, property))
             {
@@ -714,7 +737,7 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
                 return;
             }
 
-            var valueContract = GetContractSafe(value);
+            var valueContract = GetContractSafe(contract.ItemContract, value);
 
             if (ShouldWriteReference(value, null, valueContract, contract, member))
             {
@@ -1135,7 +1158,7 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
 
         try
         {
-            var valueContract = GetContractSafe(value);
+            var valueContract = GetContractSafe(contract.ItemContract, value);
 
             if (ShouldWriteReference(value, null, valueContract, contract, member))
             {
