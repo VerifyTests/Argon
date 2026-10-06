@@ -105,12 +105,15 @@ static class BoxedPrimitives
     static readonly object DecimalZeroWithTrailingZero = 0.0m;
 #endif
 
+    static readonly long negativeZeroBits = BitConverter.DoubleToInt64Bits(-0.0d);
+
     internal static object Get(double value)
     {
         if (value == 0.0d)
         {
-            // Double supports -0.0. Detection logic from https://stackoverflow.com/a/4739883/11829.
-            if (double.IsNegativeInfinity(1.0 / value))
+            // Double supports -0.0. Compare bits rather than dividing by the value, since dividing by
+            // zero throws in processes that enable the floating point divide by zero exception.
+            if (BitConverter.DoubleToInt64Bits(value) == negativeZeroBits)
             {
                 return DoubleNegativeZero;
             }

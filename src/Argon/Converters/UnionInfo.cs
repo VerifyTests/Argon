@@ -26,15 +26,17 @@ class UnionInfo
     static readonly ThreadSafeStore<Type, UnionInfo> infoCache = new(Create);
 
     /// <summary>
-    /// The JSON shape a union case serializes to, used to match an incoming payload to a case.
+    /// The JSON shapes a union case can be read from, used to match an incoming payload to a case.
     /// </summary>
+    [Flags]
     public enum Shape
     {
-        Object,
-        Array,
-        String,
-        Number,
-        Boolean
+        Object = 1,
+        Array = 2,
+        String = 4,
+        Number = 8,
+        Boolean = 16,
+        Any = Object | Array | String | Number | Boolean
     }
 
     public record Case(Type CaseType, bool AcceptsNull, ObjectConstructor Constructor);
@@ -170,14 +172,84 @@ class UnionInfo
         return valueAccessor(union);
     }
 
+    /// <summary>
+    /// The nearest case that can hold a value of the given runtime type.
+    /// </summary>
+    public Case? FindCase(Type valueType)
+    {
+        foreach (var unionCase in Cases)
+        {
+            var caseType = unionCase.CaseType;
+            if (caseType.IsAssignableFrom(valueType) ||
+                Nullable.GetUnderlyingType(caseType) == valueType)
+            {
+                return unionCase;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Reads a metadata property the same way the serializer would: anywhere in the object when
+    /// reading ahead, otherwise only from the run of metadata properties at its start.
+    /// </summary>
+    public static JToken? GetMetadataProperty(JObject payload, string name, JsonSerializer serializer)
+    {
+        var handling = serializer.MetadataPropertyHandling;
+        if (handling == MetadataPropertyHandling.Ignore)
+        {
+            return null;
+        }
+
+        if (handling == MetadataPropertyHandling.ReadAhead)
+        {
+            return payload[name];
+        }
+
+        foreach (var property in payload.Properties())
+        {
+            if (property.Name == name)
+            {
+                return property.Value;
+            }
+
+            if (!IsMetadataName(property.Name))
+            {
+                break;
+            }
+        }
+
+        return null;
+    }
+
+    static bool IsMetadataName(string name) =>
+        name is
+            JsonTypeReflector.TypePropertyName or
+            JsonTypeReflector.IdPropertyName or
+            JsonTypeReflector.RefPropertyName or
+            JsonTypeReflector.ArrayValuesPropertyName;
+
     public Case ResolveCase(JToken token, JsonSerializer serializer)
     {
         var shape = GetShape(token.Type);
 
+        // an array written with reference or type metadata is wrapped in an object holding $values
+        if (token is JObject wrapper &&
+            GetMetadataProperty(wrapper, JsonTypeReflector.ArrayValuesPropertyName, serializer) is JArray)
+        {
+            shape = Shape.Array;
+        }
+
+        var isNonFinite = token is JValue {Type: JTokenType.String, Value: string text} &&
+                          (text == JsonConvert.NaN ||
+                           text == JsonConvert.PositiveInfinity ||
+                           text == JsonConvert.NegativeInfinity);
+
         var candidates = new List<Case>();
         foreach (var unionCase in Cases)
         {
-            if (GetShape(unionCase.CaseType, serializer) == shape)
+            if ((GetShape(unionCase.CaseType, serializer, isNonFinite) & shape) != 0)
             {
                 candidates.Add(unionCase);
             }
@@ -195,7 +267,8 @@ class UnionInfo
             throw new JsonSerializationException($"No case of union type '{unionType}' is serialized as a JSON {shapeName}. Cases: {CaseNames(Cases)}.");
         }
 
-        if (token is JObject payload)
+        if (token is JObject payload &&
+            shape == Shape.Object)
         {
             return ResolveStructurally(payload, candidates, serializer);
         }
@@ -213,15 +286,25 @@ class UnionInfo
 
         foreach (var unionCase in candidates)
         {
-            if (serializer.ResolveContract(unionCase.CaseType) is not JsonObjectContract contract)
+            // a case read by a converter has no property names to compare against
+            if (serializer.ResolveContract(unionCase.CaseType) is not JsonObjectContract contract ||
+                GetReadConverter(contract, serializer) != null)
             {
                 continue;
             }
 
             var matched = 0;
             var unknown = false;
+            var readMetadata = serializer.MetadataPropertyHandling != MetadataPropertyHandling.Ignore;
             foreach (var property in payload.Properties())
             {
+                // $id, $type and the like describe the payload rather than belong to a case
+                if (readMetadata &&
+                    IsMetadataName(property.Name))
+                {
+                    continue;
+                }
+
                 if (contract.Properties.GetClosestMatchProperty(property.Name) == null)
                 {
                     unknown = true;
@@ -274,16 +357,76 @@ class UnionInfo
             _ => Shape.Object
         };
 
-    static Shape GetShape(Type caseType, JsonSerializer serializer)
+    static JsonConverter? GetReadConverter(JsonContract contract, JsonSerializer serializer)
+    {
+        var converter = contract.Converter ??
+                        JsonSerializer.GetMatchingConverter(serializer.Converters, contract.UnderlyingType) ??
+                        contract.InternalConverter;
+        if (converter is {CanRead: true})
+        {
+            return converter;
+        }
+
+        return null;
+    }
+
+    static Shape GetShape(Type caseType, JsonSerializer serializer, bool isNonFinite)
     {
         var contract = serializer.ResolveContract(caseType);
-        return contract.ContractType switch
+        var type = contract.NonNullableUnderlyingType;
+
+        var converter = GetReadConverter(contract, serializer);
+        if (converter is StringEnumConverter &&
+            type.IsEnum)
         {
-            JsonContractType.Array => Shape.Array,
-            JsonContractType.Object or JsonContractType.Dictionary or JsonContractType.Dynamic => Shape.Object,
-            JsonContractType.String => Shape.String,
-            _ => GetPrimitiveShape(contract.NonNullableUnderlyingType)
-        };
+            return Shape.String | Shape.Number;
+        }
+
+        // a converter decides its own JSON, so nothing can be assumed about the shape it reads
+        if (converter != null ||
+            type == typeof(object))
+        {
+            return Shape.Any;
+        }
+
+        switch (contract.ContractType)
+        {
+            case JsonContractType.Array:
+                return Shape.Array;
+            case JsonContractType.Object:
+            case JsonContractType.Dictionary:
+            case JsonContractType.Dynamic:
+                return Shape.Object;
+            case JsonContractType.String:
+                return Shape.String;
+            case JsonContractType.Linq:
+                return GetLinqShape(type);
+        }
+
+        // NaN and the infinities are written as strings, so those strings select a floating
+        // point case. no other string does
+        if (isNonFinite &&
+            (type == typeof(double) || type == typeof(float)))
+        {
+            return Shape.String;
+        }
+
+        return GetPrimitiveShape(type);
+    }
+
+    static Shape GetLinqShape(Type type)
+    {
+        if (type == typeof(JObject))
+        {
+            return Shape.Object;
+        }
+
+        if (type == typeof(JArray))
+        {
+            return Shape.Array;
+        }
+
+        return Shape.Any;
     }
 
     static Shape GetPrimitiveShape(Type type)

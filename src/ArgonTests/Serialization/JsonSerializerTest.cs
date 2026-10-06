@@ -361,7 +361,7 @@ public class JsonSerializerTest : TestFixtureBase
     public void CoercedEmptyStringWithRequired_DisallowNull()
     {
         var exception = Assert.Throws<JsonSerializationException>(() => JsonConvert.DeserializeObject<Binding_DisallowNull>("{requiredProperty:''}"));
-        Assert.Equal("Required property 'RequiredProperty' expects a non-null value. Path '', line 1, position 21.", exception.Message);
+        Assert.Equal("Property 'RequiredProperty' expects a non-null value. Path '', line 1, position 21.", exception.Message);
     }
 
     [Fact]

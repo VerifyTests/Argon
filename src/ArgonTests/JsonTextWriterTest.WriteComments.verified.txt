@@ -1,4 +1,5 @@
-﻿/*comment*//*hi*/*/{/*comment*/
+﻿//comment*//*hi*/
+{/*comment*/
   "Name": /*comment*/ true/*comment after true*//*comment after comma*/,
   "ExpiryDate": "2014-06-04T00:00:00Z",
   "Price": 3.99,

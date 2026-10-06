@@ -198,11 +198,26 @@ public class JArray :
                 return GetItem(i);
             }
 
+#if NET6_0_OR_GREATER
+            if (key is Index index)
+            {
+                return GetItem(index.GetOffset(Count));
+            }
+#endif
+
             throw new($"Accessed JArray values with invalid key value: {MiscellaneousUtils.ToString(key)}. Int32 array index expected.");
 
         }
         set
         {
+#if NET6_0_OR_GREATER
+            if (key is Index index)
+            {
+                SetItem(index.GetOffset(Count), value);
+                return;
+            }
+#endif
+
             if (key is not int i)
             {
                 throw new($"Set JArray values with invalid key value: {MiscellaneousUtils.ToString(key)}. Int32 array index expected.");

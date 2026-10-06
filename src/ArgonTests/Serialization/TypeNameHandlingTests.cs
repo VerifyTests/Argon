@@ -2575,4 +2575,23 @@ public class TypeNameHandlingTests : TestFixtureBase
             set => wantedUnit = value;
         }
     }
+
+    [Theory]
+    [InlineData("""{"$type":null,"Name":"test"}""")]
+    [InlineData("""{"$type":["foo"],"Name":"test"}""")]
+    [InlineData("""{"$type":{},"Name":"test"}""")]
+    [InlineData("""{"$type":42,"Name":"test"}""")]
+    public void DeserializeWithNonStringTypeProperty(string json)
+    {
+        foreach (var handling in new[] {MetadataPropertyHandling.Default, MetadataPropertyHandling.ReadAhead})
+        {
+            var settings = new JsonSerializerSettings
+            {
+                MetadataPropertyHandling = handling
+            };
+
+            var exception = Assert.Throws<JsonSerializationException>(() => JsonConvert.DeserializeObject<Dictionary<string, object>>(json, settings));
+            Assert.StartsWith("Error reading '$type' metadata property. Property must have a string value", exception.Message);
+        }
+    }
 }

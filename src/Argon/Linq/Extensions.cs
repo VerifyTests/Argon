@@ -234,6 +234,14 @@ public static class Extensions
             targetType = Nullable.GetUnderlyingType(targetType)!;
         }
 
+#if NET6_0_OR_GREATER
+        if (value.Value != null &&
+            ConvertUtils.TryConvertModernNumber(value.Value, targetType, out var converted))
+        {
+            return (U) converted!;
+        }
+#endif
+
         return (U) System.Convert.ChangeType(value.Value, targetType, InvariantCulture)!;
     }
 

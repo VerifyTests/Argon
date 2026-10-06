@@ -43,9 +43,33 @@ Property naming strategies are respected, so the comparison uses the resolved na
 matches no case, or matches two equally well, a `JsonSerializationException` is thrown naming the
 union and the candidate cases.
 
+A case whose type is read by a `JsonConverter` is treated as matching any shape, since the converter
+decides its own JSON. The same applies to an `object` or `JToken` case. An enum case read by
+`StringEnumConverter` matches both strings and numbers. If that leaves more than one case matching
+a payload, a `JsonSerializationException` is thrown.
+
+`NaN`, `Infinity` and `-Infinity` are written as strings, so those three strings select a `float`
+or `double` case. No other string is read as a number.
+
 A case can hold `null` only if it is declared nullable. Given `union IntOrString(int, string)` in a
 nullable enabled context, neither case accepts `null`, so JSON `null` reads back as the default
 union. Declaring the case as `string?` makes it the case that takes a null payload.
+
+
+### Serializer settings
+
+The global `TypeNameHandling` setting can tell apart cases that share a shape, using the existing
+`$type` and `$values` metadata. `TypeNameHandling.Auto` writes the type of the case, since the
+declared type is the union. As with any use of `TypeNameHandling`, validate incoming type names
+with a custom `ISerializationBinder` when reading external JSON.
+
+`PreserveReferencesHandling` works with union cases: the `$id` and `$ref` metadata is not counted
+when comparing property names, and a `$ref` selects the case from the type of the object it refers
+to.
+
+The payload is buffered before a case is chosen, and by default floating point numbers are read as
+`double`. That loses precision for a `decimal` case, or for `decimal` members inside a case. Set
+`FloatParseHandling.Decimal` when deserializing those unions.
 
 
 ## Closed type hierarchies

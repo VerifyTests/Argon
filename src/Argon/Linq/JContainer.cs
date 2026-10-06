@@ -207,8 +207,8 @@ public abstract class JContainer :
         // haven't inserted new token yet so next token is still at the inserting index
         var next = index == children.Count ? null : children[index];
 
-        // skipParentCheck is only set by the writer, which has already removed any property
-        // with the same name, so JObject can skip hashing the name a second time
+        // skipParentCheck is only set by the writer, which has already checked there is no
+        // property with the same name, so JObject can skip hashing the name a second time
         ValidateToken(item, null, skipParentCheck);
 
         item.Parent = this;

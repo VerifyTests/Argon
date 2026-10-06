@@ -435,4 +435,64 @@ public class JTokenWriterTest : TestFixtureBase
 
         Assert.Equal("""[1,{"integer":2147483647,"null-string":null}]""", token.ToString(Formatting.None));
     }
+
+    [Fact]
+    public void WriteDuplicatePropertyNameReplacesInOriginalPosition()
+    {
+        var o = JsonConvert.DeserializeObject<JObject>(
+            """
+            {
+              "a": 1,
+              "b": 2,
+              "c": 3,
+              "b": 4,
+              "nested": {
+                "x": 1,
+                "y": 2,
+                "z": 3,
+                "y": 4
+              },
+              "c": 5
+            }
+            """);
+
+        Assert.Equal(["a", "b", "c", "nested"], o.Properties().Select(_ => _.Name));
+        Assert.Equal(4, (int) o["b"]);
+        Assert.Equal(5, (int) o["c"]);
+        Assert.Equal(["x", "y", "z"], ((JObject) o["nested"]).Properties().Select(_ => _.Name));
+        Assert.Equal(4, (int) o["nested"]["y"]);
+    }
+
+    [Fact]
+    public void WriteDuplicatePropertyNameDoesNotSearchForPropertyIndex()
+    {
+        var o = new NoPropertyIndexSearchJObject();
+        var writer = new JTokenWriter(o);
+
+        writer.WritePropertyName("a");
+        writer.WriteValue(1);
+        writer.WritePropertyName("b");
+        writer.WriteValue(2);
+        writer.WritePropertyName("c");
+        writer.WriteValue(3);
+        writer.WritePropertyName("b");
+        writer.WriteValue(4);
+        // a container supplied to the writer can be modified between writes
+        o.AddFirst(new JProperty("external", 0));
+        writer.WritePropertyName("b");
+        writer.WriteValue(5);
+        ((IList<JToken>) o).RemoveAt(0);
+        writer.WritePropertyName("c".AsSpan());
+        writer.WriteValue(6);
+
+        Assert.Equal(["a", "b", "c"], o.Properties().Select(_ => _.Name));
+        Assert.Equal(5, (int) o["b"]);
+        Assert.Equal(6, (int) o["c"]);
+    }
+
+    class NoPropertyIndexSearchJObject : JObject
+    {
+        internal override int IndexOfItem(JToken item) =>
+            throw new InvalidOperationException("Property replacement must not search for its index.");
+    }
 }

@@ -121,43 +121,38 @@ static class CollectionUtils
         return dimensions;
     }
 
-    static void CopyFromJaggedToMultidimensionalArray(IList values, Array multidimensionalArray, int[] indices)
+    // indices is a single buffer shared by every level of the recursion. only the first
+    // dimension entries are meaningful at each level
+    static void CopyFromJaggedToMultidimensionalArray(IList values, Array multidimensionalArray, int[] indices, int dimension)
     {
-        var dimension = indices.Length;
         if (dimension == multidimensionalArray.Rank)
         {
-            multidimensionalArray.SetValue(JaggedArrayGetValue(values, indices), indices);
+            multidimensionalArray.SetValue(JaggedArrayGetValue(values, indices, dimension), indices);
             return;
         }
 
         var dimensionLength = multidimensionalArray.GetLength(dimension);
-        var list = (IList) JaggedArrayGetValue(values, indices);
+        var list = (IList) JaggedArrayGetValue(values, indices, dimension);
         var currentValuesLength = list.Count;
         if (currentValuesLength != dimensionLength)
         {
             throw new("Cannot deserialize non-cubical array as multidimensional array.");
         }
 
-        var newIndices = new int[dimension + 1];
-        for (var i = 0; i < dimension; i++)
+        for (var i = 0; i < dimensionLength; i++)
         {
-            newIndices[i] = indices[i];
-        }
-
-        for (var i = 0; i < multidimensionalArray.GetLength(dimension); i++)
-        {
-            newIndices[dimension] = i;
-            CopyFromJaggedToMultidimensionalArray(values, multidimensionalArray, newIndices);
+            indices[dimension] = i;
+            CopyFromJaggedToMultidimensionalArray(values, multidimensionalArray, indices, dimension + 1);
         }
     }
 
-    static object JaggedArrayGetValue(IList values, int[] indices)
+    static object JaggedArrayGetValue(IList values, int[] indices, int length)
     {
         var currentList = values;
-        for (var i = 0; i < indices.Length; i++)
+        for (var i = 0; i < length; i++)
         {
             var index = indices[i];
-            if (i == indices.Length - 1)
+            if (i == length - 1)
             {
                 return currentList[index]!;
             }
@@ -179,7 +174,7 @@ static class CollectionUtils
         }
 
         var multidimensionalArray = Array.CreateInstance(type, dimensions.ToArray());
-        CopyFromJaggedToMultidimensionalArray(values, multidimensionalArray, []);
+        CopyFromJaggedToMultidimensionalArray(values, multidimensionalArray, new int[rank], 0);
 
         return multidimensionalArray;
     }

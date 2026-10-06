@@ -608,4 +608,77 @@ public class DefaultValueHandlingTests : TestFixtureBase
         Currency,
         Integer
     }
+
+    class DefaultValueWithUnmatchedConstructorParameter
+    {
+        public const string DefaultText = "...";
+
+        [DefaultValue(DefaultText)]
+        [JsonProperty(PropertyName = "myText", DefaultValueHandling = DefaultValueHandling.Populate)]
+        public string Text { get; }
+
+        public DefaultValueWithUnmatchedConstructorParameter(string text = DefaultText) =>
+            Text = text;
+    }
+
+    [Fact]
+    public void DefaultValueWithUnmatchedConstructorParameterTest()
+    {
+        var myObject = JsonConvert.DeserializeObject<DefaultValueWithUnmatchedConstructorParameter>("{}");
+        Assert.Null(myObject.Text);
+    }
+
+    class DefaultValueWithRenamedConstructorParameter
+    {
+        public const string DefaultText = "...";
+
+        [DefaultValue(DefaultText)]
+        [JsonProperty("renamedText", DefaultValueHandling = DefaultValueHandling.Populate)]
+        public string Text { get; }
+
+        public DefaultValueWithRenamedConstructorParameter(
+            [DefaultValue(DefaultText)] [JsonProperty("renamedText", DefaultValueHandling = DefaultValueHandling.Populate)]
+            string text) =>
+            Text = text;
+    }
+
+    [Fact]
+    public void DefaultValueWithRenamedConstructorParameterTest()
+    {
+        var myObject = JsonConvert.DeserializeObject<DefaultValueWithRenamedConstructorParameter>("{}");
+        Assert.Equal(DefaultValueWithRenamedConstructorParameter.DefaultText, myObject.Text);
+    }
+
+    class DefaultValueWithRenamedConstructorParameterAndNamingStrategy
+    {
+        public const string DefaultText = "...";
+
+        [DefaultValue(DefaultText)]
+        [JsonProperty("RenamedText", DefaultValueHandling = DefaultValueHandling.Populate)]
+        public string Text { get; }
+
+        public DefaultValueWithRenamedConstructorParameterAndNamingStrategy([JsonProperty("RenamedText")] string text) =>
+            Text = text;
+    }
+
+    [Fact]
+    public void DefaultValueWithRenamedConstructorParameterAndNamingStrategyTest()
+    {
+        var settings = new JsonSerializerSettings
+        {
+            ContractResolver = new DefaultContractResolver
+            {
+                NamingStrategy = new SnakeCaseNamingStrategy
+                {
+                    OverrideSpecifiedNames = true
+                }
+            }
+        };
+
+        var defaultObject = JsonConvert.DeserializeObject<DefaultValueWithRenamedConstructorParameterAndNamingStrategy>("{}", settings);
+        Assert.Equal(DefaultValueWithRenamedConstructorParameterAndNamingStrategy.DefaultText, defaultObject.Text);
+
+        var populatedObject = JsonConvert.DeserializeObject<DefaultValueWithRenamedConstructorParameterAndNamingStrategy>("""{"renamed_text":"value"}""", settings);
+        Assert.Equal("value", populatedObject.Text);
+    }
 }

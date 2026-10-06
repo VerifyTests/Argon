@@ -490,7 +490,19 @@ public abstract class JToken :
             value = property.Value;
         }
 
-        return value as JValue;
+        if (value is not JValue v)
+        {
+            return null;
+        }
+
+        // the conversion operators only understand the long standing numeric types
+        var normalized = ConvertUtils.NormalizeModernNumber(v.Value);
+        if (ReferenceEquals(normalized, v.Value))
+        {
+            return v;
+        }
+
+        return new(normalized);
     }
 
     static string GetType(JToken token)

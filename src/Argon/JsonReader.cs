@@ -314,6 +314,7 @@ public abstract class JsonReader : IDisposable
                     return i;
                 }
 
+                v = ConvertUtils.NormalizeModernNumber(v)!;
                 if (v is BigInteger value)
                 {
                     i = (int) value;
@@ -525,7 +526,13 @@ public abstract class JsonReader : IDisposable
             case JsonToken.None:
                 throw JsonReaderException.Create(this, "Unexpected end when reading bytes.");
             case JsonToken.Integer:
-                buffer.Add(Convert.ToByte(Value, InvariantCulture));
+                var value = ConvertUtils.NormalizeModernNumber(Value);
+                if (value is BigInteger integer)
+                {
+                    value = (long) integer;
+                }
+
+                buffer.Add(Convert.ToByte(value, InvariantCulture));
                 return false;
             case JsonToken.EndArray:
                 return true;
@@ -558,6 +565,7 @@ public abstract class JsonReader : IDisposable
                     return d;
                 }
 
+                v = ConvertUtils.NormalizeModernNumber(v)!;
                 if (v is BigInteger value)
                 {
                     d = (double) value;
@@ -631,13 +639,14 @@ public abstract class JsonReader : IDisposable
             case JsonToken.Integer:
             case JsonToken.Float:
                 bool b;
-                if (Value is BigInteger integer)
+                var number = ConvertUtils.NormalizeModernNumber(Value);
+                if (number is BigInteger integer)
                 {
                     b = integer != 0;
                 }
                 else
                 {
-                    b = Convert.ToBoolean(Value, InvariantCulture);
+                    b = Convert.ToBoolean(number, InvariantCulture);
                 }
 
                 SetToken(b);
@@ -717,6 +726,7 @@ public abstract class JsonReader : IDisposable
                     return d;
                 }
 
+                v = ConvertUtils.NormalizeModernNumber(v)!;
                 if (v is BigInteger value)
                 {
                     d = (decimal) value;

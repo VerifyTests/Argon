@@ -564,7 +564,7 @@ public class JObject :
     /// </returns>
     protected override DynamicMetaObject GetMetaObject(Expression parameter)
     {
-#if HAVE_COMPONENT_MODEL
+#if NET7_0_OR_GREATER
         if (!DynamicIsSupported)
         {
             throw new NotSupportedException(DynamicNotSupportedMessage);

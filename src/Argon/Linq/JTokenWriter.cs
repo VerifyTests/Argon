@@ -17,6 +17,9 @@ public class JTokenWriter :
     // used when writer is writing single value and the value has no containing parent
     JValue? value;
 
+    // content is written iteratively, so writing switches between JObjects at different depths
+    Dictionary<JObject, Dictionary<string, int>>? duplicatePropertyIndexes;
+
     /// <summary>
     /// Gets the <see cref="JToken" /> at the writer's current position.
     /// </summary>
@@ -111,19 +114,25 @@ public class JTokenWriter :
     /// <summary>
     /// Writes the end.
     /// </summary>
-    protected override void WriteEnd(JsonToken token) =>
+    protected override void WriteEnd(JsonToken token)
+    {
+        // the index is only needed while its JObject is being written
+        if (token == JsonToken.EndObject &&
+            duplicatePropertyIndexes != null &&
+            parent is JObject parentObject)
+        {
+            duplicatePropertyIndexes.Remove(parentObject);
+        }
+
         RemoveParent();
+    }
 
     /// <summary>
     /// Writes the property name of a name/value pair on a JSON object.
     /// </summary>
     public override void WritePropertyName(string name)
     {
-        // avoid duplicate property name exception
-        // last property name wins
-        (parent as JObject)?.Remove(name);
-
-        AddParent(new JProperty(name));
+        AddProperty(name);
 
         // don't set state until after in case of an error
         // incorrect state will cause issues if writer is disposed when closing open properties
@@ -137,15 +146,66 @@ public class JTokenWriter :
     {
         var nameString = name.ToString();
 
-        // avoid duplicate property name exception
-        // last property name wins
-        (parent as JObject)?.Remove(nameString);
-
-        AddParent(new JProperty(nameString));
+        AddProperty(nameString);
 
         // don't set state until after in case of an error
         // incorrect state will cause issues if writer is disposed when closing open properties
         base.WritePropertyName(name);
+    }
+
+    // avoid duplicate property name exception. last property name wins, and takes the position
+    // of the property it replaces
+    void AddProperty(string name)
+    {
+        var property = new JProperty(name);
+        if (parent is not JObject parentObject)
+        {
+            AddParent(property);
+            return;
+        }
+
+        var existing = parentObject.PropertyOrNull(name);
+        if (existing == null)
+        {
+            // keep an existing index current when a unique property is appended
+            if (duplicatePropertyIndexes != null &&
+                duplicatePropertyIndexes.TryGetValue(parentObject, out var currentIndexes))
+            {
+                currentIndexes[name] = parentObject.Count;
+            }
+
+            AddParent(property);
+            return;
+        }
+
+        // most objects don't contain duplicate names, so only create an index when one is
+        // encountered. replacing by known position avoids searching the property list, which
+        // would make many duplicates quadratic
+        duplicatePropertyIndexes ??= new();
+        if (!duplicatePropertyIndexes.TryGetValue(parentObject, out var indexes))
+        {
+            indexes = new(StringComparer.Ordinal);
+            duplicatePropertyIndexes.Add(parentObject, indexes);
+        }
+
+        // a container supplied to the writer can be modified between writes, invalidating cached indexes
+        if (!indexes.TryGetValue(name, out var index) ||
+            index >= parentObject.Count ||
+            !ReferenceEquals(parentObject.GetItem(index), existing))
+        {
+            indexes.Clear();
+            var position = 0;
+            foreach (var child in parentObject.Properties())
+            {
+                indexes.Add(child.Name, position++);
+            }
+
+            index = indexes[name];
+        }
+
+        parentObject.SetItem(index, property);
+        parent = property;
+        CurrentToken = property;
     }
 
     void AddRawValue(object? value, JTokenType type) =>
@@ -186,11 +246,27 @@ public class JTokenWriter :
         {
             InternalWriteValue(JsonToken.Integer);
             AddRawValue(value, JTokenType.Integer);
+            return;
         }
-        else
+
+#if NET7_0_OR_GREATER
+        if (value is Int128 or UInt128)
         {
-            base.WriteValue(value);
+            InternalWriteValue(JsonToken.Integer);
+            AddRawValue(value, JTokenType.Integer);
+            return;
         }
+#endif
+#if NET6_0_OR_GREATER
+        if (value is Half)
+        {
+            InternalWriteValue(JsonToken.Float);
+            AddRawValue(value, JTokenType.Float);
+            return;
+        }
+#endif
+
+        base.WriteValue(value);
     }
 
     /// <summary>

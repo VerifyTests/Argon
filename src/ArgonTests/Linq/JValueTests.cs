@@ -850,4 +850,43 @@ public class JValueTests : TestFixtureBase
         Assert.Equal(1, ((IComparable) v1).CompareTo(v2));
         // ReSharper restore ExpressionIsAlwaysNull
     }
+
+    enum UnsignedEnum : ulong
+    {
+        MaxValue = ulong.MaxValue
+    }
+
+    [Fact]
+    public void CompareBigIntegerWithSmallIntegers()
+    {
+        object[] values =
+        [
+            (sbyte) 1,
+            (byte) 1,
+            (short) 1,
+            (ushort) 1,
+            DayOfWeek.Monday
+        ];
+
+        var one = new JValue(BigInteger.One);
+        var two = new JValue(new BigInteger(2));
+        foreach (var value in values)
+        {
+            var actual = new JValue(value);
+            Assert.True(one.Equals(actual));
+            Assert.True(actual.Equals(one));
+            Assert.Equal(one.GetHashCode(), actual.GetHashCode());
+            Assert.False(two.Equals(actual));
+        }
+
+        Assert.True(new JValue(new BigInteger(ulong.MaxValue)).Equals(new JValue((object) UnsignedEnum.MaxValue)));
+        Assert.False(JToken.DeepEquals(JToken.Parse("""{"A":99999999999999999999}"""), JToken.FromObject(new {A = (short) 1})));
+    }
+
+    [Fact]
+    public void NegativeZeroDouble()
+    {
+        Assert.Equal(0L, BitConverter.DoubleToInt64Bits((double) new JValue(0.0d).Value));
+        Assert.Equal(long.MinValue, BitConverter.DoubleToInt64Bits((double) new JValue(-0.0d).Value));
+    }
 }

@@ -29,6 +29,10 @@ the serializer encounters a JSON property with an array of values and the type o
     <entry><para>Object (dictionary name/values only, properties on the dictionary will not be serialized)</para></entry>
   </row>
   <row>
+    <entry><para>Memory<T>, ReadOnlyMemory<T></para></entry>
+    <entry><para>Array, or a base 64 encoded string when T is Byte. Only the selected memory slice is serialized. net6.0 and above only</para></entry>
+  </row>
+  <row>
     <entry><para>Object (more detail below)</para></entry>
     <entry><para>Object</para></entry>
   </row>
@@ -56,7 +60,8 @@ the serializer encounters a JSON property with an array of values and the type o
 <para>UInt32</para>
 <para>Int32</para>
 <para>UInt64</para>
-<para>Int64</para></entry>
+<para>Int64</para>
+<para>Int128, UInt128 (net7.0 and above only)</para></entry>
     <entry><para>Integer</para></entry>
   </row>
   <row>
@@ -64,6 +69,7 @@ the serializer encounters a JSON property with an array of values and the type o
     <para>Float</para>
     <para>Double</para>
     <para>Decimal</para>
+    <para>Half (net6.0 and above only)</para>
     </entry>
     <entry><para>Float</para></entry>
   </row>

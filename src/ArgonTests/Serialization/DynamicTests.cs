@@ -345,3 +345,80 @@ public class TestDynamicObject : DynamicObject
             false;
     }
 }
+
+#if NET7_0_OR_GREATER
+
+[CollectionDefinition(Name, DisableParallelization = true)]
+public class DynamicFeatureSwitchCollection
+{
+    public const string Name = "Dynamic feature switch";
+}
+
+// the switch is process wide, so these can not run alongside the other dynamic tests
+[Collection(DynamicFeatureSwitchCollection.Name)]
+public class DynamicFeatureSwitchTests : TestFixtureBase
+{
+    const string switchName = "Argon.Linq.JToken.DynamicIsSupported";
+
+    [Fact]
+    public void DisablesSerializerDynamicPaths()
+    {
+        var resolver = new DefaultContractResolver();
+        resolver.ResolveContract(typeof(TestDynamicObject));
+
+        AppContext.SetSwitch(switchName, false);
+        try
+        {
+            var resolveException = Assert.Throws<NotSupportedException>(() => new DefaultContractResolver().ResolveContract(typeof(TestDynamicObject)));
+            Assert.Equal(JToken.DynamicNotSupportedMessage, resolveException.Message);
+
+            // a contract resolved while the switch was on still can not be used
+            var serializer = JsonSerializer.Create(
+                new()
+                {
+                    ContractResolver = resolver
+                });
+
+            using var stringWriter = new StringWriter();
+            using var jsonWriter = new JsonTextWriter(stringWriter);
+            var serializeException = Assert.Throws<NotSupportedException>(() => serializer.Serialize(jsonWriter, new TestDynamicObject()));
+            Assert.Equal(JToken.DynamicNotSupportedMessage, serializeException.Message);
+
+            using var jsonReader = new JsonTextReader(new StringReader("{}"));
+            var deserializeException = Assert.Throws<NotSupportedException>(() => serializer.Deserialize<TestDynamicObject>(jsonReader));
+            Assert.Equal(JToken.DynamicNotSupportedMessage, deserializeException.Message);
+        }
+        finally
+        {
+            AppContext.SetSwitch(switchName, true);
+        }
+    }
+
+    [Fact]
+    public void DisablesLinqDynamic()
+    {
+        AppContext.SetSwitch(switchName, false);
+        try
+        {
+            Assert.Throws<NotSupportedException>(() =>
+            {
+                dynamic o = new JObject
+                {
+                    ["a"] = 1
+                };
+                return (int) o.a;
+            });
+            Assert.Throws<NotSupportedException>(() =>
+            {
+                dynamic v = new JValue(1);
+                return v + 1;
+            });
+        }
+        finally
+        {
+            AppContext.SetSwitch(switchName, true);
+        }
+    }
+}
+
+#endif

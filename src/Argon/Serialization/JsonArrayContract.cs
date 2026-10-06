@@ -33,6 +33,10 @@ public class JsonArrayContract : JsonContainerContract
     internal bool ShouldCreateWrapper { get; }
     internal bool CanDeserialize { get; private set; }
 
+#if NET6_0_OR_GREATER
+    internal MemoryAdapter? MemoryAdapter { get; }
+#endif
+
     readonly ConstructorInfo? parameterizedConstructor;
 
     ObjectConstructor? parameterizedCreator;
@@ -191,6 +195,17 @@ public class JsonArrayContract : JsonContainerContract
                 CanDeserialize = HasParameterizedCreatorInternal;
             }
         }
+#if NET6_0_OR_GREATER
+        else if (MemoryAdapter.IsMemoryType(NonNullableUnderlyingType))
+        {
+            CollectionItemType = NonNullableUnderlyingType.GetGenericArguments()[0];
+            var adapter = MemoryAdapter.Create(NonNullableUnderlyingType);
+            MemoryAdapter = adapter;
+            parameterizedCreator = args => adapter.FromList((IList) args[0]!);
+            IsReadOnlyOrFixedSize = true;
+            CanDeserialize = true;
+        }
+#endif
         else
         {
             // types that implement IEnumerable and nothing else
