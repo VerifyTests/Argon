@@ -271,7 +271,7 @@ static class DateTimeUtils
             {
                 case IsoZone.None:
                     // no zone means local time, the same as the framework assumes
-                    dt = new(new DateTime(ticks, DateTimeKind.Unspecified));
+                    dt = new(new(ticks, DateTimeKind.Unspecified));
                     return true;
                 default:
                     dt = new(ticks, new(offsetTicks));

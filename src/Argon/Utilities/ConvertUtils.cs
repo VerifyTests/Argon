@@ -223,12 +223,12 @@ static class ConvertUtils
 #if NET7_0_OR_GREATER
         if (value is Int128 int128)
         {
-            return (BigInteger) int128;
+            return int128;
         }
 
         if (value is UInt128 uint128)
         {
-            return (BigInteger) uint128;
+            return uint128;
         }
 #endif
 #if NET6_0_OR_GREATER

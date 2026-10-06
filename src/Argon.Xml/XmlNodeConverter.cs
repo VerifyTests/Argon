@@ -908,7 +908,11 @@ public class XmlNodeConverter :
     {
         foreach (var attribute in element.Attributes)
         {
-            if (attribute.LocalName == "Array" && attribute.NamespaceUri == jsonNamespaceUri)
+            if (attribute is
+                {
+                    LocalName: "Array",
+                    NamespaceUri: jsonNamespaceUri
+                })
             {
                 return;
             }

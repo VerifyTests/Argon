@@ -69,7 +69,7 @@ public class ModernNumericTests : TestFixtureBase
         Assert.Equal((Half) 1.5f, JsonConvert.DeserializeObject<Half>("1.5"));
         Assert.Equal((Half) 2, JsonConvert.DeserializeObject<Half>("2"));
         Assert.Equal("[1,2]", JsonConvert.SerializeObject(new List<Int128> {1, 2}));
-        Assert.Equal(new List<Int128> {1, 2}, JsonConvert.DeserializeObject<List<Int128>>("[1,2]"));
+        Assert.Equal([1, 2], JsonConvert.DeserializeObject<List<Int128>>("[1,2]"));
     }
 
     // values used to be written as strings, which have to stay readable
@@ -78,7 +78,7 @@ public class ModernNumericTests : TestFixtureBase
     {
         var result = JsonConvert.DeserializeObject<Holder>("""{"Signed":"-5","Unsigned":"340282366920938463463374607431768211455","Half":"1.5"}""");
 
-        Assert.Equal((Int128) (-5), result.Signed);
+        Assert.Equal(-5, result.Signed);
         Assert.Equal(UInt128.MaxValue, result.Unsigned);
         Assert.Equal((Half) 1.5f, result.Half);
     }
@@ -116,8 +116,8 @@ public class ModernNumericTests : TestFixtureBase
     [Fact]
     public void JsonConvertToString()
     {
-        Assert.Equal("170141183460469231731687303715884105727", JsonConvert.ToString((object) Int128.MaxValue));
-        Assert.Equal("340282366920938463463374607431768211455", JsonConvert.ToString((object) UInt128.MaxValue));
+        Assert.Equal("170141183460469231731687303715884105727", JsonConvert.ToString(Int128.MaxValue));
+        Assert.Equal("340282366920938463463374607431768211455", JsonConvert.ToString(UInt128.MaxValue));
         Assert.Equal("1.5", JsonConvert.ToString((object) (Half) 1.5f));
         Assert.Equal("2.0", JsonConvert.ToString((object) (Half) 2));
     }
@@ -125,9 +125,9 @@ public class ModernNumericTests : TestFixtureBase
     [Fact]
     public void JValues()
     {
-        var signed = new JValue((object) (Int128) 5);
-        var unsigned = new JValue((object) UInt128.MaxValue);
-        var half = new JValue((object) (Half) 1.5f);
+        var signed = new JValue((Int128) 5);
+        var unsigned = new JValue(UInt128.MaxValue);
+        var half = new JValue((Half) 1.5f);
 
         Assert.Equal(JTokenType.Integer, signed.Type);
         Assert.Equal(JTokenType.Integer, unsigned.Type);
@@ -137,18 +137,18 @@ public class ModernNumericTests : TestFixtureBase
         Assert.Equal("340282366920938463463374607431768211455", unsigned.ToString(Argon.Formatting.None));
         Assert.Equal("1.5", half.ToString(Argon.Formatting.None));
 
-        Assert.True(signed.Equals(new JValue(5)));
+        Assert.True(signed.Equals(new(5)));
         Assert.Equal(new JValue(5).GetHashCode(), signed.GetHashCode());
-        Assert.True(unsigned.Equals(new JValue((BigInteger) UInt128.MaxValue)));
+        Assert.True(unsigned.Equals(new((BigInteger) UInt128.MaxValue)));
         Assert.Equal(new JValue((BigInteger) UInt128.MaxValue).GetHashCode(), unsigned.GetHashCode());
-        Assert.True(half.Equals(new JValue(1.5d)));
+        Assert.True(half.Equals(new(1.5d)));
         Assert.Equal(new JValue(1.5d).GetHashCode(), half.GetHashCode());
-        Assert.True(signed.CompareTo(new JValue(6)) < 0);
+        Assert.True(signed.CompareTo(new(6)) < 0);
 
         Assert.Equal(5, (int) signed);
         Assert.Equal(1.5d, (double) half);
-        Assert.Equal((Int128) 5, signed.Value<Int128>());
-        Assert.Equal((Int128) 6, new JValue(6).Value<Int128>());
+        Assert.Equal(5, signed.Value<Int128>());
+        Assert.Equal(6, new JValue(6).Value<Int128>());
         Assert.Equal((Half) 1.5f, new JValue(1.5d).Value<Half>());
         Assert.Equal(5L, signed.ToObject<long>());
         Assert.Equal(UInt128.MaxValue, unsigned.ToObject<UInt128>());

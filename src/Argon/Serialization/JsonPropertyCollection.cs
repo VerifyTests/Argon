@@ -172,11 +172,10 @@ public class JsonPropertyCollection : KeyedCollection<string, JsonProperty>
     /// </remarks>
     internal JsonProperty? GetClosestMatchProperty(string name, ref int expectedIndex)
     {
-        var properties = list;
-        var end = Math.Min(expectedIndex + 4, properties.Count);
+        var end = Math.Min(expectedIndex + 4, list.Count);
         for (var index = expectedIndex; index < end; index++)
         {
-            var property = properties[index];
+            var property = list[index];
             if (ReferenceEquals(property.PropertyName, name))
             {
                 expectedIndex = index + 1;

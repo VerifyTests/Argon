@@ -1226,7 +1226,7 @@ public abstract class JsonWriter : IDisposable
 #if NET7_0_OR_GREATER
             if (value is Int128 or UInt128)
             {
-                WriteValue((object) ConvertUtils.ToBigInteger(value));
+                WriteValue(ConvertUtils.ToBigInteger(value));
                 return;
             }
 #endif
