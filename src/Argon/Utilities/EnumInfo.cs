@@ -11,4 +11,14 @@ class EnumInfo(bool isFlags, PrimitiveTypeCode typeCode, ulong[] values, string[
     public readonly ulong[] Values = values;
     public readonly string[] Names = names;
     public readonly string[] ResolvedNames = resolvedNames;
+
+    object?[]? boxedValues;
+
+    // Boxing an enum value goes through reflection, and a payload repeats the same few values.
+    // The boxes are immutable, so a race to create one only costs a duplicate.
+    public object GetBoxedValue(Type enumType, int index)
+    {
+        var boxes = boxedValues ??= new object?[Values.Length];
+        return boxes[index] ??= Enum.ToObject(enumType, Values[index]);
+    }
 }

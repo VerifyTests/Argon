@@ -184,7 +184,7 @@ static class EnumUtils
         var matchingIndex = FindIndexByName(resolvedNames, value, 0, value.Length, StringComparison.Ordinal);
         if (matchingIndex != null)
         {
-            return Enum.ToObject(enumType, enumValues[matchingIndex.Value]);
+            return entry.GetBoxedValue(enumType, matchingIndex.Value);
         }
 
         var firstNonWhitespaceIndex = -1;

@@ -702,6 +702,11 @@ public class JsonSerializer
 
     internal static JsonConverter? GetMatchingConverter(IList<JsonConverter>? converters, Type type)
     {
+        if (converters is ConverterListCache cache)
+        {
+            return cache.GetMatching(type);
+        }
+
         if (converters != null)
         {
             // indexed loop: foreach over IList<T> boxes the List<T> enumerator, and this

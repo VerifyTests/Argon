@@ -5,15 +5,15 @@
 class JPropertyKeyedCollection() :
     Collection<JToken>([])
 {
+    // An object with a handful of properties is searched faster by comparing names than by
+    // hashing one, and most objects are that small. The dictionary also costs more memory than
+    // the properties it indexes, so it is only built once an object grows past this size.
+    const int dictionaryThreshold = 8;
+
     static readonly IEqualityComparer<string> comparer = StringComparer.Ordinal;
 
+    // null while the object is small enough to search by walking the list
     Dictionary<string, JToken>? dictionary;
-
-    void AddKey(string key, JToken item)
-    {
-        EnsureDictionary();
-        dictionary![key] = item;
-    }
 
     protected override void ClearItems()
     {
@@ -26,21 +26,56 @@ class JPropertyKeyedCollection() :
     {
         if (dictionary == null)
         {
-            return false;
+            return IndexOfKey(key) != -1;
         }
 
         return dictionary.ContainsKey(key);
     }
 
-    void EnsureDictionary() =>
-        dictionary ??= new(Count, comparer);
+    int IndexOfKey(string key)
+    {
+        var items = InnerList;
+        for (var index = 0; index < items.Count; index++)
+        {
+            if (string.Equals(GetKeyForItem(items[index]), key))
+            {
+                return index;
+            }
+        }
+
+        return -1;
+    }
+
+    void EnsureDictionary()
+    {
+        if (dictionary != null)
+        {
+            return;
+        }
+
+        var items = InnerList;
+        var created = new Dictionary<string, JToken>(Math.Max(items.Count * 2, dictionaryThreshold * 2), comparer);
+        foreach (var item in items)
+        {
+            created[GetKeyForItem(item)] = item;
+        }
+
+        dictionary = created;
+    }
 
     static string GetKeyForItem(JToken item) =>
         ((JProperty) item).Name;
 
     protected override void InsertItem(int index, JToken item)
     {
-        AddKey(GetKeyForItem(item), item);
+        if (dictionary == null &&
+            Count >= dictionaryThreshold)
+        {
+            EnsureDictionary();
+        }
+
+        dictionary?[GetKeyForItem(item)] = item;
+
         base.InsertItem(index, item);
     }
 
@@ -48,7 +83,14 @@ class JPropertyKeyedCollection() :
     {
         if (dictionary == null)
         {
-            return false;
+            var index = IndexOfKey(key);
+            if (index == -1)
+            {
+                return false;
+            }
+
+            RemoveAt(index);
+            return true;
         }
 
         return dictionary.TryGetValue(key, out var value) && Remove(value);
@@ -69,18 +111,15 @@ class JPropertyKeyedCollection() :
         var keyForItem = GetKeyForItem(item);
         var keyAtIndex = GetKeyForItem(Items[index]);
 
-        if (comparer.Equals(keyAtIndex, keyForItem))
+        if (dictionary != null)
         {
-            dictionary?[keyForItem] = item;
-        }
-        else
-        {
-            AddKey(keyForItem, item);
+            dictionary[keyForItem] = item;
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-            if (keyAtIndex != null)
+            if (keyAtIndex != null &&
+                !comparer.Equals(keyAtIndex, keyForItem))
             {
-                RemoveKey(keyAtIndex);
+                dictionary.Remove(keyAtIndex);
             }
         }
 
@@ -91,9 +130,9 @@ class JPropertyKeyedCollection() :
     {
         get
         {
-            if (dictionary != null)
+            if (TryGetValue(key, out var value))
             {
-                return dictionary[key];
+                return value;
             }
 
             throw new KeyNotFoundException();
@@ -104,8 +143,15 @@ class JPropertyKeyedCollection() :
     {
         if (dictionary == null)
         {
-            value = null;
-            return false;
+            var index = IndexOfKey(key);
+            if (index == -1)
+            {
+                value = null;
+                return false;
+            }
+
+            value = InnerList[index];
+            return true;
         }
 
         return dictionary.TryGetValue(key, out value);
@@ -145,37 +191,19 @@ class JPropertyKeyedCollection() :
 
         // dictionaries in JavaScript aren't ordered
         // ignore order when comparing properties
-        var d1 = dictionary;
-        var d2 = other.dictionary;
-
-        if (d1 == null && d2 == null)
-        {
-            return true;
-        }
-
-        if (d1 == null)
-        {
-            return d2!.Count == 0;
-        }
-
-        if (d2 == null)
-        {
-            return d1.Count == 0;
-        }
-
-        if (d1.Count != d2.Count)
+        if (Count != other.Count)
         {
             return false;
         }
 
-        foreach (var keyAndProperty in d1)
+        foreach (var item in InnerList)
         {
-            if (!d2.TryGetValue(keyAndProperty.Key, out var secondValue))
+            var p1 = (JProperty) item;
+            if (!other.TryGetValue(p1.Name, out var secondValue))
             {
                 return false;
             }
 
-            var p1 = (JProperty) keyAndProperty.Value;
             var p2 = (JProperty) secondValue;
 
             // ReSharper disable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract

@@ -44,7 +44,17 @@ public class Program
             typeof(ReadValueBenchmark),
             typeof(JTokenPropertyWriteBenchmark),
             typeof(JsonPathFilterBenchmark),
-            typeof(NumberScanBenchmark)
+            typeof(NumberScanBenchmark),
+            typeof(IsoDateReadBenchmark),
+            typeof(SerializeToStringBenchmark),
+            typeof(ItemContractBenchmark),
+            typeof(RecordReadBenchmark),
+            typeof(NullableMemberReadBenchmark),
+            typeof(JTokenConverterWriteBenchmark),
+            typeof(SmallJObjectBenchmark),
+            typeof(IndentedReadBenchmark),
+            typeof(OrderedPropertyReadBenchmark),
+            typeof(EnumNameReadBenchmark)
         ]);
         if (args.Length == 0)
         {

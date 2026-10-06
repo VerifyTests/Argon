@@ -363,6 +363,8 @@ public class JObject :
     [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public override void WriteTo(JsonWriter writer, params IList<JsonConverter> converters)
     {
+        converters = ConverterListCache.Wrap(converters);
+
         writer.WriteStartObject();
 
         foreach (var property in properties.InnerList)

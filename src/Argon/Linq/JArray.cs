@@ -176,6 +176,8 @@ public class JArray :
     [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public override void WriteTo(JsonWriter writer, params IList<JsonConverter> converters)
     {
+        converters = ConverterListCache.Wrap(converters);
+
         writer.WriteStartArray();
 
         foreach (var value in values)

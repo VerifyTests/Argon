@@ -451,7 +451,7 @@ public abstract class JToken :
     /// <returns>The JSON for this token using the given formatting and converters.</returns>
     public string ToString(Formatting formatting)
     {
-        using var sw = new StringWriter(InvariantCulture);
+        using var sw = new PooledStringWriter();
 
         var jw = new JsonTextWriter(sw)
         {
@@ -472,7 +472,7 @@ public abstract class JToken :
     [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
     public string ToString(Formatting formatting, params JsonConverter[] converters)
     {
-        using var stringWriter = new StringWriter(InvariantCulture);
+        using var stringWriter = new PooledStringWriter();
         var jsonWriter = new JsonTextWriter(stringWriter)
         {
             Formatting = formatting
