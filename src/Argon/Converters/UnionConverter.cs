@@ -37,7 +37,8 @@ public class UnionConverter :
             return;
         }
 
-        serializer.Serialize(writer, caseValue);
+        // the union is the declared type, so TypeNameHandling.Auto writes the type of the case
+        serializer.Serialize(writer, caseValue, value.GetType());
     }
 
     /// <summary>
@@ -54,10 +55,87 @@ public class UnionConverter :
         }
 
         var token = JToken.ReadFrom(reader);
-        var unionCase = info.ResolveCase(token, serializer);
-        var caseValue = token.ToObject(unionCase.CaseType, serializer);
 
-        return unionCase.Constructor(caseValue);
+        if (token is JObject payload)
+        {
+            if (TryReadTypedCase(payload, unionType, info, serializer, out var typed))
+            {
+                return typed;
+            }
+
+            if (UnionInfo.GetMetadataProperty(payload, JsonTypeReflector.RefPropertyName, serializer) is JValue {Type: JTokenType.String})
+            {
+                return ReadReference(payload, unionType, info, serializer);
+            }
+        }
+
+        var unionCase = info.ResolveCase(token, serializer);
+        return Construct(unionType, info, unionCase, token.ToObject(unionCase.CaseType, serializer));
+    }
+
+    // with TypeNameHandling enabled a $type picks the case, which is what tells apart cases that
+    // share a JSON shape
+    static bool TryReadTypedCase(JObject payload, Type unionType, UnionInfo info, JsonSerializer serializer, [NotNullWhen(true)] out object? result)
+    {
+        result = null;
+
+        if (serializer.TypeNameHandling.GetValueOrDefault() == TypeNameHandling.None ||
+            UnionInfo.GetMetadataProperty(payload, JsonTypeReflector.TypePropertyName, serializer) is not JValue {Type: JTokenType.String, Value: string typeName})
+        {
+            return false;
+        }
+
+        var key = ReflectionUtils.SplitFullyQualifiedTypeName(typeName);
+        var binder = serializer.SerializationBinder ?? DefaultSerializationBinder.Instance;
+
+        Type? type;
+        try
+        {
+            type = binder.BindToType(key.Assembly, key.Type);
+        }
+        catch
+        {
+            // the name may be a closed type discriminator rather than a type name. reading the
+            // selected case reports a name that can not be resolved at all
+            return false;
+        }
+
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (type == null ||
+            info.FindCase(type) is not { } unionCase)
+        {
+            return false;
+        }
+
+        result = Construct(unionType, info, unionCase, payload.ToObject(type, serializer));
+        return true;
+    }
+
+    static object ReadReference(JObject payload, Type unionType, UnionInfo info, JsonSerializer serializer)
+    {
+        var referenced = payload.ToObject(typeof(object), serializer);
+        if (referenced == null ||
+            info.FindCase(referenced.GetType()) is not { } unionCase)
+        {
+            throw new JsonSerializationException($"Referenced value does not match any case of union type '{unionType}'.");
+        }
+
+        return unionCase.Constructor(referenced);
+    }
+
+    static object Construct(Type unionType, UnionInfo info, UnionInfo.Case unionCase, object? value)
+    {
+        if (value != null)
+        {
+            return unionCase.Constructor(value);
+        }
+
+        if (info.NullCase == null)
+        {
+            throw new JsonSerializationException($"Union type '{unionType}' does not accept a null case value.");
+        }
+
+        return info.NullCase.Constructor([null]);
     }
 
     static object? ReadNull(Type type, Type unionType, UnionInfo info)

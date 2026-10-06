@@ -622,4 +622,34 @@ public class JArrayTests : TestFixtureBase
         Assert.True(((IJsonLineInfo) a[1]).HasLineInfo());
         Assert.True(((IJsonLineInfo) a[2]).HasLineInfo());
     }
+
+#if NET6_0_OR_GREATER
+
+    [Fact]
+    public void IndexFromEnd()
+    {
+        var array = new JArray(1, 2, 3);
+
+        Assert.Equal(3, (int) array[^1]);
+
+        array[^1] = 4;
+
+        Assert.Equal(4, (int) array[2]);
+    }
+
+    [Fact]
+    public void ListPattern()
+    {
+        var array = new JArray(1, 2, 3);
+
+        if (array is [_, .., var last])
+        {
+            Assert.Equal(3, (int) last);
+            return;
+        }
+
+        Assert.Fail("Expected the list pattern to match.");
+    }
+
+#endif
 }

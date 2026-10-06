@@ -190,6 +190,9 @@ public class JValue :
 
     internal static int Compare(JTokenType valueType, object? objA, object? objB)
     {
+        objA = ConvertUtils.NormalizeModernNumber(objA);
+        objB = ConvertUtils.NormalizeModernNumber(objB);
+
         if (objA == objB)
         {
             return 0;
@@ -346,6 +349,9 @@ public class JValue :
 
     static bool Operation(ExpressionType operation, object? objA, object? objB, out object? result)
     {
+        objA = ConvertUtils.NormalizeModernNumber(objA);
+        objB = ConvertUtils.NormalizeModernNumber(objB);
+
         if (objA is string || objB is string)
         {
             if (operation is ExpressionType.Add or ExpressionType.AddAssign)
@@ -592,6 +598,19 @@ public class JValue :
             return JTokenType.TimeSpan;
         }
 
+#if NET7_0_OR_GREATER
+        if (value is Int128 or UInt128)
+        {
+            return JTokenType.Integer;
+        }
+#endif
+#if NET6_0_OR_GREATER
+        if (value is Half)
+        {
+            return JTokenType.Float;
+        }
+#endif
+
         throw new ArgumentException($"Could not determine JSON object type for type {value.GetType()}.");
     }
 
@@ -700,6 +719,12 @@ public class JValue :
                 {
                     writer.WriteValue(integer);
                 }
+#if NET7_0_OR_GREATER
+                else if (value is Int128 or UInt128)
+                {
+                    writer.WriteValue(value);
+                }
+#endif
                 else
                 {
                     writer.WriteValue(Convert.ToInt64(value, InvariantCulture));
@@ -719,6 +744,12 @@ public class JValue :
                 {
                     writer.WriteValue(f);
                 }
+#if NET6_0_OR_GREATER
+                else if (value is Half)
+                {
+                    writer.WriteValue(value);
+                }
+#endif
                 else
                 {
                     writer.WriteValue(Convert.ToDouble(value, InvariantCulture));
@@ -773,9 +804,10 @@ public class JValue :
 
         if (valueType is JTokenType.Integer or JTokenType.Float)
         {
-            var d = value is BigInteger bigInteger
+            var number = ConvertUtils.NormalizeModernNumber(value);
+            var d = number is BigInteger bigInteger
                 ? (double) bigInteger
-                : Convert.ToDouble(value, InvariantCulture);
+                : Convert.ToDouble(number, InvariantCulture);
             return d.GetHashCode();
         }
 
@@ -906,7 +938,7 @@ public class JValue :
     /// </returns>
     protected override DynamicMetaObject GetMetaObject(Expression parameter)
     {
-#if HAVE_COMPONENT_MODEL
+#if NET7_0_OR_GREATER
         if (!DynamicIsSupported)
         {
             throw new NotSupportedException(DynamicNotSupportedMessage);

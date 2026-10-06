@@ -3548,4 +3548,28 @@ public class XmlNodeConverterTest : TestFixtureBase
                 document.ToString());
         }
     }
+
+    [Fact]
+    public void RoundTripSingleItemArraysWithSpecialCharacters()
+    {
+        var json = """{"test:a":[["1"],"2"],"test b":["3"],"test#c":["4"],"test$d":["5"],"test%e":["6"],"test:f":["5"]}""";
+
+        var xmlDocument = JsonXmlConvert.DeserializeXmlNode(json, "root", true, true);
+        Assert.Equal(json, JsonXmlConvert.SerializeXmlNode(xmlDocument, Formatting.None, true));
+
+        var xDocument = JsonXmlConvert.DeserializeXNode(json, "root", true, true);
+        Assert.Equal(json, JsonXmlConvert.SerializeXNode(xDocument, Formatting.None, true));
+    }
+
+    [Theory]
+    [InlineData("""{"test":[["1"]]}""")]
+    [InlineData("""{"test":[[[[["1"]]]]]}""")]
+    public void RoundTripNestedArraysWithOneItem(string json)
+    {
+        var xmlDocument = JsonXmlConvert.DeserializeXmlNode(json, "root", true);
+        Assert.Equal(json, JsonXmlConvert.SerializeXmlNode(xmlDocument, Formatting.None, true));
+
+        var xDocument = JsonXmlConvert.DeserializeXNode(json, "root", true);
+        Assert.Equal(json, JsonXmlConvert.SerializeXNode(xDocument, Formatting.None, true));
+    }
 }

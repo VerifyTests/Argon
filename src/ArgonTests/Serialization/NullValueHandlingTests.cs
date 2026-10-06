@@ -160,4 +160,65 @@ public class NullValueHandlingTests : TestFixtureBase
 
         XUnitAssert.AreEqualNormalized(MovieNullValueHandlingIncludeExpectedResult, included);
     }
+
+    [JsonConverter(typeof(OptionalConverter))]
+    public readonly struct Optional
+    {
+        public Optional(int value)
+        {
+            HasValue = true;
+            Value = value;
+        }
+
+        public bool HasValue { get; }
+        public int Value { get; }
+    }
+
+    public class OptionalConverter : JsonConverter
+    {
+        public override bool CanConvert(Type type) =>
+            type == typeof(Optional);
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) =>
+            throw new NotSupportedException();
+
+        public override object ReadJson(JsonReader reader, Type type, object existingValue, JsonSerializer serializer)
+        {
+            if (reader.TokenType == JsonToken.Null)
+            {
+                return null;
+            }
+
+            return new Optional(Convert.ToInt32(reader.Value));
+        }
+    }
+
+    public class OptionalHolder
+    {
+        public Optional Property { get; set; } = new(1);
+        public Optional Field = new(1);
+        public Optional Other { get; set; }
+    }
+
+    [Fact]
+    public void NullForValueTypeMemberSetsDefault()
+    {
+        var holder = JsonConvert.DeserializeObject<OptionalHolder>("""{"Property":null,"Field":null,"Other":5}""");
+
+        Assert.False(holder.Property.HasValue);
+        Assert.False(holder.Field.HasValue);
+        Assert.Equal(5, holder.Other.Value);
+    }
+
+    [Fact]
+    public void ValueProviderSetsNullValueTypeToDefault()
+    {
+        var holder = new OptionalHolder();
+
+        new DynamicValueProvider(typeof(OptionalHolder).GetProperty(nameof(OptionalHolder.Property))).SetValue(holder, null);
+        new DynamicValueProvider(typeof(OptionalHolder).GetField(nameof(OptionalHolder.Field))).SetValue(holder, null);
+
+        Assert.False(holder.Property.HasValue);
+        Assert.False(holder.Field.HasValue);
+    }
 }

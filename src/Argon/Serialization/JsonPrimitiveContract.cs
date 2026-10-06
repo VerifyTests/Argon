@@ -11,6 +11,10 @@ public class JsonPrimitiveContract : JsonContract
 {
     internal PrimitiveTypeCode TypeCode { get; set; }
 
+#if NET6_0_OR_GREATER
+    internal bool IsByteMemory { get; }
+#endif
+
     /// <summary>
     /// Initializes a new instance of the <see cref="JsonPrimitiveContract" /> class.
     /// </summary>
@@ -27,6 +31,16 @@ public class JsonPrimitiveContract : JsonContract
         {
             InternalReadType = readType;
         }
+
+#if NET6_0_OR_GREATER
+        // written and read as base64, the same as byte[]
+        if (MemoryAdapter.IsByteMemoryType(NonNullableUnderlyingType))
+        {
+            IsByteMemory = true;
+            TypeCode = PrimitiveTypeCode.Bytes;
+            InternalReadType = ReadType.ReadAsBytes;
+        }
+#endif
     }
 
     static readonly FrozenDictionary<Type, ReadType> readTypeMap =
@@ -42,6 +56,9 @@ public class JsonPrimitiveContract : JsonContract
             new(typeof(DateTime), ReadType.ReadAsDateTime),
             new(typeof(DateTimeOffset), ReadType.ReadAsDateTimeOffset),
             new(typeof(float), ReadType.ReadAsDouble),
+#if NET6_0_OR_GREATER
+            new(typeof(Half), ReadType.ReadAsDouble),
+#endif
             new(typeof(double), ReadType.ReadAsDouble),
             new(typeof(long), ReadType.ReadAsInt64),
         }.ToFrozenDictionary();

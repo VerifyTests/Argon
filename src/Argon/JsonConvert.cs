@@ -187,6 +187,11 @@ public static class JsonConvert
         return EnsureFloatFormat(value, EnsureDecimalPlace(value, text), handling, quoteChar, nullable);
     }
 
+#if NET6_0_OR_GREATER
+    internal static string ToString(Half value) =>
+        EnsureDecimalPlace((double) value, value.ToString("R", InvariantCulture));
+#endif
+
     static string EnsureDecimalPlace(double value, string text)
     {
         if (double.IsNaN(value) ||
@@ -376,6 +381,13 @@ public static class JsonConvert
                 return ToString((TimeSpan) value);
             case PrimitiveTypeCode.BigInteger:
                 return ToStringInternal((BigInteger) value);
+#if NET6_0_OR_GREATER
+            case PrimitiveTypeCode.Half:
+                return ToString((Half) value);
+#endif
+            case PrimitiveTypeCode.Int128:
+            case PrimitiveTypeCode.UInt128:
+                return ((IFormattable) value).ToString(null, InvariantCulture);
         }
 
         throw new ArgumentException($"Unsupported type: {value.GetType()}. Use the JsonSerializer class to get the object's JSON representation.");

@@ -387,6 +387,12 @@ public abstract class JsonWriter : IDisposable
                 {
                     WriteValue(integer);
                 }
+#if NET7_0_OR_GREATER
+                else if (value is Int128 or UInt128)
+                {
+                    WriteValue(value);
+                }
+#endif
                 else
                 {
                     WriteValue(Convert.ToInt64(value, InvariantCulture));
@@ -406,6 +412,12 @@ public abstract class JsonWriter : IDisposable
                 {
                     WriteValue(floatValue);
                 }
+#if NET6_0_OR_GREATER
+                else if (value is Half)
+                {
+                    WriteValue(value);
+                }
+#endif
                 else
                 {
                     WriteValue(Convert.ToDouble(value, InvariantCulture));
@@ -1211,6 +1223,21 @@ public abstract class JsonWriter : IDisposable
                 throw CreateUnsupportedTypeException(this, value);
             }
 
+#if NET7_0_OR_GREATER
+            if (value is Int128 or UInt128)
+            {
+                WriteValue((object) ConvertUtils.ToBigInteger(value));
+                return;
+            }
+#endif
+#if NET6_0_OR_GREATER
+            if (value is Half half)
+            {
+                WriteValue((float) half);
+                return;
+            }
+#endif
+
             WriteValue(this, ConvertUtils.GetTypeCode(value.GetType()), value);
         }
     }
@@ -1266,6 +1293,16 @@ public abstract class JsonWriter : IDisposable
         {
             switch (typeCode)
             {
+                case PrimitiveTypeCode.Half:
+                case PrimitiveTypeCode.HalfNullable:
+                case PrimitiveTypeCode.Int128:
+                case PrimitiveTypeCode.Int128Nullable:
+                case PrimitiveTypeCode.UInt128:
+                case PrimitiveTypeCode.UInt128Nullable:
+                    // this will call to WriteValue(object)
+                    writer.WriteValue(value);
+                    return;
+
                 case PrimitiveTypeCode.Char:
                     writer.WriteValue((char) value);
                     return;

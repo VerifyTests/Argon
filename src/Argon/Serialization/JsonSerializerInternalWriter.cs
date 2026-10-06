@@ -110,6 +110,21 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
             return;
         }
 
+#if NET6_0_OR_GREATER
+        // a memory is a struct, so its type is always known and never needs writing
+        if (contract.IsByteMemory)
+        {
+            if (value is Memory<byte> memory)
+            {
+                writer.WriteValue(memory.ToArray());
+                return;
+            }
+
+            writer.WriteValue(((ReadOnlyMemory<byte>) value).ToArray());
+            return;
+        }
+#endif
+
         var bytes = (byte[]) value;
         // if type name handling is enabled then wrap the base64 byte string in an object with the type name
         var includeTypeDetails = ShouldWriteType(TypeNameHandling.Objects, contract, member, containerContract, containerProperty);
@@ -165,7 +180,7 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
                 }
                 else
                 {
-                    SerializeList(writer, (IEnumerable) value, arrayContract, member, containerContract, containerProperty);
+                    SerializeList(writer, value, arrayContract, member, containerContract, containerProperty);
                 }
 
                 break;
@@ -180,6 +195,12 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
                 SerializeDictionary(writer, value as IDictionary ?? dictionaryContract.CreateWrapper(value), dictionaryContract, member, containerContract, containerProperty);
                 break;
             case JsonContractType.Dynamic:
+#if NET7_0_OR_GREATER
+                if (!JToken.DynamicIsSupported)
+                {
+                    throw new NotSupportedException(JToken.DynamicNotSupportedMessage);
+                }
+#endif
                 SerializeDynamic(writer, (IDynamicMetaObjectProvider) value, (JsonDynamicContract) valueContract, member, containerContract, containerProperty);
                 break;
             case JsonContractType.Linq:
@@ -636,9 +657,15 @@ class JsonSerializerInternalWriter(JsonSerializer serializer) :
 
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
     [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
-    void SerializeList(JsonWriter writer, IEnumerable values, JsonArrayContract contract, JsonProperty? member, JsonContainerContract? collectionContract, JsonProperty? containerProperty)
+    void SerializeList(JsonWriter writer, object list, JsonArrayContract contract, JsonProperty? member, JsonContainerContract? collectionContract, JsonProperty? containerProperty)
     {
-        var underlyingList = values is IWrappedCollection wrappedCollection ? wrappedCollection.UnderlyingCollection : values;
+        var underlyingList = list is IWrappedCollection wrappedCollection ? wrappedCollection.UnderlyingCollection : list;
+
+#if NET6_0_OR_GREATER
+        var values = contract.MemoryAdapter?.GetEnumerable(list) ?? (IEnumerable) list;
+#else
+        var values = (IEnumerable) list;
+#endif
 
         OnSerializing(writer, underlyingList);
 

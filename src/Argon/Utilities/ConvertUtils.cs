@@ -35,6 +35,16 @@ static class ConvertUtils
             new(typeof(float?), PrimitiveTypeCode.SingleNullable),
             new(typeof(double), PrimitiveTypeCode.Double),
             new(typeof(double?), PrimitiveTypeCode.DoubleNullable),
+#if NET6_0_OR_GREATER
+            new(typeof(Half), PrimitiveTypeCode.Half),
+            new(typeof(Half?), PrimitiveTypeCode.HalfNullable),
+#endif
+#if NET7_0_OR_GREATER
+            new(typeof(Int128), PrimitiveTypeCode.Int128),
+            new(typeof(Int128?), PrimitiveTypeCode.Int128Nullable),
+            new(typeof(UInt128), PrimitiveTypeCode.UInt128),
+            new(typeof(UInt128?), PrimitiveTypeCode.UInt128Nullable),
+#endif
             new(typeof(DateTime), PrimitiveTypeCode.DateTime),
             new(typeof(DateTime?), PrimitiveTypeCode.DateTimeNullable),
             new(typeof(DateTimeOffset), PrimitiveTypeCode.DateTimeOffset),
@@ -195,6 +205,39 @@ static class ConvertUtils
             return new(bytes);
         }
 
+        if (value is short or ushort or byte or sbyte or bool or char)
+        {
+            return new(System.Convert.ToInt64(value, InvariantCulture));
+        }
+
+        if (value is Enum enumeration)
+        {
+            if (enumeration.GetTypeCode() == TypeCode.UInt64)
+            {
+                return new(System.Convert.ToUInt64(value, InvariantCulture));
+            }
+
+            return new(System.Convert.ToInt64(value, InvariantCulture));
+        }
+
+#if NET7_0_OR_GREATER
+        if (value is Int128 int128)
+        {
+            return (BigInteger) int128;
+        }
+
+        if (value is UInt128 uint128)
+        {
+            return (BigInteger) uint128;
+        }
+#endif
+#if NET6_0_OR_GREATER
+        if (value is Half half)
+        {
+            return new((float) half);
+        }
+#endif
+
         throw new InvalidCastException($"Cannot convert {value.GetType()} to BigInteger.");
     }
 
@@ -225,6 +268,24 @@ static class ConvertUtils
             return i != 0;
         }
 
+#if NET7_0_OR_GREATER
+        if (targetType == typeof(Int128))
+        {
+            return (Int128) i;
+        }
+
+        if (targetType == typeof(UInt128))
+        {
+            return (UInt128) i;
+        }
+#endif
+#if NET6_0_OR_GREATER
+        if (targetType == typeof(Half))
+        {
+            return (Half) (double) i;
+        }
+#endif
+
         try
         {
             return System.Convert.ChangeType((long) i, targetType, InvariantCulture);
@@ -234,6 +295,107 @@ static class ConvertUtils
             throw new InvalidOperationException($"Can not convert from BigInteger to {targetType}.", exception);
         }
     }
+
+    // Half, Int128 and UInt128 are not IConvertible, so the code that compares and converts
+    // numbers sees them as the nearest type it already understands
+    internal static object? NormalizeModernNumber(object? value)
+    {
+#if NET7_0_OR_GREATER
+        if (value is Int128 or UInt128)
+        {
+            return ToBigInteger(value);
+        }
+#endif
+#if NET6_0_OR_GREATER
+        if (value is Half half)
+        {
+            return (float) half;
+        }
+#endif
+        return value;
+    }
+
+#if NET6_0_OR_GREATER
+    internal static bool TryConvertModernNumber(object initialValue, Type targetType, out object? value)
+    {
+        targetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+        if (targetType == typeof(Half))
+        {
+            value = ToHalf(initialValue);
+            return true;
+        }
+
+#if NET7_0_OR_GREATER
+        if (targetType == typeof(Int128) ||
+            targetType == typeof(UInt128))
+        {
+            value = FromBigInteger(ToBigInteger(initialValue), targetType);
+            return true;
+        }
+
+        if (initialValue is Int128 or UInt128)
+        {
+            if (targetType.IsInstanceOfType(initialValue))
+            {
+                value = initialValue;
+                return true;
+            }
+
+            var integer = ToBigInteger(initialValue);
+            if (targetType == typeof(BigInteger))
+            {
+                value = integer;
+            }
+            else if (targetType == typeof(string))
+            {
+                value = integer.ToString(InvariantCulture);
+            }
+            else
+            {
+                value = FromBigInteger(integer, targetType);
+            }
+
+            return true;
+        }
+#endif
+
+        if (initialValue is Half source)
+        {
+            if (targetType.IsInstanceOfType(initialValue))
+            {
+                value = initialValue;
+            }
+            else if (targetType == typeof(BigInteger))
+            {
+                value = new BigInteger((float) source);
+            }
+            else if (targetType == typeof(string))
+            {
+                value = source.ToString(null, InvariantCulture);
+            }
+            else
+            {
+                value = System.Convert.ChangeType((float) source, targetType, InvariantCulture);
+            }
+
+            return true;
+        }
+
+        value = null;
+        return false;
+    }
+
+    static Half ToHalf(object value) =>
+        value switch
+        {
+            Half half => half,
+            BigInteger integer => (Half) (double) integer,
+            float single => (Half) single,
+            double number => (Half) number,
+            Enum => (Half) System.Convert.ToDouble(value, InvariantCulture),
+            _ => Half.Parse(System.Convert.ToString(value, InvariantCulture)!, NumberStyles.Float | NumberStyles.AllowThousands, InvariantCulture)
+        };
+#endif
 
     enum ConvertResult
     {
@@ -297,6 +459,13 @@ static class ConvertUtils
             value = initialValue;
             return ConvertResult.Success;
         }
+
+#if NET6_0_OR_GREATER
+        if (TryConvertModernNumber(initialValue, targetType, out value))
+        {
+            return ConvertResult.Success;
+        }
+#endif
 
         // use Convert.ChangeType if both types are IConvertible
         if (initialValue is IConvertible convertible && IsConvertible(targetType))
@@ -389,7 +558,7 @@ static class ConvertUtils
             }
             if (targetType == typeof(Time))
             {
-                value = Time.ParseExact(s, "HH':'mm':'ss.FFFFFFF", InvariantCulture);
+                value = Time.Parse(s, InvariantCulture);
                 return ConvertResult.Success;
             }
 #endif

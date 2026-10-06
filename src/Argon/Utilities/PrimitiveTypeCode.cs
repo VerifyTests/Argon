@@ -41,5 +41,11 @@
     Uri = 38,
     String = 39,
     Bytes = 40,
-    DBNull = 41
+    DBNull = 41,
+    Half = 42,
+    HalfNullable = 43,
+    Int128 = 44,
+    Int128Nullable = 45,
+    UInt128 = 46,
+    UInt128Nullable = 47
 }

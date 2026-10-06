@@ -890,7 +890,7 @@ public class XmlNodeConverter :
             // Match on the decoded local name and namespace (not the raw JSON property name),
             // otherwise prefixed or XML-encoded names never match and a single-element nested
             // array loses its json:Array marker on round-trip.
-            XmlUtils.GetQualifiedNameParts(propertyName, out var qualifiedPrefix, out var localName);
+            XmlUtils.GetQualifiedNameParts(EncodeName(propertyName), out var qualifiedPrefix, out var localName);
             var ns = qualifiedPrefix.IsNullOrEmpty() ? manager.DefaultNamespace : manager.LookupNamespace(qualifiedPrefix);
 
             foreach (var childNode in nestedArrayElement.ChildNodes)
@@ -906,6 +906,14 @@ public class XmlNodeConverter :
 
     static void AddJsonArrayAttribute(IXmlElement element, IXmlDocument document)
     {
+        foreach (var attribute in element.Attributes)
+        {
+            if (attribute.LocalName == "Array" && attribute.NamespaceUri == jsonNamespaceUri)
+            {
+                return;
+            }
+        }
+
         element.SetAttributeNode(document.CreateAttribute("json:Array", jsonNamespaceUri, "true"));
 
         // linq to xml doesn't automatically include prefixes via the namespace manager
@@ -1119,9 +1127,19 @@ public class XmlNodeConverter :
         currentNode.AppendChild(documentType);
     }
 
+    string EncodeName(string name)
+    {
+        if (EncodeSpecialCharacters)
+        {
+            return XmlConvert.EncodeLocalName(name);
+        }
+
+        return XmlConvert.EncodeName(name);
+    }
+
     IXmlElement CreateElement(string elementName, IXmlDocument document, string? elementPrefix, XmlNamespaceManager manager)
     {
-        var encodeName = EncodeSpecialCharacters ? XmlConvert.EncodeLocalName(elementName) : XmlConvert.EncodeName(elementName);
+        var encodeName = EncodeName(elementName);
         var ns = elementPrefix.IsNullOrEmpty() ? manager.DefaultNamespace : manager.LookupNamespace(elementPrefix);
 
         if (ns.IsNullOrEmpty())
@@ -1158,7 +1176,7 @@ public class XmlNodeConverter :
 
                         if (count == 1 && WriteArrayAttribute)
                         {
-                            XmlUtils.GetQualifiedNameParts(propertyName, out var elementPrefix, out var localName);
+                            XmlUtils.GetQualifiedNameParts(EncodeName(propertyName), out var elementPrefix, out var localName);
                             var ns = elementPrefix.IsNullOrEmpty() ? manager.DefaultNamespace : manager.LookupNamespace(elementPrefix);
 
                             foreach (var childNode in currentNode.ChildNodes)

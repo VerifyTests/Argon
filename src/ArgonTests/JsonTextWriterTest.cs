@@ -1629,6 +1629,30 @@ public class JsonTextWriterTest : TestFixtureBase
         GC.WaitForPendingFinalizers();
         Assert.Equal(1, UnmanagedResourceFakingJsonWriter.DisposalCalls);
     }
+
+    [Fact]
+    public void WriteCommentContainingBlockCommentEnd()
+    {
+        var token = JToken.Parse(
+            "[ // a */ b\n 1 ]",
+            new()
+            {
+                CommentHandling = CommentHandling.Load
+            });
+
+        var json = token.ToString(Formatting.None);
+
+        Assert.Equal("[// a */ b\n1]", json);
+        Assert.Equal(1, (int) JArray.Parse(json)[0]);
+
+        var stringWriter = new StringWriter();
+        using (var jsonWriter = new JsonTextWriter(stringWriter))
+        {
+            jsonWriter.WriteComment("a*/b\nc".AsSpan());
+        }
+
+        Assert.Equal("//a*/b\n//c\n", stringWriter.ToString());
+    }
 }
 
 public class CustomJsonTextWriter(TextWriter textWriter) : JsonTextWriter(textWriter)

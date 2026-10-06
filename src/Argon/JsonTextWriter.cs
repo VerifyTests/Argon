@@ -268,11 +268,24 @@ public class JsonTextWriter : JsonWriter
         {
             InternalWriteValue(JsonToken.Integer);
             WriteValueInternal(bigInteger.ToString(InvariantCulture));
+            return;
         }
-        else
+
+#if NET6_0_OR_GREATER
+        // a finite Half is written from its own shortest round trip text. going through float
+        // would write the float digits, e.g. 0.099975586 for (Half) 0.1
+        if (value is Half half &&
+            Half.IsFinite(half) &&
+            FloatFormat == "R" &&
+            GetType() == typeof(JsonTextWriter))
         {
-            base.WriteValue(value);
+            InternalWriteValue(JsonToken.Float);
+            WriteValueInternal(JsonConvert.ToString(half));
+            return;
         }
+#endif
+
+        base.WriteValue(value);
     }
 
     /// <summary>
@@ -704,9 +717,28 @@ public class JsonTextWriter : JsonWriter
     {
         InternalWriteComment();
 
+        // if text contains "*/" then it must have been a line comment
+        if (text != null &&
+            text.Contains("*/"))
+        {
+            WriteLineComments(text);
+            return;
+        }
+
         writer.Write("/*");
         writer.Write(text);
         writer.Write("*/");
+    }
+
+    // each line must be emitted separately
+    void WriteLineComments(string text)
+    {
+        foreach (var line in text.Split('\n'))
+        {
+            writer.Write("//");
+            writer.Write(line);
+            writer.Write('\n');
+        }
     }
 
     /// <summary>
@@ -715,6 +747,12 @@ public class JsonTextWriter : JsonWriter
     public override void WriteComment(CharSpan text)
     {
         InternalWriteComment();
+
+        if (text.IndexOf("*/".AsSpan()) > -1)
+        {
+            WriteLineComments(text.ToString());
+            return;
+        }
 
         writer.Write("/*");
         writer.Write(text);

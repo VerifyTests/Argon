@@ -233,5 +233,16 @@ public class TimeTests : TestFixtureBase
         Assert.Equal(new Time(23, 59, 59), l[0]);
         Assert.Null(l[1]);
     }
+    [Theory]
+    [InlineData("13:45", 13, 45, 0)]
+    [InlineData("13:45:30", 13, 45, 30)]
+    [InlineData("1:45 PM", 13, 45, 0)]
+    public void DeserializeOtherFormats(string text, int hour, int minute, int second)
+    {
+        var t = JsonConvert.DeserializeObject<Time>($"\"{text}\"");
+
+        Assert.Equal(new(hour, minute, second), t);
+    }
+
 }
 #endif

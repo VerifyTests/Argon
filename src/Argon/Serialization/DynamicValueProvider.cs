@@ -35,15 +35,8 @@ public class DynamicValueProvider : IValueProvider
 #if !RELEASE
             // dynamic method doesn't check whether the type is 'legal' to set
             // add this check for unit tests
-            var underlyingType = member.GetMemberUnderlyingType();
-            if (value == null)
-            {
-                if (!underlyingType.IsNullable())
-                {
-                    throw new JsonSerializationException($"Incompatible value. Cannot set {member} to null.");
-                }
-            }
-            else if (!underlyingType.IsInstanceOfType(value))
+            if (value != null &&
+                !member.GetMemberUnderlyingType().IsInstanceOfType(value))
             {
                 throw new JsonSerializationException($"Incompatible value. Cannot set {member} to type {value.GetType()}.");
             }

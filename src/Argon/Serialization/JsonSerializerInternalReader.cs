@@ -468,6 +468,12 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
                 }
             }
             case JsonContractType.Dynamic:
+#if NET7_0_OR_GREATER
+                if (!JToken.DynamicIsSupported)
+                {
+                    throw new NotSupportedException(JToken.DynamicNotSupportedMessage);
+                }
+#endif
                 var dynamicContract = (JsonDynamicContract) contract;
                 return CreateDynamic(reader, dynamicContract, member, id);
         }
@@ -519,10 +525,10 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
             var typeToken = current[JsonTypeReflector.TypePropertyName];
             if (typeToken != null)
             {
-                var qualifiedTypeName = (string?) typeToken;
                 var typeTokenReader = typeToken.CreateReader();
                 typeTokenReader.ReadAndAssert();
-                ResolveTypeName(typeTokenReader, ref type, ref contract, member, containerContract, containerMember, qualifiedTypeName!);
+                var qualifiedTypeName = GetQualifiedTypeName(typeTokenReader);
+                ResolveTypeName(typeTokenReader, ref type, ref contract, member, containerContract, containerMember, qualifiedTypeName);
 
                 var valueToken = current[JsonTypeReflector.ValuePropertyName];
                 if (valueToken != null)
@@ -619,7 +625,7 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
                     else if (string.Equals(propertyName, JsonTypeReflector.TypePropertyName, StringComparison.Ordinal))
                     {
                         reader.ReadAndAssert();
-                        var qualifiedTypeName = (string) reader.GetValue();
+                        var qualifiedTypeName = GetQualifiedTypeName(reader);
 
                         ResolveTypeName(reader, ref type, ref contract, member, containerContract, containerMember, qualifiedTypeName);
 
@@ -654,6 +660,16 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
         }
 
         return false;
+    }
+
+    static string GetQualifiedTypeName(JsonReader reader)
+    {
+        if (reader.TokenType != JsonToken.String)
+        {
+            throw JsonSerializationException.Create(reader, $"Error reading '{JsonTypeReflector.TypePropertyName}' metadata property. Property must have a string value, got {reader.TokenType}.");
+        }
+
+        return reader.StringValue;
     }
 
     [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
@@ -841,6 +857,27 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
 
             try
             {
+#if NET6_0_OR_GREATER
+                if (value != null &&
+                    ConvertUtils.TryConvertModernNumber(value, contract.NonNullableUnderlyingType, out var convertedNumber))
+                {
+                    return convertedNumber;
+                }
+
+                if (value is byte[] bytes)
+                {
+                    if (contract.NonNullableUnderlyingType == typeof(Memory<byte>))
+                    {
+                        return new Memory<byte>(bytes);
+                    }
+
+                    if (contract.NonNullableUnderlyingType == typeof(ReadOnlyMemory<byte>))
+                    {
+                        return new ReadOnlyMemory<byte>(bytes);
+                    }
+                }
+#endif
+
                 if (contract.IsConvertible)
                 {
                     var primitiveContract = (JsonPrimitiveContract) contract;
@@ -1771,7 +1808,8 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
             var constructorProperty = context.ConstructorProperty;
             if (constructorProperty == null && context.Property != null)
             {
-                constructorProperty = contract.CreatorParameters.ForgivingCaseSensitiveFind(context.Property.UnderlyingName!);
+                constructorProperty = contract.CreatorParameters.ForgivingCaseSensitiveFind(context.Property.UnderlyingName!) ??
+                                      contract.CreatorParameters.ForgivingCaseSensitiveFind(context.Property.PropertyName!);
             }
 
             if (constructorProperty is {Ignored: false})
@@ -2263,7 +2301,7 @@ class JsonSerializerInternalReader(JsonSerializer serializer) :
 
                     if (resolvedRequired == Required.DisallowNull)
                     {
-                        throw JsonSerializationException.Create(reader, $"Required property '{property.PropertyName}' expects a non-null value.");
+                        throw JsonSerializationException.Create(reader, $"Property '{property.PropertyName}' expects a non-null value.");
                     }
 
                     break;

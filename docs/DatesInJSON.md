@@ -12,7 +12,7 @@ The default format used by Json.NET is the [ISO 8601 standard](http://en.wikiped
 
 `DateOnly` and `TimeOnly` are supported out of the box on net6.0 and above. No converter is required.
 
-Both are written as, and parsed from, JSON strings using a fixed invariant-culture format:
+Both are written as JSON strings using a fixed invariant-culture format:
 
 | Type       | Format                 | Example              |
 |------------|------------------------|----------------------|
@@ -28,7 +28,9 @@ var date = JsonConvert.DeserializeObject<DateOnly>("\"2000-12-29\"");
 
 Nullable (`DateOnly?` / `TimeOnly?`) and collection members behave the same way, with `null` written as `null`.
 
-Note that these formats are fixed. `DateFormatHandling`, `DateFormatString` and `DateTimeZoneHandling` apply to `DateTime` and `DateTimeOffset` only, and have no effect on `DateOnly` or `TimeOnly`. To use a different format, add a custom `JsonConverter`.
+`DateOnly` is parsed using that same format. `TimeOnly` is parsed with `TimeOnly.Parse` and the invariant culture, so other time formats are also read, for example `"13:45"`.
+
+Note that the written formats are fixed. `DateFormatHandling`, `DateFormatString` and `DateTimeZoneHandling` apply to `DateTime` and `DateTimeOffset` only, and have no effect on `DateOnly` or `TimeOnly`. To use a different format, add a custom `JsonConverter`.
 
 On net462, net472 and net48 the types do not exist, so this support is not compiled in.
 
