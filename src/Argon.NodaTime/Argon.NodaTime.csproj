@@ -3,12 +3,15 @@
   <PropertyGroup>
     <Description>Provides serialization support between Noda Time and Json.NET.</Description>
     <TargetFrameworks>net48;net6.0;net7.0;net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
+    <!-- The tests use internals through InternalsVisibleTo -->
+    <SquashInternalsVisibleTo>Honor</SquashInternalsVisibleTo>
     <PackageTags>nodatime;json;Argon</PackageTags>
   </PropertyGroup>
   <ItemGroup>
     <SupportedPlatform Include="browser" />
     <PackageReference Include="NodaTime" />
     <PackageReference Include="ProjectDefaults" PrivateAssets="all" />
+    <PackageReference Include="Squash" PrivateAssets="all" />
     <ProjectReference Include="..\Argon\Argon.csproj" />
   </ItemGroup>
 
