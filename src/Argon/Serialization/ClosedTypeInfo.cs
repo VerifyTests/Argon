@@ -2,6 +2,8 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
+namespace Argon;
+
 /// <summary>
 /// Resolves the derived types the C# compiler records for a <c>closed</c> type hierarchy, and the
 /// type discriminator inferred for each of them.

@@ -1,3 +1,5 @@
+namespace Argon;
+
 class TimeZoneInfoConverter :
     JsonConverter<TimeZoneInfo>
 {

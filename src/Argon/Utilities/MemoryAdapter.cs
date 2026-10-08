@@ -4,6 +4,8 @@
 
 #if NET6_0_OR_GREATER
 
+namespace Argon;
+
 /// <summary>
 /// Reads and writes the contents of a <see cref="Memory{T}" /> or <see cref="ReadOnlyMemory{T}" />,
 /// neither of which is enumerable.

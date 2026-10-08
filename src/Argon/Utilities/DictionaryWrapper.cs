@@ -4,6 +4,8 @@
 
 #nullable disable
 
+namespace Argon;
+
 interface IWrappedDictionary
     : IDictionary
 {

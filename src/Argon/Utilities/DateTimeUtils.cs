@@ -2,6 +2,8 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
+namespace Argon;
+
 static class DateTimeUtils
 {
     const string isoDateFormat = "yyyy-MM-ddTHH:mm:ss.FFFFFFFK";

@@ -2,6 +2,8 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
+namespace Argon;
+
 static class Base64Encoder
 {
     const int Base64LineSize = 76;

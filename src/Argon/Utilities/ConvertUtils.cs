@@ -6,6 +6,8 @@
 // ReSharper disable NullableWarningSuppressionIsUsed
 // ReSharper disable RedundantSuppressNullableWarningExpression
 
+namespace Argon;
+
 static class ConvertUtils
 {
     static readonly FrozenDictionary<Type, PrimitiveTypeCode> typeCodeMap =

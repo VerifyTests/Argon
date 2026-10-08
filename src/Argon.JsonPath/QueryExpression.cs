@@ -1,4 +1,6 @@
-﻿abstract class QueryExpression
+﻿namespace Argon;
+
+abstract class QueryExpression
 {
     internal QueryOperator Operator;
 

@@ -4,6 +4,8 @@
 
 using System.Collections.Immutable;
 
+namespace Argon;
+
 /// <summary>
 /// Helper class for serializing immutable collections.
 /// Note that this is used by all builds, even those that don't support immutable collections, in case the DLL is GACed

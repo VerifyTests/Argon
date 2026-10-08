@@ -1,4 +1,6 @@
-﻿enum ReadType
+﻿namespace Argon;
+
+enum ReadType
 {
     Read,
     ReadAsInt32,

@@ -2,6 +2,8 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
+namespace Argon;
+
 class BidirectionalDictionary<TFirst, TSecond>(IEqualityComparer<TFirst> firstEqualityComparer,
     IEqualityComparer<TSecond> secondEqualityComparer,
     string duplicateFirstErrorMessage = "Duplicate item already exists for '{0}'.",

@@ -2,6 +2,8 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
+namespace Argon;
+
 class EnumInfo(bool isFlags, PrimitiveTypeCode typeCode, ulong[] values, string[] names, string[] resolvedNames)
 {
     public readonly bool IsFlags = isFlags;

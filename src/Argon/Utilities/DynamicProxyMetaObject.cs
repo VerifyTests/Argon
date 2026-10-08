@@ -2,6 +2,8 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
+namespace Argon;
+
 [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
 [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
 sealed class DynamicProxyMetaObject<T> : DynamicMetaObject

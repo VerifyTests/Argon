@@ -1,4 +1,6 @@
-﻿enum QueryOperator
+﻿namespace Argon;
+
+enum QueryOperator
 {
     None = 0,
     Equals = 1,

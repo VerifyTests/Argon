@@ -1,5 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 
+namespace Argon;
+
 class BooleanQueryExpression(QueryOperator @operator, object left, object? right) :
     QueryExpression(@operator)
 {

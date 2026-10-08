@@ -1,3 +1,5 @@
+namespace Argon;
+
 class QueryScanFilter(QueryExpression expression) :
     PathFilter
 {

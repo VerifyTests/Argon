@@ -5,6 +5,8 @@
 // ReSharper disable NullableWarningSuppressionIsUsed
 // ReSharper disable RedundantSuppressNullableWarningExpression
 
+namespace Argon;
+
 [RequiresUnreferencedCode(MiscellaneousUtils.TrimWarning)]
 [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
 class JsonSerializerInternalWriter(JsonSerializer serializer) :
