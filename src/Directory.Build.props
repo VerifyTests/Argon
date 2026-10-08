@@ -3,6 +3,9 @@
     <!-- The IL codes are linker warnings from Squash, for reflection the trim analyzer
          already checks at compile time, where the source suppresses it. -->
     <NoWarn>CS1591;CS1573;NU1605;NU1608;NU1109;IL2026;IL2060;IL2067;IL2070;IL2072;IL2121</NoWarn>
+    <!-- Polyfill's types are marked as embedded, which hides them from the assemblies named in
+         InternalsVisibleTo. A project that needs them references Polyfill itself. -->
+    <PolyUseEmbeddedAttribute>true</PolyUseEmbeddedAttribute>
     <LangVersion>preview</LangVersion>
     <Version>0.38.1</Version>
     <AssemblyVersion>1.0.0</AssemblyVersion>

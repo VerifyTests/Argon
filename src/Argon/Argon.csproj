@@ -2,8 +2,10 @@
   <PropertyGroup>
     <TargetFrameworks>net462;net472;net48;net6.0;net7.0;net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
     <PolyNullability>true</PolyNullability>
-    <!-- The other Argon libraries and the tests use internals through InternalsVisibleTo -->
-    <Squash_InternalsVisibleTo>Honor</Squash_InternalsVisibleTo>
+    <!-- The other Argon libraries and the tests use internals through InternalsVisibleTo. Argon's
+         own are all in this namespace and are kept whole. What Polyfill adds is hidden from them
+         (PolyUseEmbeddedAttribute), so it is trimmed where nothing here uses it. -->
+    <Squash_InternalNamespacesToKeep>Argon</Squash_InternalNamespacesToKeep>
     <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
   </PropertyGroup>
   <ItemGroup>

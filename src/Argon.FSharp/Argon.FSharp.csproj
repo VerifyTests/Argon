@@ -10,6 +10,7 @@
     <Using Include="Microsoft.FSharp.Collections" />
     <PackageReference Include="FSharp.Core" />
     <PackageReference Include="ProjectDefaults" PrivateAssets="all" />
+    <PackageReference Include="Polyfill" PrivateAssets="all" />
     <PackageReference Include="Squash" PrivateAssets="all" />
     <ProjectReference Include="..\Argon\Argon.csproj" />
   </ItemGroup>
