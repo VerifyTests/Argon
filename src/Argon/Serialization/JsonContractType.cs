@@ -1,4 +1,6 @@
-﻿enum JsonContractType
+﻿namespace Argon;
+
+enum JsonContractType
 {
     None = 0,
     Object = 1,

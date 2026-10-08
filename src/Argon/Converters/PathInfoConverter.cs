@@ -1,4 +1,6 @@
-﻿// ReSharper disable NullableWarningSuppressionIsUsed
+﻿namespace Argon;
+
+// ReSharper disable NullableWarningSuppressionIsUsed
 // ReSharper disable RedundantSuppressNullableWarningExpression
 class PathInfoConverter :
     JsonConverter

@@ -1,1 +1,3 @@
-﻿record struct TypeNameKey(string? Assembly, string Type);
+﻿namespace Argon;
+
+record struct TypeNameKey(string? Assembly, string Type);

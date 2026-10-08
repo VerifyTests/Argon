@@ -2,6 +2,8 @@
 // Use of this source code is governed by the Apache License 2.0,
 // as found in the LICENSE.txt file.
 
+namespace Argon.NodaTime;
+
 /// <summary>
 /// Json.NET converter for <see cref="DateTimeZone"/>.
 /// </summary>

@@ -1,3 +1,5 @@
+namespace Argon;
+
 class ScanMultipleFilter(List<string> names) :
     PathFilter
 {

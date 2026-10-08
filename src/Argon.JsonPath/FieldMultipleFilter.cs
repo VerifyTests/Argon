@@ -1,3 +1,5 @@
+namespace Argon;
+
 class FieldMultipleFilter(List<string> names) :
     PathFilter
 {

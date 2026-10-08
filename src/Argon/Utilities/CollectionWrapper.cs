@@ -4,6 +4,8 @@
 
 #nullable disable
 
+namespace Argon;
+
 class CollectionWrapper<T> : ICollection<T>, IWrappedCollection
 {
     readonly IList list;

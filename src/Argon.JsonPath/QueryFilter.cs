@@ -1,4 +1,6 @@
-﻿class QueryFilter(QueryExpression expression) :
+﻿namespace Argon;
+
+class QueryFilter(QueryExpression expression) :
     PathFilter
 {
     internal QueryExpression Expression = expression;

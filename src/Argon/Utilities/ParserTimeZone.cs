@@ -1,4 +1,6 @@
-﻿enum ParserTimeZone
+﻿namespace Argon;
+
+enum ParserTimeZone
 {
     Unspecified = 0,
     Utc = 1,

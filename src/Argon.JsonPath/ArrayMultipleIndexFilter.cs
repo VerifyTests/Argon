@@ -1,3 +1,5 @@
+namespace Argon;
+
 class ArrayMultipleIndexFilter(List<int> indexes) :
     PathFilter
 {

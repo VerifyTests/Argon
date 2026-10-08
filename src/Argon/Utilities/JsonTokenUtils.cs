@@ -2,6 +2,8 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
+namespace Argon;
+
 static class JsonTokenUtils
 {
     internal static bool IsEndToken(this JsonToken token) =>

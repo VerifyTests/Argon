@@ -1,4 +1,6 @@
-﻿enum PrimitiveTypeCode
+﻿namespace Argon;
+
+enum PrimitiveTypeCode
 {
     Empty = 0,
     Object = 1,

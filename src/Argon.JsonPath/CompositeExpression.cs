@@ -1,4 +1,6 @@
-﻿class CompositeExpression(QueryOperator @operator) :
+﻿namespace Argon;
+
+class CompositeExpression(QueryOperator @operator) :
     QueryExpression(@operator)
 {
     public List<QueryExpression> Expressions { get; set; } = [];

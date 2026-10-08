@@ -2,6 +2,8 @@
 // Use of this source code is governed by The MIT License,
 // as found in the license.md file.
 
+namespace Argon;
+
 /// <summary>
 /// Builds a string. Unlike <see cref="System.Text.StringBuilder" /> this class lets you reuse its internal buffer.
 /// </summary>

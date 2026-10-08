@@ -6,6 +6,8 @@
 // ReSharper disable RedundantSuppressNullableWarningExpression
 // ReSharper disable AssignNullToNotNullAttribute
 
+namespace Argon;
+
 static class MiscellaneousUtils
 {
     internal const string TrimWarning = "Argon relies on reflection over types that may be removed when trimming.";

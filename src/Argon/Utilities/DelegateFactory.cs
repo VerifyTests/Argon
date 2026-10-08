@@ -4,6 +4,8 @@
 
 // ReSharper disable RedundantSuppressNullableWarningExpression
 
+namespace Argon;
+
 static class DelegateFactory
 {
     [RequiresDynamicCode(MiscellaneousUtils.AotWarning)]
