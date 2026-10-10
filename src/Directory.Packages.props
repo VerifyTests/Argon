@@ -21,7 +21,7 @@
     <PackageVersion Include="System.Buffers" Version="4.6.1" />
     <PackageVersion Include="System.Memory" Version="4.6.3" />
     <PackageVersion Include="System.Collections.Immutable" Version="8.0.0" Pinned="true" />
-    <PackageVersion Include="DiffEngine" Version="20.7.2" />
+    <PackageVersion Include="DiffEngine" Version="20.8.1" />
     <PackageVersion Include="EmptyFiles" Version="8.20.1" />
     <PackageVersion Include="SimpleInfoName" Version="3.2.1" />
     <PackageVersion Include="Verify" Version="33.3.2" />
