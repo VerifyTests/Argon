@@ -15,7 +15,8 @@ Argon is a JSON framework for .NET. It is a hard fork of [Newtonsoft.Json](https
 
 ## Sponsors
 
-### Entity Framework Extensions<!-- include: sponsors. path: /docs/sponsors.include.md -->
+<!-- include: sponsors. path: /docs/sponsors.include.md -->
+### Entity Framework Extensions
 
 [Entity Framework Extensions](https://entityframework-extensions.net/?utm_source=simoncropp&utm_medium=Argon) is a major sponsor and is proud to contribute to the development this project.
 
