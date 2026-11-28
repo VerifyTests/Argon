@@ -1,6 +1,7 @@
+* text=auto eol=lf
 *.png 	binary
 
-src/.editorconfig text eol=lf working-tree-encoding=UTF-8
+.editorconfig text eol=lf working-tree-encoding=UTF-8
 *.sln.DotSettings text eol=lf working-tree-encoding=UTF-8
 *.slnx.DotSettings text eol=lf working-tree-encoding=UTF-8
 
